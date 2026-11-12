@@ -1,0 +1,120 @@
+{
+  "id": "case-01-harbor-ledger",
+  "title": { "crime": "The Harbor Ledger", "friendly": "The Missing Festival Coins" },
+  "setup": {
+    "crime": "Port Calder, a rainy harbor town. Silas Crane reports $90k stolen from his shipping company's safe. You are a newly promoted detective with 3 days before the next cargo ship sails and the money leaves with it. The Tidewater Syndicate has been washing cash through the fish market for months, and somebody inside the harbor is protecting it.",
+    "friendly": "Port Calder is getting ready for the Gold Coin Festival, but the prize chest is empty! The sneaky Tidewater Gang is hiding the coins somewhere by the harbor. You have 3 days before their boat sails away. Some people will help you, and some will try to trick you."
+  },
+  "unit": { "crime": "$#k", "friendly": "# coins" },
+  "clock": { "days": 3, "hoursPerDay": 4 },
+  "cast": [
+    { "id": "vex", "name": "Vex Lorne", "role": "suspect", "reliability": "liar", "protects": "crane", "color": "#c2410c",
+      "blurb": { "crime": "Courier who moves the cash. Smooth talker.", "friendly": "Runs errands for the gang. Very smooth talker." } },
+    { "id": "kane", "name": "Kane Hollis", "role": "suspect", "reliability": "honest", "color": "#4d7c0f",
+      "blurb": { "crime": "Dock foreman. Looks guilty, keeps to himself.", "friendly": "Dock boss. Grumpy, but fair." } },
+    { "id": "rosa", "name": "Rosa Diaz", "role": "witness", "reliability": "mistaken", "color": "#be185d",
+      "blurb": { "crime": "Runs the fish market. Busy, sharp, sometimes rushed.", "friendly": "Runs the fish market. Always in a hurry." } },
+    { "id": "juno", "name": "Juno Park", "role": "witness", "reliability": "honest", "color": "#0369a1",
+      "blurb": { "crime": "Night guard on the docks. Leaving town soon.", "friendly": "Night guard on the docks. Going on a trip soon." } },
+    { "id": "tip", "name": "\"Tip\" Callahan", "role": "informant", "reliability": "double-agent", "protects": "crane", "color": "#7e22ce",
+      "blurb": { "crime": "Knows everyone. Sells what he hears, to anyone.", "friendly": "Knows everybody's business. Will tell you things... for a favor." } },
+    { "id": "crane", "name": "Silas Crane", "role": "boss", "reliability": "liar", "color": "#334155",
+      "blurb": { "crime": "Owns Crane Shipping. Reported the theft himself.", "friendly": "Owns the big shipping company. He reported the missing coins." } },
+    { "id": "mara", "name": "Mara Quill", "role": "ally", "ability": "accountant", "reliability": "honest", "color": "#0f766e",
+      "blurb": { "crime": "Forensic accountant. Sees patterns in totals.", "friendly": "Counts things super fast." } },
+    { "id": "dex", "name": "Sgt. Dex Okafor", "role": "ally", "ability": "partner", "reliability": "honest", "color": "#a16207",
+      "blurb": { "crime": "Your old partner. Patient, explains his thinking.", "friendly": "Your old detective buddy. Great at explaining." } },
+    { "id": "lin", "name": "Dr. Lin Abara", "role": "ally", "ability": "forensics", "reliability": "honest", "color": "#1d4ed8",
+      "blurb": { "crime": "Forensic analyst. One sure answer, no guesswork.", "friendly": "Science detective. Can find one answer for sure." } },
+    { "id": "cole", "name": "Officer Cole", "role": "ally", "ability": "undercover", "reliability": "honest", "color": "#475569",
+      "blurb": { "crime": "Undercover cop inside the syndicate. Can confirm one claim.", "friendly": "A secret helper inside the gang. Can check if someone told the truth." } }
+  ],
+  "leads": [
+    {
+      "id": "L1", "type": "ledger", "cost": 2, "opensAfter": [],
+      "title": { "crime": "Fish market cash book", "friendly": "The fish market notebook" },
+      "intro": { "crime": "Rosa keeps a cash book for the market. Somebody has been writing in it at night. Work out who moved how much each hour.", "friendly": "Rosa's notebook has numbers in it from last night. Work out how many coins each person carried each hour." },
+      "columns": ["vex", "kane", "rosa", "tip", "juno", "crane"],
+      "rows": ["8pm", "9pm", "10pm", "11pm", "Midnight", "1am"],
+      "speakers": ["rosa", "kane"],
+      "liars": { "junior": [], "detective": [], "inspector": [], "chief": [] },
+      "fact": { "crime": "Cash moves through the fish market every night, and Vex carries the biggest bags.", "friendly": "The coins go through the fish market at night, and Vex carries the most." }
+    },
+    {
+      "id": "L2", "type": "surveillance", "cost": 2, "opensAfter": ["L1"],
+      "title": { "crime": "Dock camera log", "friendly": "The dock cameras" },
+      "intro": { "crime": "The dock cameras caught a few people in a few rooms. Juno was on duty. Work out who was in which room each hour. Rooms are numbered along the pier.", "friendly": "The cameras saw some people in some rooms. Work out who was in which room each hour. Rooms are numbered along the pier." },
+      "columns": ["vex", "kane", "juno", "tip", "rosa", "crane"],
+      "rows": ["9pm", "10pm", "11pm", "Midnight", "1am", "2am"],
+      "rooms": ["Harbor office", "Ice house", "Warehouse 9", "Fish hall", "Net loft", "Boathouse"],
+      "speakers": ["juno", "vex", "kane"],
+      "liars": { "junior": [], "detective": ["vex"], "inspector": ["vex"], "chief": ["vex"] },
+      "fact": { "crime": "Vex was inside Warehouse 9 at midnight, not at home as he claims.", "friendly": "Vex was in Warehouse 9 at midnight. He said he was at home!" }
+    },
+    {
+      "id": "L3", "type": "ledger", "cost": 2, "opensAfter": ["L1"],
+      "title": { "crime": "Tip's payment records", "friendly": "Tip's secret notes" },
+      "intro": { "crime": "Tip hands over his payment records, a little too eagerly. Work out the payments and check what Tip says about them.", "friendly": "Tip gives you his notes. He seems very keen to help. Check if what he says matches the numbers." },
+      "columns": ["tip", "vex", "rosa", "kane", "crane", "juno"],
+      "rows": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "speakers": ["tip", "rosa", "kane"],
+      "liars": { "junior": ["tip"], "detective": ["tip"], "inspector": ["tip"], "chief": ["tip"] },
+      "fact": { "crime": "Every payment ends up in an account owned by Crane Shipping. Tip lied to cover it.", "friendly": "All the coins go to the shipping company. Tip fibbed to hide it!" }
+    },
+    {
+      "id": "L4", "type": "ledger", "cost": 2, "opensAfter": ["L2", "L3"], "hard": true,
+      "title": { "crime": "The harbormaster's private ledger", "friendly": "The secret ledger" },
+      "intro": { "crime": "Hidden in Warehouse 9: a private ledger in Crane's handwriting. Crack it and the whole trail is exposed.", "friendly": "Hidden in Warehouse 9: a secret book in Mr. Crane's handwriting! Crack it to solve the case." },
+      "columns": ["crane", "vex", "rosa", "kane", "tip", "juno"],
+      "rows": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      "speakers": ["vex", "rosa", "kane"],
+      "liars": { "junior": ["vex"], "detective": ["vex"], "inspector": ["vex", "rosa"], "chief": ["vex", "rosa"] },
+      "fact": { "crime": "Crane staged the theft. The $90k never left his company. It was washed through the market to pay the syndicate.", "friendly": "Mr. Crane hid the coins himself and blamed someone else!" }
+    }
+  ],
+  "events": [
+    {
+      "id": "juno-leaves", "at": 4, "unlessSolved": "L2",
+      "effect": { "type": "removeSpeaker", "lead": "L2", "speaker": "juno", "recover": { "hours": 1, "favors": 1 } },
+      "rumor": { "crime": "Juno's bus ticket is for the start of Day 2.", "friendly": "Juno is going on a trip at the start of Day 2." },
+      "message": { "crime": "Juno has left town. Tracking her down for her statement will cost time and a favor.", "friendly": "Juno went on her trip! You can still call her, but it costs time and a favor." }
+    },
+    {
+      "id": "warehouse-burns", "at": 8, "ifFlag": "tip-trap", "unlessSolved": "L4",
+      "effect": { "type": "addCost", "lead": "L4", "hours": 1 },
+      "rumor": { "crime": "Word on the docks: someone wants Warehouse 9 gone.", "friendly": "Somebody wants to mess up Warehouse 9." },
+      "message": { "crime": "Warehouse 9 burned overnight. Tip told someone. The ledger survived, but rebuilding the trail costs an extra hour.", "friendly": "Warehouse 9 got flooded! Tip told the gang. Finding the secret book now takes an extra hour." }
+    },
+    {
+      "id": "ship-sails", "at": 12,
+      "effect": { "type": "endCase" },
+      "rumor": { "crime": "The cargo ship sails at the end of Day 3.", "friendly": "The gang's boat leaves at the end of Day 3." },
+      "message": { "crime": "The ship is leaving. Make your accusation now.", "friendly": "The boat is leaving! Time to say who did it." }
+    }
+  ],
+  "offers": [
+    {
+      "id": "tip-trap", "from": "tip", "after": "L1", "cost": { "favors": 1 },
+      "text": { "crime": "\"Warehouse 9 is where they keep the books. Give me one favor and I'll keep an eye on it for you. Nobody touches it. You have my word.\"", "friendly": "\"Give me one favor and I'll guard Warehouse 9 for you. Promise!\"" },
+      "accept": { "crime": "Tip grins and pockets the favor.", "friendly": "Tip winks and runs off." },
+      "decline": { "crime": "Tip shrugs. \"Your loss, detective.\"", "friendly": "Tip shrugs. \"Suit yourself!\"" }
+    }
+  ],
+  "endings": [
+    {
+      "id": "full-bust", "accuse": ["crane"], "requires": ["L4", "tip-exposed"],
+      "title": { "crime": "Full bust", "friendly": "Case closed!" },
+      "text": { "crime": "Crane is arrested on the dock with the ledger in evidence. Vex and Tip both turn state's witness. The Tidewater Syndicate is finished in Port Calder.", "friendly": "Mr. Crane is caught! The coins go back to the festival, and the Tidewater Gang is done for." }
+    },
+    {
+      "id": "boss-walks", "accuse": ["crane", "vex", "tip"],
+      "title": { "crime": "The boss walks", "friendly": "So close!" },
+      "text": { "crime": "You made an arrest, but without the full trail Crane's lawyers tear the case apart. The ship sails on schedule.", "friendly": "You caught a helper, but the boss got away on the boat." }
+    },
+    {
+      "id": "wrong-arrest", "accuse": ["kane", "rosa", "juno"],
+      "title": { "crime": "Wrong arrest", "friendly": "Oops, wrong person" },
+      "text": { "crime": "You arrested an innocent person. The syndicate couldn't have planned it better.", "friendly": "That person didn't do it! The gang is laughing all the way to their boat." }
+    }
+  ]
+}
