@@ -16,7 +16,14 @@ jobs:
       - run: npm test
       - run: npm run validate
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
       - uses: actions/upload-artifact@v4
         with:
           name: syndicate-ledger
           path: dist/syndicate-ledger.html
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results

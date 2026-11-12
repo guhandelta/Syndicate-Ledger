@@ -236,8 +236,10 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 ## 9. Tech standards
 
-- TypeScript with no UI framework, built with Vite into one `dist/syndicate-ledger.html` that runs offline.
+- TypeScript, with the UI in Svelte 5, built with Vite into one `dist/syndicate-ledger.html` that runs offline.
+- Game rules live in `src/engine/` and `src/game/` as plain TypeScript. UI components only call them and never hold rules of their own.
 - Vitest for tests. The solver, generator and validator MUST have tests.
+- Playwright end-to-end tests MUST play every case to its full-bust ending at all four presets, and check each screen for serious accessibility problems.
 - Progress is saved in the browser's local storage. No accounts, no server.
 - `src/engine/` MUST NOT depend on `src/ui/`.
 - Zones MUST be shown with thick borders and a pattern as well as a color, for colorblind players.
@@ -257,6 +259,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-12 | Moved the UI to Svelte 5 with no change to rules or saves; added end-to-end and accessibility tests (section 9) |
 | 2026-11-12 | Built v1. Event times are start or end of a day; events can't hit a lead that's already started; Juno can be tracked down for 1 hour + 1 favor; added Dr. Lin Abara and Officer Cole as allies; the boss is shown as an ordinary suspect |
 | 2026-11-12 | Added surveillance (rooms) grids; Case 1 cut to 4 leads and a 12-hour clock; Chief gets a liar range; v1 scope set to one story |
 | 2026-11-12 | First draft of the rule book and Case 1 brief |
