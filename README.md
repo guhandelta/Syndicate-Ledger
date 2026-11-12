@@ -8,6 +8,8 @@ The game ships with one case, **The Harbor Ledger**, playable at four ranks from
 
 ## Play
 
+Play online at **https://guhandelta.github.io/Syndicate-Ledger/**. Every merge to `main` redeploys it.
+
 ```bash
 npm install
 npm run dev      # play locally at http://localhost:5173
