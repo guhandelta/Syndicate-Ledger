@@ -23,7 +23,9 @@ Open `dist/syndicate-ledger.html` in any browser. Progress saves in the browser.
 ## Develop
 
 ```bash
-npm test                     # engine and game tests
+npm test                     # engine, game and UI helper tests
+npm run check                # type-check the TypeScript and Svelte code
+npm run build && npm run e2e # play Case 1 end to end at every rank in Chromium
 npm run generate             # regenerate every lead × rank puzzle for Case 1
 npm run validate             # check the case against the rule book
 ```
@@ -34,7 +36,8 @@ npm run validate             # check the case against the rule book
 | `cases/` | Case files (JSON) and their generated, checked-in puzzles |
 | `src/engine/` | Solver, puzzle generator, uniqueness check, difficulty grader, hints |
 | `src/game/` | Case types, difficulty presets, clock, trust, events, endings, statement wording |
-| `src/ui/` | The browser interface |
+| `src/ui/` | The browser interface, in Svelte 5: `session.svelte.ts` holds screen and puzzle state, `components/` holds one file per screen and widget |
+| `e2e/` | Playwright tests that play the built game |
 | `scripts/` | Puzzle generation and case validation |
 
 ### Writing a new case

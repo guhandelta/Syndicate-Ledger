@@ -1,7 +1,12 @@
 import './ui/styles.css';
+import { mount } from 'svelte';
 import caseFile from '../cases/case-01-harbor-ledger.json';
 import puzzles from '../cases/case-01-harbor-ledger/puzzles.json';
 import type { CaseFile, PuzzleBook } from './game/caseTypes';
-import { mountApp } from './ui/app';
+import App from './ui/App.svelte';
+import { Session } from './ui/session.svelte';
 
-mountApp(document.getElementById('app')!, caseFile as unknown as CaseFile, puzzles as unknown as PuzzleBook);
+const session = new Session(caseFile as unknown as CaseFile, puzzles as unknown as PuzzleBook);
+// open the screen in the address bar (reload, shared link), if the game allows it
+if (location.hash) session.applyRoute(location.hash);
+mount(App, { target: document.getElementById('app')!, props: { session } });
