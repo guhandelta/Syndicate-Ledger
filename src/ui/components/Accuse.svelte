@@ -24,6 +24,6 @@
     {/each}
   </div>
   {#if !forced}
-    <div class="page-actions"><button class="btn" onclick={session.goBoard}>Not yet, back to the board</button></div>
+    <div class="page-actions"><button class="btn" onclick={session.goBoard}>{session.hub === 'town' ? 'Not yet, back to the town' : 'Not yet, back to the board'}</button></div>
   {/if}
 </main>

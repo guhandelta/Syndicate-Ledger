@@ -7,7 +7,8 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   use: { trace: 'off' },
   projects: [
-    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
+    // software WebGL, so the 3D town renders on machines without a graphics card
+    { name: 'desktop', use: { ...devices['Desktop Chrome'], launchOptions: { args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] } } },
     { name: 'phone', use: { ...devices['Pixel 7'] } },
   ],
 });

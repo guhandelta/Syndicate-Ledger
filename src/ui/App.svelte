@@ -3,6 +3,7 @@
   import Title from './components/Title.svelte';
   import Intro from './components/Intro.svelte';
   import Board from './components/Board.svelte';
+  import TownScreen from './components/Town.svelte';
   import Puzzle from './components/Puzzle.svelte';
   import Accuse from './components/Accuse.svelte';
   import Verdict from './components/Verdict.svelte';
@@ -68,6 +69,8 @@
   <Intro {session} />
 {:else if session.screen === 'board'}
   <Board {session} />
+{:else if session.screen === 'town' && session.town}
+  <TownScreen {session} />
 {:else if session.screen === 'puzzle' && session.leadId}
   {#key session.leadId}
     <Puzzle {session} />

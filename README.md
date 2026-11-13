@@ -18,6 +18,8 @@ npm run build    # writes dist/syndicate-ledger.html, a single file that runs of
 
 Open `dist/syndicate-ledger.html` in any browser. Progress saves in the browser.
 
+**Town (PC):** from the evidence board, choose *Walk the town*. WASD or arrows to walk, Shift to run, E to talk or enter a door, C to switch between the angled and behind-the-detective cameras, B for the case board. Each case's town is data in `cases/<case-id>/town.json`.
+
 **Controls:** click or tap a cell, then a number. Keyboard: arrows to move, 1–6 to enter, Backspace to erase, P to toggle notes, Ctrl+Z / Ctrl+Shift+Z to undo and redo.
 
 ## Develop
@@ -37,6 +39,7 @@ npm run validate             # check the case against the rule book
 | `src/engine/` | Solver, puzzle generator, uniqueness check, difficulty grader, hints |
 | `src/game/` | Case types, difficulty presets, clock, trust, events, endings, statement wording |
 | `src/ui/` | The browser interface, in Svelte 5: `session.svelte.ts` holds screen and puzzle state, `components/` holds one file per screen and widget |
+| `src/town/` | The walkable 3D town (three.js): `townLogic.ts` holds movement, collisions and cameras as plain functions, `TownScene.ts` draws it, `art/` holds the character figures |
 | `e2e/` | Playwright tests that play the built game |
 | `scripts/` | Puzzle generation and case validation |
 
