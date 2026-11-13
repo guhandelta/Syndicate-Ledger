@@ -117,6 +117,13 @@ export class Session {
     }
   }
 
+  /** Remembers that a town story shot has played, so it never plays twice. */
+  seeShot(id: string) {
+    if (!this.s) return;
+    this.s.shotsSeen = [...(this.s.shotsSeen ?? []), id];
+    this.save();
+  }
+
   // ---------- navigation ----------
 
   route(): string {

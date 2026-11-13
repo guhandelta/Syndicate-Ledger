@@ -241,6 +241,12 @@ kbd {
 .talk-portrait img { width: 190%; margin: -4% 0 0 -45%; display: block; }
 .talk-body h2 { margin: 0; }
 .talk-role { margin: 0 0 0.5em; color: var(--accent); font-size: 0.9rem; font-weight: 600; }
+.shot-bar { position: absolute; left: 0; right: 0; background: #05070b; animation: shot-in 0.35s ease-out; }
+.shot-bar.top { top: 0; height: 9%; }
+.shot-bar.bottom { bottom: 0; min-height: 16%; display: flex; gap: 16px; align-items: center; justify-content: center; padding: 10px 24px; }
+.shot-caption { margin: 0; max-width: 46em; font-size: 1.15rem; font-weight: 600; text-align: center; }
+@keyframes shot-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .shot-bar { animation: none; } }
 .town-fallback { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; padding: 24px; text-align: center; }
 /* the town is for PC screens; phones keep the board */
 @media (max-width: 860px), (pointer: coarse) {
