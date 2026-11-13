@@ -2,7 +2,7 @@
 
 Low-poly character renders for the 3D town. Each file shows one character, named `<character>-<view>.png`.
 Views: `front`, `side-left` (character faces left), `side-right` (character faces right), `back`.
-Sizes vary: most views are 1024×1536. Four are still low-res crops from contact sheets, stand-ins until full-size renders exist: left-facing views for Meena, Devan and Arul (250×1024) and Arun's right-facing view (250×640). All sit on a flat grey background (no transparency yet).
+Sizes vary: most views are 1024×1536. Four are still low-res crops from contact sheets, stand-ins until full-size renders exist: left-facing views for Meena, Devan and Arul (250×1024) and Arun's right-facing view (527×708). All sit on a flat grey background (no transparency yet).
 
 | Character | Likely Case 1 role | front | side-left | side-right | back |
 | --- | --- | --- | --- | --- | --- |
