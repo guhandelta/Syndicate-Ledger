@@ -36,6 +36,8 @@ export interface GameState {
   hintsUsed: number;
   accused?: string;
   endingId?: string;
+  /** Story shots already played in the town. */
+  shotsSeen?: string[];
 }
 
 export interface Game {

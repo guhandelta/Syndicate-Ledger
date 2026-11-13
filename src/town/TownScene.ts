@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { cameraPose, forward, nearest, npcPosition, npcPresent, step, type Nearby, type Pose } from './townLogic';
-import type { Building, CameraKind, Door, Npc, Prop, Town, Vec2 } from './townTypes';
+import { cameraPose, forward, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, type Nearby, type Pose } from './townLogic';
+import type { Building, CameraKind, Door, Npc, Prop, Shot, Town, Vec2 } from './townTypes';
 
 /** How a door's marker is drawn. */
 export type DoorState = 'open' | 'started' | 'solved' | 'locked' | 'plain';
@@ -96,6 +96,8 @@ export class TownScene {
   private raf = 0;
   private lastNearby = '';
   private introLeft = 0;
+  private shot: Shot | null = null;
+  private shotTime = 0;
   private disposed = false;
 
   constructor(canvas: HTMLCanvasElement, opts: TownSceneOptions) {
@@ -180,6 +182,19 @@ export class TownScene {
       // turn to face them
       this.pose.heading = Math.atan2(person.at[0] - this.pose.x, -(person.at[1] - this.pose.z));
     }
+  }
+
+  /** Plays a story shot until it is ended with no argument. The caller pauses the walk and times it. */
+  playShot(shot?: Shot) {
+    this.shot = shot ?? null;
+    this.shotTime = 0;
+    this.introLeft = 0;
+    if (!this.focus) this.cameraKind = this.explore;
+  }
+
+  /** True while the opening wide shot is still on screen. */
+  get inIntro(): boolean {
+    return this.introLeft > 0;
   }
 
   setView(view: TownView) {
@@ -298,8 +313,13 @@ export class TownScene {
       this.introLeft -= dt;
       if (this.introLeft <= 0 && !this.focus) this.cameraKind = this.explore;
     }
-    const want = cameraPose(this.cameraKind, this.town.cameras, this.pose, this.focus);
-    const k = 1 - Math.exp(-dt * (this.cameraKind === 'behind' ? 6 : 3.5));
+    let want = cameraPose(this.cameraKind, this.town.cameras, this.pose, this.focus);
+    if (this.shot) {
+      this.shotTime += dt;
+      const who = this.shot.focus.npc;
+      want = shotPose(this.shot, shotFocus(this.shot, this.town, who ? this.people.find((p) => p.npc.cast === who)?.at : undefined), this.shotTime);
+    }
+    const k = 1 - Math.exp(-dt * (this.cameraKind === 'behind' && !this.shot ? 6 : 3.5));
     this.camera.position.lerp(new THREE.Vector3(...want.position), k);
     this.camTarget.lerp(new THREE.Vector3(...want.target), k);
     this.camera.lookAt(this.camTarget);
@@ -307,6 +327,7 @@ export class TownScene {
     // buildings between the camera and the player fade, so they never hide the detective
     for (const it of this.buildings) {
       const blocks =
+        !this.shot &&
         this.cameraKind !== 'wide' &&
         this.camera.position.z > this.pose.z &&
         it.b.at[1] - it.b.size[1] / 2 > this.pose.z - 0.5 &&

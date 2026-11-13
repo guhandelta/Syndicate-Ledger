@@ -1,5 +1,5 @@
 import type { CaseFile } from '../game/caseTypes';
-import type { Building, CameraKind, CameraSettings, Door, Npc, Town, Vec2 } from './townTypes';
+import type { Building, CameraKind, CameraSettings, Door, Npc, Shot, Town, Vec2 } from './townTypes';
 
 /** Pure town rules: movement, collisions, who is nearby and where the camera goes. No rendering here. */
 
@@ -141,6 +141,42 @@ export function cameraPose(kind: CameraKind, c: CameraSettings, player: Pose, fo
   return { position: [player.x, c.angled.height, player.z + c.angled.back], target: [player.x, 0.8, player.z] };
 }
 
+/** What the story shots need to know about the game. */
+export interface ShotFacts {
+  solved: string[];
+  /** Leads the player can work now. */
+  open: string[];
+  firedEvents: string[];
+}
+
+/** Shots whose moment has come and that the player has not seen yet, in file order. */
+export function dueShots(town: Town, facts: ShotFacts, seen: string[]): Shot[] {
+  return (town.shots ?? []).filter((s) => {
+    if (seen.includes(s.id)) return false;
+    if (s.when.leadOpens) return facts.open.includes(s.when.leadOpens);
+    if (s.when.leadSolved) return facts.solved.includes(s.when.leadSolved);
+    if (s.when.event) return facts.firedEvents.includes(s.when.event);
+    return false;
+  });
+}
+
+/** The point on the ground a shot looks at. `npcAt` is where its person stands right now. */
+export function shotFocus(shot: Shot, town: Town, npcAt?: Vec2): Vec2 {
+  if (shot.focus.door) return town.doors.find((d) => d.id === shot.focus.door)!.at;
+  if (shot.focus.building) return town.buildings.find((b) => b.id === shot.focus.building)!.at;
+  return npcAt ?? town.npcs.find((n) => n.cast === shot.focus.npc)!.at;
+}
+
+/** Where the camera is `t` seconds into a shot. */
+export function shotPose(shot: Shot, focus: Vec2, t = 0): CameraPose {
+  const a = (((shot.angle ?? 0) + (shot.orbit ?? 0) * t) * Math.PI) / 180;
+  const lookY = shot.focus.building ? 2 : 1.2;
+  return {
+    position: [focus[0] + Math.sin(a) * shot.distance, shot.height, focus[1] + Math.cos(a) * shot.distance],
+    target: [focus[0], lookY, focus[1]],
+  };
+}
+
 /** Problems in a town file, checked against its case. An empty list means it is fine. */
 export function validateTown(town: Town, cf: CaseFile): string[] {
   const errors: string[] = [];
@@ -170,5 +206,29 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
     for (const p of [npc.at, ...(npc.path ?? [])]) free(p, `${npc.cast}'s spot`);
   }
   for (const c of cf.cast) if (!town.npcs.some((n) => n.cast === c.id)) errors.push(`${c.name} is not in the town`);
+  const shotIds = new Set<string>();
+  for (const shot of town.shots ?? []) {
+    const what = `Shot "${shot.id}"`;
+    if (shotIds.has(shot.id)) errors.push(`${what} is listed twice`);
+    shotIds.add(shot.id);
+    const { leadOpens, leadSolved, event } = shot.when;
+    if ([leadOpens, leadSolved, event].filter(Boolean).length !== 1) errors.push(`${what} needs exactly one trigger`);
+    for (const id of [leadOpens, leadSolved]) if (id && !leadIds.has(id)) errors.push(`${what} waits on unknown lead ${id}`);
+    if (leadOpens && leadIds.has(leadOpens) && !cf.leads.find((l) => l.id === leadOpens)!.opensAfter.length)
+      errors.push(`${what} waits for ${leadOpens} to open, but it is open from the start`);
+    if (event && !eventIds.has(event)) errors.push(`${what} waits on unknown event ${event}`);
+    const { door, building, npc } = shot.focus;
+    if ([door, building, npc].filter(Boolean).length !== 1) errors.push(`${what} needs exactly one thing to look at`);
+    if (door && !town.doors.some((d) => d.id === door)) errors.push(`${what} looks at unknown door ${door}`);
+    if (building && !town.buildings.some((b) => b.id === building)) errors.push(`${what} looks at unknown building ${building}`);
+    if (npc) {
+      const who = town.npcs.find((n) => n.cast === npc);
+      if (!who) errors.push(`${what} looks at ${npc}, who is not in the town`);
+      else if (who.untilEvent) errors.push(`${what} looks at ${npc}, who may have left town by then`);
+    }
+    if (!(shot.seconds >= 2 && shot.seconds <= 8)) errors.push(`${what} must last 2 to 8 seconds`);
+    if (!(shot.distance >= 2) || !(shot.height >= 1)) errors.push(`${what} has the camera too close or too low`);
+    if (!shot.caption) errors.push(`${what} has no caption`);
+  }
   return errors;
 }

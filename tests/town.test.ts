@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import caseFile from '../cases/case-01-harbor-ledger.json';
 import townFile from '../cases/case-01-harbor-ledger/town.json';
 import type { CaseFile } from '../src/game/caseTypes';
-import { cameraPose, nearest, npcPosition, npcPresent, step, validateTown } from '../src/town/townLogic';
+import { cameraPose, dueShots, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
 
 const cf = caseFile as unknown as CaseFile;
@@ -85,5 +85,55 @@ describe('cameras', () => {
     const p = cameraPose('talk', town.cameras, player, [2, 0]);
     expect(p.target).toEqual([2, 1.15, 0]);
     expect(p.position[2]).toBeGreaterThan(0);
+  });
+});
+
+describe('story shots', () => {
+  const facts = (solved: string[], firedEvents: string[] = []) => ({
+    solved,
+    open: cf.leads.filter((l) => l.opensAfter.every((id) => solved.includes(id))).map((l) => l.id),
+    firedEvents,
+  });
+  const ids = (solved: string[], fired: string[] = [], seen: string[] = []) => dueShots(town, facts(solved, fired), seen).map((s) => s.id);
+
+  it('plays nothing at the start of the case', () => {
+    expect(ids([])).toEqual([]);
+  });
+
+  it('shows the leads that open once the first one is solved, and each only once', () => {
+    expect(ids(['L1'])).toEqual(['cameras-open', 'lockup-open']);
+    expect(ids(['L1'], [], ['cameras-open'])).toEqual(['lockup-open']);
+    expect(ids(['L1'], [], ['cameras-open', 'lockup-open'])).toEqual([]);
+  });
+
+  it('follows timed events and the end of the trail', () => {
+    expect(ids([], ['juno-leaves'])).toEqual(['juno-gone']);
+    const seen = ['cameras-open', 'lockup-open'];
+    expect(ids(['L1', 'L2', 'L3'], ['warehouse-burns'], seen)).toEqual(['warehouse-hit', 'warehouse-open']);
+    expect(ids(['L1', 'L2', 'L3', 'L4'], [], [...seen, 'warehouse-open'])).toEqual(['to-the-desk']);
+  });
+
+  it('puts the camera at the given distance and height, looking at the focus, and circles it', () => {
+    const shot = town.shots!.find((s) => s.id === 'cameras-open')!;
+    const focus = shotFocus(shot, town);
+    expect(focus).toEqual(town.doors.find((d) => d.id === 'camera-post')!.at);
+    const a = shotPose(shot, focus, 0);
+    const b = shotPose(shot, focus, 2);
+    for (const p of [a, b]) {
+      expect(Math.hypot(p.position[0] - focus[0], p.position[2] - focus[1])).toBeCloseTo(shot.distance);
+      expect(p.position[1]).toBe(shot.height);
+      expect([p.target[0], p.target[2]]).toEqual(focus);
+    }
+    expect(b.position[0]).not.toBeCloseTo(a.position[0]);
+  });
+
+  it('reports shots that wait on things the case does not have', () => {
+    const base = town.shots![0];
+    const bad = (shot: object) => validateTown({ ...town, shots: [{ ...base, id: 'x', ...shot }] } as Town, cf);
+    expect(bad({ when: { leadOpens: 'L1' } })).toContain('Shot "x" waits for L1 to open, but it is open from the start');
+    expect(bad({ when: { event: 'nope' } })).toContain('Shot "x" waits on unknown event nope');
+    expect(bad({ focus: { npc: 'juno' } })).toContain('Shot "x" looks at juno, who may have left town by then');
+    expect(bad({ focus: { door: 'nope' } })).toContain('Shot "x" looks at unknown door nope');
+    expect(bad({ seconds: 30 })).toContain('Shot "x" must last 2 to 8 seconds');
   });
 });

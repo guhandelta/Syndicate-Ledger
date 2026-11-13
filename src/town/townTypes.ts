@@ -1,3 +1,5 @@
+import type { Text } from '../game/caseTypes';
+
 /** A walkable place for a case. Loaded from cases/<case-id>/town.json, so a new case needs no new code. */
 
 export type Vec2 = [x: number, z: number];
@@ -54,6 +56,35 @@ export interface CameraSettings {
   talk: { distance: number; height: number; side: number };
 }
 
+/** What makes a story shot play. Exactly one of these. */
+export interface ShotTrigger {
+  /** A lead that was locked has just opened. */
+  leadOpens?: string;
+  leadSolved?: string;
+  /** A timed event from the case file has fired. */
+  event?: string;
+}
+
+/**
+ * A short scripted camera shot for a moment in the story or the investigation.
+ * It plays once, the next time the player is in the town after its trigger comes true.
+ */
+export interface Shot {
+  id: string;
+  when: ShotTrigger;
+  /** What the camera looks at. Exactly one of these ids. */
+  focus: { door?: string; building?: string; npc?: string };
+  /** How far from the focus the camera stands, and how high. */
+  distance: number;
+  height: number;
+  /** Degrees around the focus: 0 looks from the south, 90 from the east. Default 0. */
+  angle?: number;
+  /** Degrees per second the camera circles while the shot plays. Default 0. */
+  orbit?: number;
+  seconds: number;
+  caption: Text;
+}
+
 export interface Town {
   name: string;
   /** Walkable ground: min x, min z, max x, max z. */
@@ -68,4 +99,6 @@ export interface Town {
   cameras: CameraSettings;
   /** Which camera each moment uses. */
   moments: { enter: CameraKind; explore: CameraKind; talk: CameraKind };
+  /** Story shots, in the order they play when several are due at once. */
+  shots?: Shot[];
 }

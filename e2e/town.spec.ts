@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { startCase } from './helpers';
+import { GAME_URL, startCase } from './helpers';
 
 // The town is for PC screens; phones keep the evidence board.
 test.beforeEach(({}, testInfo) => {
@@ -47,6 +47,36 @@ test('walk to the fish market, talk to a witness and open the first lead from it
   await expect(page.getByRole('button', { name: /Camera: Behind/ })).toBeVisible();
   await page.keyboard.press('KeyB');
   await expect(page.getByRole('heading', { name: 'Leads' })).toBeVisible();
+});
+
+test('story shots play once when new leads open, and can be skipped', async ({ page }) => {
+  test.slow();
+  await startCase(page, 'inspector');
+  // close the first lead in the save, then come back straight into the town
+  await page.evaluate(() => {
+    const key = 'syndicate-ledger:save:v1';
+    const save = JSON.parse(localStorage.getItem(key)!);
+    save.leads.L1.started = true;
+    save.leads.L1.solved = true;
+    localStorage.setItem(key, JSON.stringify(save));
+  });
+  await page.goto(GAME_URL + '#/town');
+  await page.reload();
+
+  const caption = page.locator('.shot-caption');
+  await expect(caption).toContainText('camera post', { timeout: 30_000 });
+  await expect(page.locator('.town-prompt')).toHaveCount(0);
+  await page.keyboard.press('KeyE');
+  await expect(caption).toContainText('Net loft', { timeout: 30_000 });
+  await page.getByRole('button', { name: /Skip/ }).click();
+  await expect(page.getByRole('button', { name: /Camera: Angled/ })).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('syndicate-ledger:save:v1')!).shotsSeen)).toEqual(['cameras-open', 'lockup-open']);
+
+  // seen shots stay seen
+  await page.reload();
+  await expect(page.getByRole('button', { name: /Camera: Angled/ })).toBeVisible();
+  await page.waitForTimeout(3000);
+  await expect(caption).toHaveCount(0);
 });
 
 test('the board hides the town link on phone-sized screens', async ({ page }) => {

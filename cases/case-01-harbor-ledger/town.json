@@ -64,5 +64,31 @@
     "behind": { "height": 2.7, "back": 5, "lookAhead": 4 },
     "talk": { "distance": 1.5, "height": 1.75, "side": 1.5 }
   },
-  "moments": { "enter": "wide", "explore": "angled", "talk": "talk" }
+  "moments": { "enter": "wide", "explore": "angled", "talk": "talk" },
+  "shots": [
+    {
+      "id": "cameras-open", "when": { "leadOpens": "L2" }, "focus": { "door": "camera-post" }, "distance": 7, "height": 3.2, "angle": 20, "orbit": 6, "seconds": 4,
+      "caption": { "crime": "The cash book points at the docks. The camera post has the night on tape.", "friendly": "The notebook points to the docks. The camera post saw everything!" }
+    },
+    {
+      "id": "lockup-open", "when": { "leadOpens": "L3" }, "focus": { "door": "net-loft" }, "distance": 8, "height": 3.6, "angle": -15, "orbit": -5, "seconds": 4,
+      "caption": { "crime": "Tip keeps his own books in a lock-up under the Net loft.", "friendly": "Tip hides his notes in a little room under the Net loft." }
+    },
+    {
+      "id": "juno-gone", "when": { "event": "juno-leaves" }, "focus": { "door": "camera-post" }, "distance": 6, "height": 2.4, "angle": 60, "orbit": 8, "seconds": 4,
+      "caption": { "crime": "Day 2. Juno's post by the cameras stands empty.", "friendly": "Day 2. Juno has gone on her trip, so nobody is at the camera post." }
+    },
+    {
+      "id": "warehouse-hit", "when": { "event": "warehouse-burns" }, "focus": { "building": "warehouse-9" }, "distance": 13, "height": 5.5, "angle": 25, "orbit": -6, "seconds": 5,
+      "caption": { "crime": "Warehouse 9 burned in the night. Only one person knew to look there.", "friendly": "Warehouse 9 got flooded in the night. Only one person knew about it." }
+    },
+    {
+      "id": "warehouse-open", "when": { "leadOpens": "L4" }, "focus": { "door": "warehouse-9" }, "distance": 9, "height": 4, "angle": 10, "orbit": 5, "seconds": 4.5,
+      "caption": { "crime": "Both trails end at the same door: Warehouse 9.", "friendly": "Both clues lead to the same door: Warehouse 9!" }
+    },
+    {
+      "id": "to-the-desk", "when": { "leadSolved": "L4" }, "focus": { "door": "police" }, "distance": 8, "height": 3.4, "angle": -20, "orbit": 4, "seconds": 4.5,
+      "caption": { "crime": "You have the ledger. The harbor police desk is waiting for a name.", "friendly": "You have the secret book. Go tell the harbor police who did it!" }
+    }
+  ]
 }
