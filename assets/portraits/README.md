@@ -1,6 +1,6 @@
 # Character portraits
 
-Head-and-shoulders portraits for the dialog and the trust meter, in two sets. Each file is named `<character>-<expression>.png`, where the expression is `neutral`, `suspicious` or `caught-lying`.
+Head-and-shoulders portraits for the dialog and the trust meter, in three sets. Each file is named `<character>-<expression>.png`, where the expression is `neutral`, `suspicious` or `caught-lying`.
 
 - `set-1/`: Dr. Lin Abara, Juno Park, Kane Hollis, Mara Quill and Officer Cole (all three expressions), plus Rosa Diaz (caught lying only).
 - `set-3/`: Silas Crane (neutral and suspicious, completing his set with set 2), Tip Callahan and Vex Lorne (all three expressions each).
