@@ -6,9 +6,13 @@ import {
   type Game, type GameState,
 } from '../game/state';
 import { gridLabels, t, type Tone } from '../game/text';
+import type { Pose } from '../town/townLogic';
+import type { Town } from '../town/townTypes';
 import { findWrong, zoneCombos } from './puzzleHelpers';
 
-export type Screen = 'title' | 'intro' | 'board' | 'puzzle' | 'accuse' | 'verdict';
+export type Screen = 'title' | 'intro' | 'board' | 'town' | 'puzzle' | 'accuse' | 'verdict';
+/** The two places leads are opened from: the evidence board and the walkable town. */
+export type Hub = 'board' | 'town';
 
 export interface ModalAction {
   label: string;
@@ -67,6 +71,10 @@ export function loadSave(cf: CaseFile): GameState | null {
 export class Session {
   readonly cf: CaseFile;
   readonly book: PuzzleBook;
+  /** The walkable place for this case, if it has one. */
+  readonly town: Town | null;
+  /** Where the player was standing in the town, so they return to the same spot. */
+  townPose: Pose | null = null;
 
   s = $state<GameState | null>(null);
   screen = $state<Screen>('title');
@@ -74,10 +82,13 @@ export class Session {
   modals = $state<Modal[]>([]);
   pui = $state<PuzzleUi>(freshPui());
   titlePreset = $state<Preset>('inspector');
+  /** Where closing a lead or backing out returns to. */
+  hub = $state<Hub>('board');
 
-  constructor(cf: CaseFile, book: PuzzleBook) {
+  constructor(cf: CaseFile, book: PuzzleBook, town: Town | null = null) {
     this.cf = cf;
     this.book = book;
+    this.town = town;
     this.s = loadSave(cf);
     if (this.s) this.titlePreset = this.s.preset;
   }
@@ -121,6 +132,7 @@ export class Session {
     if (!g || !name) return this.show('title');
     if (g.s.endingId) return this.show(name === 'verdict' ? 'verdict' : 'title');
     if (name === 'lead' && arg && g.s.leads[arg]?.started) return this.openLead(arg);
+    if (name === 'town' && this.town) return this.show('town');
     if (name === 'intro' || name === 'board' || name === 'accuse') return this.show(name);
     this.show('board');
   }
@@ -128,6 +140,7 @@ export class Session {
   show(screen: Exclude<Screen, 'puzzle'>) {
     this.screen = screen;
     this.leadId = null;
+    if (screen === 'board' || screen === 'town') this.hub = screen;
   }
 
   private openLead(id: string) {
@@ -138,7 +151,7 @@ export class Session {
 
   goBoard = () => {
     this.modals = [];
-    this.show(this.s?.endingId ? 'verdict' : 'board');
+    this.show(this.s?.endingId ? 'verdict' : this.hub);
   };
 
   goAccuse = () => {
@@ -172,6 +185,8 @@ export class Session {
 
   newCase() {
     this.s = newGame(this.cf, this.book, this.titlePreset).s;
+    this.townPose = null;
+    this.hub = 'board';
     this.show('intro');
   }
 
@@ -410,7 +425,7 @@ export class Session {
       dismissible: true,
       actions: [{ label: 'Continue', primary: true, run: this.closeModal }],
     });
-    this.show('board');
+    this.show(this.hub);
     const offer = this.cf.offers.find((o) => o.after === id && !g.s.offersSeen.includes(o.id));
     if (!offer) return;
     const from = this.person(offer.from);

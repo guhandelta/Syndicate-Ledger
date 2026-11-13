@@ -83,5 +83,10 @@
       </div>
     </section>
   </div>
-  <div class="page-actions"><button class="btn danger" onclick={session.goAccuse}>Make an accusation</button></div>
+  <div class="page-actions">
+    {#if session.town}
+      <button class="btn town-link" onclick={() => session.show('town')}>Walk the town (PC)</button>
+    {/if}
+    <button class="btn danger" onclick={session.goAccuse}>Make an accusation</button>
+  </div>
 </main>

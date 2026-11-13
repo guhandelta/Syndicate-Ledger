@@ -8,6 +8,8 @@ import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
 import { PRESETS, type CaseFile, type PuzzleBook } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
+import { validateTown } from '../src/town/townLogic';
+import type { Town } from '../src/town/townTypes';
 
 const file = process.argv[2] ?? 'cases/case-01-harbor-ledger.json';
 const cf: CaseFile = JSON.parse(readFileSync(file, 'utf8'));
@@ -74,9 +76,17 @@ else {
     }
 }
 
+// A case may have a walkable town. If it does, the town must match the case.
+const townPath = join(dirname(file), cf.id, 'town.json');
+let hasTown = false;
+if (existsSync(townPath)) {
+  hasTown = true;
+  for (const e of validateTown(JSON.parse(readFileSync(townPath, 'utf8')) as Town, cf)) fail(`town: ${e}`);
+}
+
 if (errors.length) {
   console.error(`✗ ${cf.id}: ${errors.length} problem(s)`);
   for (const e of errors) console.error('  - ' + e);
   process.exit(1);
 }
-console.log(`✓ ${cf.id} passes the rule book checks (${cf.leads.length} leads × ${PRESETS.length} presets)`);
+console.log(`✓ ${cf.id} passes the rule book checks (${cf.leads.length} leads × ${PRESETS.length} presets${hasTown ? ', town checked' : ''})`);

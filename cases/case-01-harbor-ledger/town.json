@@ -1,0 +1,68 @@
+{
+  "name": "Port Calder harbor",
+  "bounds": [-30, -14, 30, 16],
+  "waterline": -11,
+  "start": { "at": [4.5, 3], "heading": 0 },
+  "buildings": [
+    { "id": "harbor-office", "name": "Harbor office", "at": [-22.5, -6.5], "size": [7.5, 5], "height": 4.2, "color": "#5b6472", "roof": "#2f3742", "doorSide": "south" },
+    { "id": "ice-house", "name": "Ice house", "at": [-13.5, -6.5], "size": [7.5, 5], "height": 3.6, "color": "#7f97a8", "roof": "#3d4c5a", "doorSide": "south" },
+    { "id": "warehouse-9", "name": "Warehouse 9", "at": [-4.5, -6.5], "size": [7.5, 5], "height": 5.2, "color": "#7a4a3a", "roof": "#3a2620", "doorSide": "south" },
+    { "id": "fish-hall", "name": "Fish hall", "at": [4.5, -6.5], "size": [7.5, 5], "height": 4, "color": "#8a7a52", "roof": "#3f3a2a", "doorSide": "south" },
+    { "id": "net-loft", "name": "Net loft", "at": [13.5, -6.5], "size": [7.5, 5], "height": 4.6, "color": "#6b5a7a", "roof": "#352c40", "doorSide": "south" },
+    { "id": "boathouse", "name": "Boathouse", "at": [22.5, -6.5], "size": [7.5, 5], "height": 3.4, "color": "#4f7068", "roof": "#27403a", "doorSide": "south" },
+    { "id": "crane-shipping", "name": "Crane Shipping", "at": [-16, 11.5], "size": [10, 5], "height": 5, "color": "#4a5568", "roof": "#232a36", "doorSide": "north" },
+    { "id": "detective-office", "name": "Detective's office", "at": [14, 11.5], "size": [8, 5], "height": 4, "color": "#6e5a44", "roof": "#33281d", "doorSide": "north" }
+  ],
+  "doors": [
+    { "id": "fish-hall", "at": [4.5, -2.9], "label": "Fish hall", "lead": "L1" },
+    { "id": "camera-post", "at": [9, 0.8], "label": "Dock camera post", "lead": "L2" },
+    { "id": "net-loft", "at": [13.5, -2.9], "label": "Tip's lock-up in the Net loft", "lead": "L3" },
+    { "id": "warehouse-9", "at": [-4.5, -2.9], "label": "Warehouse 9", "lead": "L4" },
+    { "id": "office", "at": [14, 7.9], "label": "Your office", "goto": "board" },
+    { "id": "police", "at": [-22.5, -2.9], "label": "Harbor police desk", "goto": "accuse" }
+  ],
+  "npcs": [
+    { "cast": "rosa", "at": [1.6, -1.4] },
+    { "cast": "kane", "at": [-9, 0.6], "path": [[-9, 4.5]] },
+    { "cast": "vex", "at": [22.5, -2.2], "path": [[17.5, 0.8]] },
+    { "cast": "juno", "at": [10.8, 2.6], "untilEvent": "juno-leaves" },
+    { "cast": "tip", "at": [0.9, 6.2] },
+    { "cast": "crane", "at": [-16, 7.4] },
+    { "cast": "cole", "at": [-13.5, -2.3] },
+    { "cast": "dex", "at": [10.6, 7.3] },
+    { "cast": "mara", "at": [17.6, 7.4] },
+    { "cast": "lin", "at": [21, 4.6], "path": [[25, 4.6]] }
+  ],
+  "props": [
+    { "kind": "lamp", "at": [-20, 2] },
+    { "kind": "lamp", "at": [-10, 6.5] },
+    { "kind": "lamp", "at": [0, 2] },
+    { "kind": "lamp", "at": [0, 7.4] },
+    { "kind": "lamp", "at": [12.4, 5] },
+    { "kind": "lamp", "at": [22, 2] },
+    { "kind": "camera", "at": [9, 2] },
+    { "kind": "crate", "at": [-7.6, -3.3] },
+    { "kind": "crate", "at": [-1.2, -3.3] },
+    { "kind": "crate", "at": [-8.4, -3.2] },
+    { "kind": "crate", "at": [7.6, -3.3] },
+    { "kind": "crate", "at": [-27, 5] },
+    { "kind": "crate", "at": [26.5, 8] },
+    { "kind": "boat", "at": [-10, -13.5] },
+    { "kind": "boat", "at": [9, -14] },
+    { "kind": "boat", "at": [24, -13.2] },
+    { "kind": "bollard", "at": [-27, -10.5] },
+    { "kind": "bollard", "at": [-18, -10.5] },
+    { "kind": "bollard", "at": [-9, -10.5] },
+    { "kind": "bollard", "at": [0, -10.5] },
+    { "kind": "bollard", "at": [9, -10.5] },
+    { "kind": "bollard", "at": [18, -10.5] },
+    { "kind": "bollard", "at": [27, -10.5] }
+  ],
+  "cameras": {
+    "wide": { "position": [0, 30, 34], "target": [0, 0, -2] },
+    "angled": { "height": 10.5, "back": 13 },
+    "behind": { "height": 2.7, "back": 5, "lookAhead": 4 },
+    "talk": { "distance": 1.5, "height": 1.75, "side": 1.5 }
+  },
+  "moments": { "enter": "wide", "explore": "angled", "talk": "talk" }
+}

@@ -244,6 +244,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 - `src/engine/` MUST NOT depend on `src/ui/`.
 - Zones MUST be shown with thick borders and a pattern as well as a color, for colorblind players.
 - Everything MUST work by keyboard and by touch, down to phone width.
+- A case MAY have a walkable 3D town, described as data in `cases/<case-id>/town.json` (places, doors, where people stand and walk, cameras). The town is for PC screens and is a second way in: every lead, the case board and the accusation MUST stay reachable from the evidence board, which keeps the keyboard, touch and phone rule above. Walking costs no clock time. `npm run validate` MUST check the town against its case.
 - Every change goes through a pull request that runs the tests and validates every case.
 
 ## 10. Decisions and change log
@@ -259,6 +260,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-12 | Added an optional walkable 3D town for PC (prototype for Case 1): leads open from doors, people stand and walk in the harbor, cameras switch by moment. The evidence board stays the full, touch-friendly way to play (section 9) |
 | 2026-11-12 | Moved the UI to Svelte 5 with no change to rules or saves; added end-to-end and accessibility tests (section 9) |
 | 2026-11-12 | Built v1. Event times are start or end of a day; events can't hit a lead that's already started; Juno can be tracked down for 1 hour + 1 favor; added Dr. Lin Abara and Officer Cole as allies; the boss is shown as an ordinary suspect |
 | 2026-11-12 | Added surveillance (rooms) grids; Case 1 cut to 4 leads and a 12-hour clock; Chief gets a liar range; v1 scope set to one story |

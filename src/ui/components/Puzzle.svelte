@@ -21,7 +21,7 @@
 <StatusBar {session} />
 <main class="page puzzle">
   <div class="puzzle-head">
-    <button class="btn ghost" onclick={session.goBoard}>← Board</button>
+    <button class="btn ghost" onclick={session.goBoard}>{session.hub === 'town' ? '← Town' : '← Board'}</button>
     <div>
       <p class="eyebrow">{lead.id} · {lead.type === 'ledger' ? 'Cash ledger' : 'Camera log'}</p>
       <h1>{session.T(lead.title)}</h1>

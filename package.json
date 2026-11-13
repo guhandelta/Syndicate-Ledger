@@ -20,6 +20,7 @@
     "@sveltejs/vite-plugin-svelte": "^5.1.1",
     "@tsconfig/svelte": "^5.0.9",
     "@types/node": "^22.20.5",
+    "@types/three": "^0.187.0",
     "svelte": "^5.57.3",
     "svelte-check": "^4.7.8",
     "tsx": "^4.20.3",
@@ -27,5 +28,8 @@
     "vite": "^6.3.5",
     "vite-plugin-singlefile": "^2.2.0",
     "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
   }
 }
