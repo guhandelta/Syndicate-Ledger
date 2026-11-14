@@ -38,7 +38,12 @@
   // Corner tips: check every few seconds whether the player has been still for 5 minutes.
   $effect(() => {
     const timer = setInterval(() => session.checkIdle(), 5000);
-    return () => clearInterval(timer);
+    const busy = () => session.poke();
+    window.addEventListener('notepad-activity', busy);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('notepad-activity', busy);
+    };
   });
 
   function onKey(e: KeyboardEvent) {
@@ -104,6 +109,7 @@
 {/if}
 
 <button class="help-fab" aria-label="Help" title="Help (?)" onclick={() => session.openHelp()}>?</button>
+<button class="whatnow-btn" aria-expanded={!!session.idleTip} title="What can I do here, and what should I do next?" onclick={session.askForTip}>What now?</button>
 
 {#if session.idleTip && !session.helpOpen}
   <IdleTip {session} hint={session.idleTip} />

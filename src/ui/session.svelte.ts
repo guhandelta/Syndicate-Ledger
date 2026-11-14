@@ -96,6 +96,8 @@ export class Session {
   helpTab = $state<'play' | 'rank' | 'case' | 'controls'>('play');
   /** The corner tip shown after the player has been still for a while (src/ui/idleHint.ts). */
   idleTip = $state<IdleHint | null>(null);
+  /** The tip was asked for (What now? button), so it also lists what the player can do here. */
+  tipAsked = $state(false);
   lastActive = Date.now();
 
   constructor(cf: CaseFile, book: PuzzleBook, town: Town | null = null) {
@@ -142,6 +144,7 @@ export class Session {
   openHelp = (tab?: Session['helpTab']) => {
     if (tab) this.helpTab = tab;
     this.idleTip = null;
+    this.tipAsked = false;
     this.helpOpen = true;
   };
 
@@ -152,15 +155,30 @@ export class Session {
 
   dismissIdle() {
     this.idleTip = null;
+    this.tipAsked = false;
     this.poke();
+  }
+
+  /** The What now? button: shows the tip for this screen straight away, or hides it if it is showing. */
+  askForTip = () => {
+    if (this.idleTip) return this.dismissIdle();
+    this.helpOpen = false;
+    this.tipAsked = true;
+    this.idleTip = this.tipNow();
+    this.poke();
+  };
+
+  private tipNow(): IdleHint {
+    return idleHint({
+      game: this.game, screen: this.screen, leadId: this.leadId, town: this.town, dialog: this.modals.length > 0, tone: this.tone,
+    });
   }
 
   /** Called on a timer: shows a tip for the current screen once the player has been still for IDLE_MS. */
   checkIdle(now = Date.now()) {
     if (this.idleTip || this.helpOpen || now - this.lastActive < IDLE_MS) return;
-    this.idleTip = idleHint({
-      game: this.game, screen: this.screen, leadId: this.leadId, town: this.town, dialog: this.modals.length > 0, tone: this.tone,
-    });
+    this.tipAsked = false;
+    this.idleTip = this.tipNow();
   }
 
   // ---------- navigation ----------

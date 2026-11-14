@@ -112,3 +112,44 @@ test('a tip pops up after 5 minutes without a move, and says what to do there', 
   await page.clock.fastForward('03:00');
   await expect(tip).toBeHidden();
 });
+
+test('the case notebook keeps notes across reloads, and typing in it does not touch the grid', async ({ page }) => {
+  await startCase(page, 'junior');
+  await page.locator('article.lead', { hasText: 'L1' }).getByRole('button').click();
+  await clearDialogs(page);
+  await page.locator('table.grid tbody td').first().click();
+  const filled = await page.locator('table.grid .val').count();
+  await page.getByRole('button', { name: 'Notebook', exact: true }).click();
+  const notes = page.getByRole('textbox', { name: 'Your notes' });
+  await expect(notes).toBeFocused();
+  await page.getByRole('button', { name: '+ Clue' }).click();
+  await page.keyboard.type('Rosa 2 at 8pm');
+  await expect(notes).toHaveValue('Clue: Rosa 2 at 8pm');
+  await expect(page.locator('table.grid .val')).toHaveCount(filled);
+  await expect(page.getByText('Saved')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(notes).toBeHidden();
+  await page.reload();
+  await page.getByRole('button', { name: 'Notebook', exact: true }).click();
+  await expect(notes).toHaveValue('Clue: Rosa 2 at 8pm');
+  await expectAccessible(page);
+});
+
+test('the What now? button shows what to do on the current screen, on demand', async ({ page }) => {
+  await startCase(page, 'inspector');
+  const tip = page.getByRole('status', { name: 'Tip' });
+  await expect(tip).toBeHidden();
+  const ask = page.getByRole('button', { name: 'What now?' });
+  await ask.click();
+  await expect(tip).toContainText('The evidence board');
+  await expect(tip).toContainText('You can:');
+  await expect(tip).toContainText('Open Fish market cash book');
+  await ask.click();
+  await expect(tip).toBeHidden();
+  await page.locator('article.lead', { hasText: 'L1' }).getByRole('button').click();
+  await clearDialogs(page);
+  await ask.click();
+  await expect(tip).toContainText('Mark each witness statement True or Lie');
+  await expect(tip).toContainText('Look at');
+  await expectAccessible(page);
+});
