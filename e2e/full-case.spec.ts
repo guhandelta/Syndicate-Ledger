@@ -15,9 +15,24 @@ for (const preset of PRESETS) {
     }
     await page.getByRole('button', { name: 'Make an accusation' }).click();
     await page.getByRole('button', { name: /Silas Crane/ }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Accuse', exact: true }).click();
+    for (const id of cf.proof!.crane.needs) await page.getByLabel(t(cf.leads.find((l) => l.id === id)!.title, PRESET_RULES[preset].tone)).check();
+    await page.getByRole('button', { name: 'Make the accusation' }).click();
     const fullBust = cf.endings.find((e) => e.id === 'full-bust')!;
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(t(fullBust.title, PRESET_RULES[preset].tone));
     await expect(page.getByLabel('3 of 3 stars')).toBeVisible();
   });
 }
+
+test('a right name with weak proof is refused and costs a try', async ({ page }) => {
+  await startCase(page, 'inspector');
+  for (const lead of cf.leads) {
+    await solveLead(page, 'inspector', lead.id);
+    await clearDialogs(page, { 'wants a word': 'Decline' });
+  }
+  await page.getByRole('button', { name: 'Make an accusation' }).click();
+  await page.getByRole('button', { name: /Silas Crane/ }).click();
+  await page.getByLabel(t(cf.leads[0].title, PRESET_RULES.inspector.tone)).check();
+  await page.getByRole('button', { name: 'Make the accusation' }).click();
+  await expect(page.getByRole('dialog')).toContainText('Not proven');
+  await expect(page.getByRole('dialog')).toContainText('1 try left');
+});

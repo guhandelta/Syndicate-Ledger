@@ -90,7 +90,7 @@
           </li>
           <li><strong>Test the statements.</strong> Witnesses say things about the grid. You're told how many of them are lies. Check each one against your grid and mark it <em>True</em> or <em>Lie</em>.</li>
           <li><strong>Close the lead.</strong> If the grid and your marks are right, you get a fact for your case notes. Catching a liar also earns you a favor.</li>
-          <li><strong>Make your accusation</strong> when the facts point to someone. Who you name, and how much you've proven, decides your ending.</li>
+          <li><strong>Make your accusation</strong> when the facts point to someone. Name a person, then tick the solved leads that prove it: a right name with weak proof is refused and costs a try. You can accuse only a few people, each only a couple of times, and an innocent person you accuse stops being so helpful. Run out of chances and the case is lost.</li>
         </ol>
         <h3>Favors and allies</h3>
         <p>Favors pay for help. You start with {r.startFavors}. Inside a lead, call an ally:</p>

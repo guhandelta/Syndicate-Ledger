@@ -36,6 +36,10 @@ export interface GameState {
   hintsUsed: number;
   accused?: string;
   endingId?: string;
+  /** Every accusation made so far, and whether it held up. */
+  accuseLog?: { person: string; ok: boolean }[];
+  /** Set when the case is lost: the clock ran out, or nobody who could win it is left to accuse. */
+  lost?: 'time' | 'limits';
   /** Story shots already played in the town. */
   shotsSeen?: string[];
   /** Missed-clue nudges already shown. */
@@ -95,7 +99,7 @@ export function leadCost(g: Game, leadId: string): number {
 }
 
 export function caseOver(g: Game) {
-  return !!g.s.endingId;
+  return !!g.s.endingId || !!g.s.lost;
 }
 
 /** Spend clock time; returns events that fired as a result. */
@@ -178,10 +182,11 @@ export function addFlag(g: Game, f: string) {
   if (!g.s.flags.includes(f)) g.s.flags.push(f);
 }
 
-export type Trust = 'unknown' | 'suspicious' | 'caught' | 'mistaken' | 'verified';
+export type Trust = 'unknown' | 'suspicious' | 'caught' | 'mistaken' | 'verified' | 'refuses';
 
 /** Trust meter (rule book section 3), from solved leads plus the player's current marks. */
 export function trustOf(g: Game, personId: string): Trust {
+  if (refusing(g, personId)) return 'refuses';
   let saidSomething = false;
   let caught = false;
   let mistaken = false;
@@ -222,6 +227,74 @@ export function buyTip(g: Game, leadId: string, informant: string): Claim | 'can
     return c;
   }
   return 'cant';
+}
+
+// ---------- accusations (rule book section 3) ----------
+
+export const timeUp = (g: Game) => clockOn(g) && hoursLeft(g) <= 0;
+/** Someone who was accused without proof stops helping the player. */
+export const refusing = (g: Game, personId: string) => g.s.flags.includes(`refuses:${personId}`);
+export const failedTries = (g: Game, personId: string) => (g.s.accuseLog ?? []).filter((t) => t.person === personId && !t.ok).length;
+export const accusedPeople = (g: Game) => [...new Set((g.s.accuseLog ?? []).map((t) => t.person))];
+export const triesLeft = (g: Game, personId: string) => Math.max(0, rules(g).accuse.perPerson - failedTries(g, personId));
+
+/** Whether this person can be accused now, and if not, why not. */
+export function accuseStatus(g: Game, personId: string): 'ok' | 'locked' | 'no-room' {
+  if (triesLeft(g, personId) === 0) return 'locked';
+  if (!accusedPeople(g).includes(personId) && accusedPeople(g).length >= rules(g).accuse.people) return 'no-room';
+  return 'ok';
+}
+export const canAccuse = (g: Game, personId: string) => accuseStatus(g, personId) === 'ok';
+
+/** True while someone who can be convicted is still open to accusation. */
+export const canStillWin = (g: Game) => Object.keys(g.cf.proof ?? {}).some((p) => canAccuse(g, p));
+
+/** The proven facts the player can lean on in an accusation: one per solved lead. */
+export const evidenceLeads = (g: Game) => g.cf.leads.filter((l) => g.s.leads[l.id].solved);
+
+/** Proof holds when it covers everything this person needs and every fact chosen points at them. */
+export function proofHolds(g: Game, personId: string, evidence: string[]): boolean {
+  const needs = g.cf.proof?.[personId]?.needs;
+  if (!needs) return false;
+  const chosen = new Set(evidence);
+  if (!needs.every((id) => chosen.has(id))) return false;
+  return evidence.every((id) => {
+    const lead = g.cf.leads.find((l) => l.id === id);
+    return !!lead && g.s.leads[id].solved && !!lead.pointsTo?.includes(personId);
+  });
+}
+
+export type AccuseResult =
+  | { kind: 'blocked'; why: 'locked' | 'no-room' }
+  | { kind: 'accepted'; ending: Ending }
+  | { kind: 'rejected'; triesLeft: number; locked: boolean; refuses: boolean; lost?: 'time' | 'limits' };
+
+/**
+ * An accusation with the facts the player leans on. It only holds when the proof is valid; otherwise it costs a try.
+ * An innocent person who is accused stops helping: leads where they speak cost one more hour.
+ */
+export function submitAccusation(g: Game, personId: string, evidence: string[]): AccuseResult {
+  const status = accuseStatus(g, personId);
+  if (status !== 'ok') return { kind: 'blocked', why: status };
+  g.s.accuseLog ??= [];
+  if (proofHolds(g, personId, evidence)) {
+    g.s.accuseLog.push({ person: personId, ok: true });
+    return { kind: 'accepted', ending: accuse(g, personId) };
+  }
+  g.s.accuseLog.push({ person: personId, ok: false });
+  const innocent = !g.cf.proof?.[personId];
+  if (innocent) {
+    addFlag(g, `refuses:${personId}`);
+    if (clockOn(g)) {
+      for (const lead of g.cf.leads) {
+        const lp = g.s.leads[lead.id];
+        if (!lp.started && puzzleOf(g, lead.id).statements.some((s) => s.speaker === personId)) lp.extraCost += 1;
+      }
+    }
+  }
+  const lost = timeUp(g) ? 'time' : !canStillWin(g) ? 'limits' : undefined;
+  if (lost) g.s.lost = lost;
+  return { kind: 'rejected', triesLeft: triesLeft(g, personId), locked: triesLeft(g, personId) === 0, refuses: innocent, lost };
 }
 
 export function accuse(g: Game, personId: string): Ending {

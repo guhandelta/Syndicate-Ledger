@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Lead } from '../../game/caseTypes';
-  import { clockOn, leadCost, leadOpen, puzzleOf, rules, trustOf } from '../../game/state';
+  import { clockOn, leadCost, leadOpen, puzzleOf, refusing, rules, trustOf } from '../../game/state';
   import type { Session } from '../session.svelte';
   import CastCard from './CastCard.svelte';
   import StatusBar from './StatusBar.svelte';
@@ -27,6 +27,11 @@
     const lp = g.s.leads[l.id];
     return lp.solved ? 'solved' : !leadOpen(g, l.id) ? 'locked' : lp.started ? 'started' : 'open';
   }
+  /** People who won't talk freely any more, and who speak in this lead (it costs an hour more while the clock runs). */
+  const refusers = (l: Lead) =>
+    clockOn(g) && !g.s.leads[l.id].started
+      ? cf.cast.filter((c) => refusing(g, c.id) && puzzleOf(g, l.id).statements.some((s) => s.speaker === c.id)).map((c) => c.name)
+      : [];
   const needs = (l: Lead) => l.opensAfter.map((id) => session.T(cf.leads.find((x) => x.id === id)!.title)).join(' and ');
 </script>
 
@@ -46,6 +51,7 @@
           </div>
           <h3>{session.T(l.title)}</h3>
           <p>{state === 'locked' ? `Opens after: ${needs(l)}.` : session.T(l.intro)}</p>
+          {#if state !== 'solved' && refusers(l).length}<p class="muted">⚠ {refusers(l).join(' and ')} won't talk freely: +1 h.</p>{/if}
           {#if state === 'open'}
             <button class="btn primary" onclick={() => session.work(l.id)}>Work this lead{clockOn(g) ? ` (${leadCost(g, l.id)} h)` : ''}</button>
           {:else if state === 'started'}

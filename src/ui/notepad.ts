@@ -162,5 +162,17 @@ export function mountNotepad({ storageKey, right = 16 }: NotepadOptions) {
     e.stopPropagation();
   });
 
+  // The game asks for the notes to be wiped when a case is lost.
+  window.addEventListener('notepad-clear', () => {
+    clearTimeout(timer);
+    text.value = '';
+    saved.textContent = '';
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {
+      /* nothing to clear */
+    }
+  });
+
   document.body.append(panel, btn);
 }
