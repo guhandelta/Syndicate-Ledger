@@ -38,6 +38,8 @@ export interface GameState {
   endingId?: string;
   /** Story shots already played in the town. */
   shotsSeen?: string[];
+  /** Missed-clue nudges already shown. */
+  cluesShown?: string[];
 }
 
 export interface Game {
