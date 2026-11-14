@@ -38,7 +38,12 @@
   // Corner tips: check every few seconds whether the player has been still for 5 minutes.
   $effect(() => {
     const timer = setInterval(() => session.checkIdle(), 5000);
-    return () => clearInterval(timer);
+    const busy = () => session.poke();
+    window.addEventListener('notepad-activity', busy);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('notepad-activity', busy);
+    };
   });
 
   function onKey(e: KeyboardEvent) {

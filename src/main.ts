@@ -6,9 +6,11 @@ import town from '../cases/case-01-harbor-ledger/town.json';
 import type { CaseFile, PuzzleBook } from './game/caseTypes';
 import App from './ui/App.svelte';
 import type { Town } from './town/townTypes';
+import { mountNotepad } from './ui/notepad';
 import { Session } from './ui/session.svelte';
 
 const session = new Session(caseFile as unknown as CaseFile, puzzles as unknown as PuzzleBook, town as unknown as Town);
 // open the screen in the address bar (reload, shared link), if the game allows it
 if (location.hash) session.applyRoute(location.hash);
 mount(App, { target: document.getElementById('app')!, props: { session } });
+mountNotepad({ storageKey: `syndicate-ledger:notes:${caseFile.id}`, right: 76 });

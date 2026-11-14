@@ -24,6 +24,8 @@ Open `dist/syndicate-ledger.html` in any browser. Progress saves in the browser.
 
 **Help:** press the **?** button (or the ? or H key) on any screen for how to play, your rank's rules, the case's lead order and the controls. If you sit still for 5 minutes, a tip in the corner says what to do next.
 
+**Notebook:** the **Notebook** button opens a side panel for your own investigation notes. It saves in the browser as you type and has a short *Stuck? Try this* list. v1 at `/v1/` has the same notebook (`scripts/build-site.sh` adds `src/ui/notepad.ts` to the original v1 source); nothing else in v1 changes.
+
 **Controls:** click or tap a cell, then a number. Keyboard: arrows to move, 1–6 to enter, Backspace to erase, P to toggle notes, Ctrl+Z / Ctrl+Shift+Z to undo and redo.
 
 ## Develop
