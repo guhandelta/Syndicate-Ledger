@@ -74,4 +74,18 @@ describe('idle tips', () => {
   it('asks the player to answer a waiting dialog first', () => {
     expect(idleHint(ctx({ game: newGame(cf, book, 'junior'), screen: 'board', dialog: true })).where).toBe('A message is waiting');
   });
+
+  it('lists what can be done on every screen', () => {
+    const g = newGame(cf, book, 'inspector');
+    for (const screen of ['title', 'intro', 'board', 'town', 'accuse', 'verdict'] as const) {
+      const hint = idleHint(ctx({ game: g, screen }));
+      expect(hint.can.length, screen).toBeGreaterThan(0);
+    }
+    startLead(g, 'L1');
+    const inLead = idleHint(ctx({ game: g, screen: 'puzzle', leadId: 'L1' }));
+    expect(inLead.can.join(' ')).toMatch(/Mark each witness statement True or Lie/);
+    solve(g, 'L1');
+    expect(idleHint(ctx({ game: g, screen: 'puzzle', leadId: 'L1' })).can.join(' ')).toMatch(/pick the next lead/);
+    expect(idleHint(ctx({ game: g, screen: 'board', town: null })).can.join(' ')).not.toMatch(/Walk the town/);
+  });
 });

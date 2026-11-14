@@ -109,6 +109,7 @@
 {/if}
 
 <button class="help-fab" aria-label="Help" title="Help (?)" onclick={() => session.openHelp()}>?</button>
+<button class="whatnow-btn" aria-expanded={!!session.idleTip} title="What can I do here, and what should I do next?" onclick={session.askForTip}>What now?</button>
 
 {#if session.idleTip && !session.helpOpen}
   <IdleTip {session} hint={session.idleTip} />

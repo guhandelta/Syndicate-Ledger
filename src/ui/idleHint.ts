@@ -16,6 +16,8 @@ export interface IdleHint {
   where: string;
   /** What to do next, in one or two sentences. Points the way, never gives an answer away. */
   todo: string;
+  /** Everything the player can do on this screen, one short line each. */
+  can: string[];
 }
 
 export interface IdleContext {
@@ -30,6 +32,48 @@ export interface IdleContext {
 
 /** What the player can do right now and what they should do next, for the screen they are on. */
 export function idleHint(ctx: IdleContext): IdleHint {
+  return { ...whatToDo(ctx), can: canDo(ctx) };
+}
+
+/** Everything possible on this screen, so a player who is lost can see their options. */
+function canDo(ctx: IdleContext): string[] {
+  const g = ctx.game;
+  if (ctx.dialog) return ['Read the message, then press one of its buttons.'];
+  if (!g || ctx.screen === 'title') {
+    return ['Pick a rank: Junior is the gentlest, Chief the hardest.', 'Open the case (or Continue / Start over if you have a saved one).', 'Read How to play, or press ? for full help.'];
+  }
+  switch (ctx.screen) {
+    case 'intro':
+      return ['Read what happened.', 'Go to the evidence board to start investigating.'];
+    case 'board':
+      return [
+        'Open a lead with Work this lead. Locked leads open once the ones before them are solved.',
+        'Read your case notes and rumors for what you have proven and what is coming.',
+        'Check the People cards: each shows how far you can trust them.',
+        ...(ctx.town ? ['Walk the town (PC) to open leads from its doors.'] : []),
+        'Make an accusation when the facts point to someone.',
+      ];
+    case 'town':
+      return ['Walk with WASD or the arrow keys, Shift to run.', 'Press E near a person to talk, or at a door to open its lead.', 'Press C to change camera and B for the case board.', 'The Harbor police desk is where you make your accusation.'];
+    case 'puzzle': {
+      const lp = ctx.leadId ? g.s.leads[ctx.leadId] : null;
+      if (lp?.solved) return ['Read the fact this lead proved.', 'Go back and pick the next lead.'];
+      return [
+        'Click a cell, then a number. Arrow keys and 1–9 work too.',
+        'Erase, Notes (pencil marks, key P), Undo and Redo are under the grid.',
+        'Mark each witness statement True or Lie.',
+        'Call an ally with a favor: Mara lists what a zone can hold, Dex explains the next step, Lin reveals a cell, Cole checks a statement.',
+        'Close this lead when the grid is full and every statement is marked.',
+      ];
+    }
+    case 'accuse':
+      return ['Pick who you think is behind it, then confirm.', 'Go back to the board if you are not ready.'];
+    default:
+      return ['Read how your case ended.', 'Start over from the menu (☰) to try another rank or ending.'];
+  }
+}
+
+function whatToDo(ctx: IdleContext): Omit<IdleHint, 'can'> {
   const { game: g, screen, tone } = ctx;
   const kid = tone === 'friendly';
   if (ctx.dialog) return { where: 'A message is waiting', todo: 'Read it, then pick one of its buttons to carry on.' };

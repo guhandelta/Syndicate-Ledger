@@ -134,3 +134,22 @@ test('the case notebook keeps notes across reloads, and typing in it does not to
   await expect(notes).toHaveValue('Clue: Rosa 2 at 8pm');
   await expectAccessible(page);
 });
+
+test('the What now? button shows what to do on the current screen, on demand', async ({ page }) => {
+  await startCase(page, 'inspector');
+  const tip = page.getByRole('status', { name: 'Tip' });
+  await expect(tip).toBeHidden();
+  const ask = page.getByRole('button', { name: 'What now?' });
+  await ask.click();
+  await expect(tip).toContainText('The evidence board');
+  await expect(tip).toContainText('You can:');
+  await expect(tip).toContainText('Open Fish market cash book');
+  await ask.click();
+  await expect(tip).toBeHidden();
+  await page.locator('article.lead', { hasText: 'L1' }).getByRole('button').click();
+  await clearDialogs(page);
+  await ask.click();
+  await expect(tip).toContainText('Mark each witness statement True or Lie');
+  await expect(tip).toContainText('Look at');
+  await expectAccessible(page);
+});

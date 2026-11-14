@@ -22,7 +22,7 @@ Open `dist/syndicate-ledger.html` in any browser. Progress saves in the browser.
 
 **Town (PC):** from the evidence board, choose *Walk the town*. WASD or arrows to walk, Shift to run, E to talk or enter a door, C to switch between the angled and behind-the-detective cameras, B for the case board. Each case's town is data in `cases/<case-id>/town.json`. The same file lists the story shots: short camera shots with a caption that play once when a lead opens, a lead is solved or a timed event fires (E or Esc skips them).
 
-**Help:** press the **?** button (or the ? or H key) on any screen for how to play, your rank's rules, the case's lead order and the controls. If you sit still for 5 minutes, a tip in the corner says what to do next.
+**Help:** press the **?** button (or the ? or H key) on any screen for how to play, your rank's rules, the case's lead order and the controls. If you sit still for 5 minutes, a tip in the corner says what to do next. The **What now?** button shows the same tip on demand, plus everything you can do on that screen.
 
 **Notebook:** the **Notebook** button opens a side panel for your own investigation notes. It saves in the browser as you type and has a short *Stuck? Try this* list. v1 at `/v1/` has the same notebook (`scripts/build-site.sh` adds `src/ui/notepad.ts` to the original v1 source); nothing else in v1 changes.
 

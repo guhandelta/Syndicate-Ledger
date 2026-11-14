@@ -99,6 +99,8 @@
           {#if informant}<li><strong>{informant.name.replace(/"/g, '')}</strong> sells one extra statement for 1 favor{timed ? ' and 1 hour' : ''}. Be careful who you trust.</li>{/if}
         </ul>
         <p class="muted">Help from allies lowers your star rating at the end. The corner tips that appear when you've been still for 5 minutes are free.</p>
+        <h3>When you hit a wall</h3>
+        <p>Press <strong>What now?</strong> in the bottom-right corner at any time. It lists what you can do on the current screen and points to what to try next, without giving away an answer.</p>
         <h3>Your notebook</h3>
         <p>Press <strong>Notebook</strong> in the bottom-right corner to write down suspects, clues and who lied. It saves in this browser as you type, and its <em>Stuck? Try this</em> list has tips for when you hit a wall.</p>
         <h3>The people</h3>
@@ -174,6 +176,7 @@
         <h3>Anywhere</h3>
         <ul>
           <li>? or H opens this help. Esc closes it.</li>
+          <li><strong>What now?</strong> (bottom right) tells you what you can do on the screen you're on and what to try next. Press it again to hide it.</li>
           <li>Notebook (bottom right) opens your case notebook. It saves as you type.</li>
           <li>☰ goes back to the start screen. Your case is saved in this browser.</li>
         </ul>
