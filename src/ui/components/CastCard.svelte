@@ -3,7 +3,8 @@
   import type { Trust } from '../../game/state';
   import { abilityLabel } from '../puzzleHelpers';
   import type { Session } from '../session.svelte';
-  import Avatar from './Avatar.svelte';
+  import { expressionFor } from '../voices';
+  import Portrait from './Portrait.svelte';
   import { TRUST_LABEL } from './labels';
 
   let { session, person, trust }: { session: Session; person: CastMember; trust?: Trust } = $props();
@@ -14,7 +15,7 @@
 </script>
 
 <div class="cast-card">
-  <Avatar {person} />
+  <Portrait {person} expression={expressionFor(trust)} friendly={session.tone === 'friendly'} size={52} />
   <div>
     <div class="cast-name">{person.name}</div>
     <div class="cast-role">

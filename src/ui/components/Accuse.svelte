@@ -1,7 +1,8 @@
 <script lang="ts">
   import { clockOn, hoursLeft, trustOf } from '../../game/state';
   import type { Session } from '../session.svelte';
-  import Avatar from './Avatar.svelte';
+  import { expressionFor } from '../voices';
+  import Portrait from './Portrait.svelte';
   import StatusBar from './StatusBar.svelte';
   import { TRUST_LABEL } from './labels';
 
@@ -19,7 +20,7 @@
     {#each suspects as c (c.id)}
       {@const trust = trustOf(g, c.id)}
       <button class="accuse-card" onclick={() => session.askAccuse(c)}>
-        <Avatar person={c} /><span class="cast-name">{c.name}</span><span class="trust trust-{trust}">{TRUST_LABEL[trust]}</span>
+        <Portrait person={c} expression={expressionFor(trust)} friendly={session.tone === 'friendly'} size={72} /><span class="cast-name">{c.name}</span><span class="trust trust-{trust}">{TRUST_LABEL[trust]}</span>
       </button>
     {/each}
   </div>

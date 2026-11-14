@@ -10,6 +10,19 @@ export type Reliability = 'honest' | 'liar' | 'mistaken' | 'double-agent';
 export type Role = 'suspect' | 'witness' | 'informant' | 'ally' | 'boss';
 export type Ability = 'forensics' | 'accountant' | 'undercover' | 'partner';
 
+/**
+ * How a line is said. The UI draws each one as a different comic bubble (outline, colour, portrait expression);
+ * see src/ui/voices.ts.
+ */
+export type Voice = 'speech' | 'calm' | 'thought' | 'shout' | 'whisper' | 'nervous' | 'suspicious' | 'lying';
+export const VOICES: Voice[] = ['speech', 'calm', 'thought', 'shout', 'whisper', 'nervous', 'suspicious', 'lying'];
+
+/** Something a person says out loud, and how they say it (default "speech"). */
+export interface Line {
+  text: Text;
+  voice?: Voice;
+}
+
 export interface CastMember {
   id: string;
   name: string;
@@ -19,6 +32,10 @@ export interface CastMember {
   protects?: string;
   color: string;
   blurb: Text;
+  /** What they say when the player walks up to them in the town. */
+  greeting?: Line;
+  /** How they usually talk; their statements use it. Default "speech". */
+  voice?: Voice;
 }
 
 export interface Lead {
@@ -60,6 +77,8 @@ export interface Offer {
   after: string;
   cost: { favors: number };
   text: Text;
+  /** How the offer is said. Defaults to the speaker's voice. */
+  voice?: Voice;
   accept: Text;
   decline: Text;
 }

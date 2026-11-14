@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Modal } from '../session.svelte';
-  import Avatar from './Avatar.svelte';
+  import { unquote } from '../voices';
+  import Dialogue from './Dialogue.svelte';
 
   let { modal }: { modal: Modal } = $props();
   let box: HTMLElement;
@@ -14,10 +15,9 @@
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" bind:this={box}>
     <h2 id="modal-title">{modal.title}</h2>
     {#if modal.speaker}
-      <div class="offer">
-        <Avatar person={modal.speaker} />
-        <div>{#each modal.paragraphs as p}<p>{p}</p>{/each}</div>
-      </div>
+      <Dialogue person={modal.speaker} voice={modal.voice ?? modal.speaker.voice ?? 'speech'} friendly={modal.friendly} size={72}>
+        {#each modal.paragraphs as p}<p>{unquote(p)}</p>{/each}
+      </Dialogue>
     {:else}
       {#each modal.paragraphs as p}<p>{p}</p>{/each}
     {/if}

@@ -1,6 +1,6 @@
 import { nextStep } from '../engine/logic';
 import type { Cell } from '../engine/types';
-import type { CaseEvent, CaseFile, CastMember, Preset, PuzzleBook, Text } from '../game/caseTypes';
+import type { CaseEvent, CaseFile, CastMember, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import {
   accuse, addFlag, buyTip, checkLead, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
   type Game, type GameState,
@@ -26,8 +26,12 @@ export interface Modal {
   /** Shown in a larger font, for the fact a solved lead gives. */
   fact?: string;
   note?: string;
-  /** Shows this person's avatar beside the text, for offers. */
+  /** Shows the text as this person's dialogue, in a bubble beside their face (offers). */
   speaker?: CastMember;
+  /** How the speaker says it; defaults to how they usually talk. */
+  voice?: Voice;
+  /** Use the Junior portraits. */
+  friendly?: boolean;
   /** Escape closes it. */
   dismissible: boolean;
   actions: ModalAction[];
@@ -449,6 +453,8 @@ export class Session {
       title: `${from.name} wants a word`,
       paragraphs: [this.T(offer.text)],
       speaker: from,
+      voice: offer.voice,
+      friendly: this.tone === 'friendly',
       note: `Costs ${offer.cost.favors} favor. You have ${g.s.favors}.`,
       dismissible: false,
       actions: [

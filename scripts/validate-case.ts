@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
-import { PRESETS, type CaseFile, type PuzzleBook } from '../src/game/caseTypes';
+import { PRESETS, VOICES, type CaseFile, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
 import { validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
@@ -25,6 +25,17 @@ if (cf.cast.filter((c) => c.role === 'boss').length !== 1) fail('a case needs ex
 for (const c of cf.cast) {
   if ((c.reliability === 'liar' || c.reliability === 'double-agent') && c.role !== 'boss' && !c.protects) fail(`${c.id} lies but has no "protects" motive`);
   if (c.protects && !castIds.has(c.protects)) fail(`${c.id} protects unknown person ${c.protects}`);
+}
+
+// dialogue voices pick the bubble style, so an unknown one would draw nothing
+const badVoice = (v: Voice | undefined) => v !== undefined && !VOICES.includes(v);
+for (const c of cf.cast) {
+  if (badVoice(c.voice)) fail(`${c.id}: unknown voice "${c.voice}"`);
+  if (badVoice(c.greeting?.voice)) fail(`${c.id}: greeting has unknown voice "${c.greeting?.voice}"`);
+}
+for (const o of cf.offers) {
+  if (badVoice(o.voice)) fail(`offer ${o.id}: unknown voice "${o.voice}"`);
+  if (!castIds.has(o.from)) fail(`offer ${o.id}: from unknown person ${o.from}`);
 }
 
 for (const lead of cf.leads) {

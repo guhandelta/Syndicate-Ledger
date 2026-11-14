@@ -246,6 +246,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 - Everything MUST work by keyboard and by touch, down to phone width.
 - A case MAY have a walkable 3D town, described as data in `cases/<case-id>/town.json` (places, doors, where people stand and walk, cameras). The town is for PC screens and is a second way in: every lead, the case board and the accusation MUST stay reachable from the evidence board, which keeps the keyboard, touch and phone rule above. Walking costs no clock time. `npm run validate` MUST check the town against its case.
 - A town MAY list story shots in `town.json`: short scripted camera shots with a caption, each tied to one moment (a lead opens, a lead is solved, a timed event fires). A shot plays once, MUST be skippable, MUST last 2 to 8 seconds and MUST NOT carry information the evidence board does not also show.
+- Spoken lines are shown as comic bubbles beside the speaker's face. A line has a voice (speech, calm, thought, shout, whisper, nervous, suspicious, lying) that sets the bubble's outline shape, colours and lettering; every voice MUST differ in shape or outline style as well as colour. A caught liar's lines always use the lying voice and portrait. Bubbles MUST NOT carry information the text does not, and screen readers get the speaker and a verb ("Tip whispers"). Voices are set in `src/ui/voices.ts` and in the case file.
 - Every change goes through a pull request that runs the tests and validates every case.
 
 ## 10. Decisions and change log
@@ -261,6 +262,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-14 | Added comic dialogue bubbles with per-voice outlines and colours, face portraits that follow the trust meter, and a greeting line per cast member (section 9) |
 | 2026-11-13 | Added story shots to the town: scripted, skippable camera shots with a caption that play once when a lead opens, a lead is solved or a timed event fires (section 9) |
 | 2026-11-12 | Added an optional walkable 3D town for PC (prototype for Case 1): leads open from doors, people stand and walk in the harbor, cameras switch by moment. The evidence board stays the full, touch-friendly way to play (section 9) |
 | 2026-11-12 | Moved the UI to Svelte 5 with no change to rules or saves; added end-to-end and accessibility tests (section 9) |

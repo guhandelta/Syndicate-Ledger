@@ -7,6 +7,8 @@
   import type { CameraKind, Door, Shot } from '../../town/townTypes';
   import { abilityLabel } from '../puzzleHelpers';
   import type { Session } from '../session.svelte';
+  import { expressionFor, voiceFor } from '../voices';
+  import Dialogue from './Dialogue.svelte';
   import StatusBar from './StatusBar.svelte';
   import { TRUST_LABEL } from './labels';
 
@@ -238,22 +240,32 @@
       </div>
 
       {#if talking}
+        {@const trust = talking.role === 'ally' ? undefined : trustOf(g, talking.id)}
+        {@const leads = talking.role === 'ally' ? [] : speaksIn(talking)}
         <div class="town-talk" role="dialog" aria-labelledby="talk-name">
-          {#if FIGURES[talking.id]}
-            <div class="talk-portrait" style:--c={talking.color}><img src={FIGURES[talking.id]} alt="" /></div>
-          {/if}
-          <div class="talk-body">
+          <div class="talk-head">
             <h2 id="talk-name">{talking.name}</h2>
             <p class="talk-role">{roleLine(talking)}</p>
-            <p>{session.T(talking.blurb)}</p>
-            {#if talking.role !== 'ally'}
-              {@const leads = speaksIn(talking)}
-              <p class="muted">{leads.length ? `Has statements in: ${leads.join(', ')}.` : 'Has made no statements in this case.'}</p>
-            {:else}
-              <p class="muted">Call this ally from inside a lead.</p>
-            {/if}
-            <button class="btn primary sm" onclick={endTalk}>Goodbye <kbd>E</kbd></button>
+            <p class="talk-blurb muted">{session.T(talking.blurb)}</p>
           </div>
+          {#if talking.greeting}
+            {@const voice = voiceFor(talking.greeting.voice, trust)}
+            <Dialogue person={talking} {voice} expression={expressionFor(trust)} friendly={session.tone === 'friendly'} size={104}>
+              <p>{session.T(talking.greeting.text)}</p>
+            </Dialogue>
+          {/if}
+          <Dialogue voice="thought" side="right" size={44}>
+            <p>
+              {#if talking.role === 'ally'}
+                I can call on them from inside a lead.
+              {:else if leads.length}
+                Has statements in: {leads.join(', ')}.
+              {:else}
+                Has made no statements in this case.
+              {/if}
+            </p>
+          </Dialogue>
+          <button class="btn primary sm talk-bye" onclick={endTalk}>Goodbye <kbd>E</kbd></button>
         </div>
       {:else if prompt}
         <div class="town-prompt" class:locked={!prompt.can} role="status">

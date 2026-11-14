@@ -172,6 +172,8 @@ button { font: inherit; }
 .stmt.pickable { cursor: pointer; outline: 2px dashed var(--accent); }
 .stmt.missing { opacity: 0.85; border-style: dashed; }
 .stmt.paid { border-style: dotted; }
+.stmt.said { display: grid; gap: 6px; padding: 10px 12px 12px; }
+.stmt.said .mark-btns, .stmt.said .verdict-tag { padding-left: 66px; }
 .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; background: #4a3a14; color: #ffd98a; padding: 1px 7px; border-radius: 999px; margin-left: 4px; vertical-align: 1px; }
 .tag.paid-tag { background: #3b2552; color: #e0c4ff; }
 .tag.ok { background: #1f4a2a; color: #b6f0c2; }
@@ -201,7 +203,6 @@ button { font: inherit; }
 .modal { background: var(--panel); border: 1px solid var(--accent); border-radius: 14px; padding: 18px 20px; max-width: 520px; width: 100%; }
 .modal h2 { margin-top: 0; }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 14px; }
-.offer { display: flex; gap: 12px; align-items: flex-start; font-style: italic; }
 .fact { font-size: 1.08rem; }
 
 @media (max-width: 860px) {
@@ -234,13 +235,14 @@ kbd {
 .town-prompt.locked { border-color: var(--danger); color: #ffc2b8; }
 .town-help { position: absolute; left: 12px; bottom: 6px; margin: 0; font-size: 0.82rem; color: var(--ink); text-shadow: 0 1px 3px #000; }
 .town-talk {
-  position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); width: min(94%, 680px); display: flex; gap: 16px; align-items: stretch;
-  background: rgba(27, 33, 48, 0.96); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 18px;
+  position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); width: min(94%, 700px); display: grid; gap: 14px;
+  background: rgba(27, 33, 48, 0.96); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 22px 16px;
 }
-.talk-portrait { flex: none; width: 120px; height: 150px; overflow: hidden; border-radius: 10px; background: var(--c); border: 2px solid rgba(255, 255, 255, 0.25); }
-.talk-portrait img { width: 190%; margin: -4% 0 0 -45%; display: block; }
-.talk-body h2 { margin: 0; }
-.talk-role { margin: 0 0 0.5em; color: var(--accent); font-size: 0.9rem; font-weight: 600; }
+.talk-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.talk-head h2 { margin: 0; }
+.talk-role { margin: 0; color: var(--accent); font-size: 0.9rem; font-weight: 600; }
+.talk-blurb { margin: 0; flex-basis: 100%; font-size: 0.9rem; }
+.talk-bye { justify-self: end; }
 .shot-bar { position: absolute; left: 0; right: 0; background: #05070b; animation: shot-in 0.35s ease-out; }
 .shot-bar.top { top: 0; height: 9%; }
 .shot-bar.bottom { bottom: 0; min-height: 16%; display: flex; gap: 16px; align-items: center; justify-content: center; padding: 10px 24px; }
@@ -252,3 +254,40 @@ kbd {
 @media (max-width: 860px), (pointer: coarse) {
   .town-link { display: none; }
 }
+
+/* comic dialogue: a face with a bubble beside it; shapes and colours per voice live in src/ui/voices.ts */
+.dialogue { display: flex; gap: 18px; align-items: flex-start; }
+.dialogue.face-right { flex-direction: row-reverse; }
+.dialogue > .bubble { flex: 1; min-width: 0; }
+.portrait {
+  flex: none; display: block; border-radius: 50%; object-fit: cover; background: var(--c);
+  border: 3px solid var(--c); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+.portrait.expr-caught-lying { border-color: var(--bad); }
+.portrait.expr-suspicious { border-color: #d49a2a; }
+.self-badge {
+  flex: none; width: var(--face); height: var(--face); min-width: 40px; min-height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--panel-2); border: 2px dashed var(--accent); color: var(--accent); font: 700 0.8rem 'Courier New', ui-monospace, monospace;
+}
+.bubble { position: relative; padding: 12px 18px; color: var(--b-ink); isolation: isolate; }
+.bubble.small { padding: 8px 13px; }
+.bubble-art { position: absolute; inset: 0; overflow: visible; z-index: -1; pointer-events: none; }
+.bubble-text { position: relative; font-size: 1rem; line-height: 1.4; }
+.bubble.small .bubble-text { font-size: 0.93rem; }
+.bubble-text p { margin: 0; }
+.bubble-text p + p { margin-top: 0.4em; }
+/* lettering follows the voice too */
+.voice-thought .bubble-text { font-style: italic; }
+.voice-whisper .bubble-text { font-style: italic; font-size: 0.92em; letter-spacing: 0.01em; }
+.voice-shout .bubble-text { font-weight: 800; letter-spacing: 0.02em; }
+.voice-shout { padding: 16px 24px; }
+.voice-thought { padding: 18px 28px; }
+.voice-lying .bubble-text { font-weight: 600; }
+.voice-calm { padding-inline: 24px; }
+.voice-nervous .bubble-art { animation: bubble-tremble 2.4s ease-in-out infinite; }
+@keyframes bubble-tremble {
+  0%, 88%, 100% { transform: translate(0, 0); }
+  90% { transform: translate(-1px, 0.5px); } 92% { transform: translate(1px, -0.5px); } 94% { transform: translate(-1px, 0); } 96% { transform: translate(1px, 0.5px); }
+}
+@media (prefers-reduced-motion: reduce) { .voice-nervous .bubble-art { animation: none; } }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
