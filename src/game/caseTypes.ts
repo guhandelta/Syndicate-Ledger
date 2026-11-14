@@ -53,6 +53,8 @@ export interface Lead {
   speakers: string[];
   liars: Record<Preset, string[]>;
   fact: Text;
+  /** Who this lead's fact points at. An accusation may only lean on facts that point at the accused. */
+  pointsTo?: string[];
 }
 
 export type EventEffect =
@@ -126,6 +128,20 @@ export interface MissedClue {
   message: Text;
 }
 
+/** What it takes to convict someone: facts from these solved leads, and no fact that points elsewhere. */
+export interface Proof {
+  needs: string[];
+}
+
+/** Shown when the case is lost. Nothing here may say who did it. */
+export interface LostCase {
+  title: Text;
+  /** The clock ran out before an accusation held up. */
+  time: Text;
+  /** Everyone who could still be accused has been, or is out of tries. */
+  limits: Text;
+}
+
 export interface CaseFile {
   id: string;
   title: Text;
@@ -138,6 +154,9 @@ export interface CaseFile {
   events: CaseEvent[];
   offers: Offer[];
   endings: Ending[];
+  /** Who can be convicted, and on what. Anyone not listed can never be proven guilty. */
+  proof?: Record<string, Proof>;
+  lost?: LostCase;
   missedClues?: MissedClue[];
 }
 

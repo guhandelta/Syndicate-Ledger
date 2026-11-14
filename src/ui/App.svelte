@@ -7,6 +7,7 @@
   import Puzzle from './components/Puzzle.svelte';
   import Accuse from './components/Accuse.svelte';
   import Verdict from './components/Verdict.svelte';
+  import Lost from './components/Lost.svelte';
   import ModalView from './components/Modal.svelte';
   import Help from './components/Help.svelte';
   import IdleTip from './components/IdleTip.svelte';
@@ -100,6 +101,8 @@
   <Accuse {session} />
 {:else if session.screen === 'verdict'}
   <Verdict {session} />
+{:else if session.screen === 'lost' && session.cf.lost}
+  <Lost {session} />
 {/if}
 
 {#if session.modals.length}

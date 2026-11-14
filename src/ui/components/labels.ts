@@ -6,4 +6,5 @@ export const TRUST_LABEL: Record<Trust, string> = {
   caught: 'Caught lying',
   mistaken: 'Honest mistake',
   verified: 'Verified',
+  refuses: 'Won\'t talk',
 };

@@ -52,6 +52,20 @@ for (const lead of cf.leads) {
 }
 if (!cf.leads.some((l) => l.opensAfter.length === 0)) fail('no lead is open at the start');
 
+const personIds = castIds;
+for (const l of cf.leads) for (const w of l.pointsTo ?? []) if (!personIds.has(w)) fail(`lead ${l.id}: pointsTo ${w} is not a person`);
+for (const [who, pr] of Object.entries(cf.proof ?? {})) {
+  if (!personIds.has(who)) fail(`proof: ${who} is not a person`);
+  if (!pr.needs.length) fail(`proof: ${who} needs no evidence`);
+  for (const id of pr.needs) {
+    const l = cf.leads.find((x) => x.id === id);
+    if (!l) fail(`proof: ${who} needs unknown lead ${id}`);
+    else if (!l.pointsTo?.includes(who)) fail(`proof: lead ${id} does not point to ${who}`);
+  }
+}
+if (!cf.lost) fail('case has no "lost" text for the case-lost screen');
+if (!Object.keys(cf.proof ?? {}).length) fail('case has no provable person');
+
 for (const ev of cf.events) if (!ev.rumor) fail(`event ${ev.id} has no rumor (events must be shown ahead of time)`);
 
 // clock: full bust reachable on the default (Inspector) clock without informants

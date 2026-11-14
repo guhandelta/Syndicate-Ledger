@@ -38,7 +38,7 @@ export const VOICE_STYLE: Record<Voice, VoiceStyle> = {
 
 /** Portrait expression from the trust meter, when the line itself doesn't set one. */
 export function expressionFor(trust: Trust | undefined): Expression {
-  return trust === 'caught' ? 'caught-lying' : trust === 'suspicious' ? 'suspicious' : 'neutral';
+  return trust === 'caught' ? 'caught-lying' : trust === 'suspicious' || trust === 'refuses' ? 'suspicious' : 'neutral';
 }
 
 /**

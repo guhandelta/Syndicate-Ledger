@@ -22,7 +22,7 @@ export interface IdleHint {
 
 export interface IdleContext {
   game: Game | null;
-  screen: 'title' | 'intro' | 'board' | 'town' | 'puzzle' | 'accuse' | 'verdict';
+  screen: 'title' | 'intro' | 'board' | 'town' | 'puzzle' | 'accuse' | 'verdict' | 'lost';
   leadId: string | null;
   town: Town | null;
   /** A dialog is waiting for an answer. */
@@ -67,7 +67,7 @@ function canDo(ctx: IdleContext): string[] {
       ];
     }
     case 'accuse':
-      return ['Pick who you think is behind it, then confirm.', 'Go back to the board if you are not ready.'];
+      return ['Pick who you think is behind it.', 'Then tick the leads whose facts prove it: a right name with weak proof is refused.', 'Go back to the board if you are not ready.'];
     default:
       return ['Read how your case ended.', 'Start over from the menu (☰) to try another rank or ending.'];
   }
@@ -81,6 +81,7 @@ function whatToDo(ctx: IdleContext): Omit<IdleHint, 'can'> {
     return { where: 'The start screen', todo: 'Pick a rank (Junior is the gentlest), then press Open the case. Press ? any time for help.' };
   }
   if (screen === 'intro') return { where: 'The case briefing', todo: 'Read what happened, then go on to the evidence board to pick your first lead.' };
+  if (screen === 'lost') return { where: 'The case is lost', todo: 'The investigation is over and your notes are gone. Start over from the menu (☰) to try again.' };
   if (screen === 'verdict') return { where: 'The case is closed', todo: 'Read your ending. Start over from the menu (☰) to try another rank or chase a different ending.' };
 
   const leadName = (l: Lead) => t(l.title, tone);
@@ -91,7 +92,7 @@ function whatToDo(ctx: IdleContext): Omit<IdleHint, 'can'> {
 
   if (screen === 'accuse') {
     return allSolved
-      ? { where: 'The accusation', todo: 'Every lead is solved. Think about who the facts in your case notes point to, then name them.' }
+      ? { where: 'The accusation', todo: 'Every lead is solved. Pick who the facts point to, then tick the leads that prove it.' }
       : { where: 'The accusation', todo: 'Some leads are still unsolved, so you may be accusing too early. Go back and solve them first unless the clock is about to run out.' };
   }
 

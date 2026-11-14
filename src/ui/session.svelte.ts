@@ -3,7 +3,8 @@ import type { Cell } from '../engine/types';
 import type { CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
-  accuse, addFlag, buyTip, checkLead, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  submitAccusation,
   type Game, type GameState,
 } from '../game/state';
 import { gridLabels, t, type Tone } from '../game/text';
@@ -12,7 +13,7 @@ import type { Town } from '../town/townTypes';
 import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
 import { findWrong, zoneCombos } from './puzzleHelpers';
 
-export type Screen = 'title' | 'intro' | 'board' | 'town' | 'puzzle' | 'accuse' | 'verdict';
+export type Screen = 'title' | 'intro' | 'board' | 'town' | 'puzzle' | 'accuse' | 'verdict' | 'lost';
 /** The two places leads are opened from: the evidence board and the walkable town. */
 export type Hub = 'board' | 'town';
 
@@ -92,6 +93,9 @@ export class Session {
   titlePreset = $state<Preset>('inspector');
   /** Where closing a lead or backing out returns to. */
   hub = $state<Hub>('board');
+  /** Who the player is about to accuse, and the proven facts they have picked to back it. */
+  accuseTarget = $state<CastMember | null>(null);
+  evidence = $state<string[]>([]);
   helpOpen = $state(false);
   helpTab = $state<'play' | 'rank' | 'case' | 'controls'>('play');
   /** The corner tip shown after the player has been still for a while (src/ui/idleHint.ts). */
@@ -126,7 +130,9 @@ export class Session {
 
   save() {
     try {
-      if (this.s) localStorage.setItem(SAVE_KEY, JSON.stringify($state.snapshot(this.s)));
+      // a lost case leaves nothing behind: no save, no notes
+      if (this.s?.lost) localStorage.removeItem(SAVE_KEY);
+      else if (this.s) localStorage.setItem(SAVE_KEY, JSON.stringify($state.snapshot(this.s)));
     } catch {
       /* storage unavailable: play continues without saving */
     }
@@ -194,6 +200,7 @@ export class Session {
     const g = this.game;
     this.modals = [];
     if (!g || !name) return this.show('title');
+    if (g.s.lost) return this.show('lost');
     if (g.s.endingId) return this.show(name === 'verdict' ? 'verdict' : 'title');
     if (name === 'lead' && arg && g.s.leads[arg]?.started) return this.openLead(arg);
     if (name === 'town' && this.town) return this.show('town');
@@ -543,26 +550,68 @@ export class Session {
 
   // ---------- accusation ----------
 
-  askAccuse(who: CastMember) {
-    this.modals.push({
-      title: `Accuse ${who.name}?`,
-      paragraphs: [
-        'This ends the case. There is no going back.',
-        ...pendingClues(this.g, { kind: 'accuse', person: who.id }).map((c) => this.T(c.message)),
-      ],
-      dismissible: true,
-      actions: [
-        { label: 'Cancel', run: this.closeModal },
-        {
-          label: 'Accuse',
-          primary: true,
-          run: () => {
-            accuse(this.g, who.id);
-            this.modals = [];
-            this.show('verdict');
-          },
-        },
-      ],
-    });
+  /** Picks the person to accuse; the next step is choosing the facts that prove it. */
+  pickAccused(who: CastMember) {
+    if (accuseStatus(this.g, who.id) !== 'ok') return;
+    this.accuseTarget = who;
+    this.evidence = [];
   }
+
+  backToPeople() {
+    this.accuseTarget = null;
+    this.evidence = [];
+  }
+
+  toggleEvidence(leadId: string) {
+    this.evidence = this.evidence.includes(leadId) ? this.evidence.filter((id) => id !== leadId) : [...this.evidence, leadId];
+  }
+
+  /** Nudges about this accusation, shown above the evidence list. */
+  accuseNudges(who: CastMember): string[] {
+    return pendingClues(this.g, { kind: 'accuse', person: who.id }).map((c) => this.T(c.message));
+  }
+
+  /** Makes the accusation with the chosen facts. It holds only if the proof is valid. */
+  submitAccuse() {
+    const who = this.accuseTarget;
+    if (!who || !this.evidence.length) return;
+    const g = this.g;
+    const res = submitAccusation(g, who.id, this.evidence);
+    this.modals = [];
+    if (res.kind === 'accepted') return this.show('verdict');
+    if (res.kind === 'blocked') return;
+    if (res.lost) return this.loseCase();
+    const clocked = rules(g).clock !== 'off';
+    const paragraphs = [
+      `That doesn't hold up. Either a fact you chose doesn't point at ${who.name}, or the proof has gaps. Look at what your case notes really prove.`,
+      res.locked
+        ? `You can't accuse ${who.name} again.`
+        : `You have ${res.triesLeft} ${res.triesLeft === 1 ? 'try' : 'tries'} left on ${who.name}.`,
+      `You have accused ${accusedPeople(g).length} of ${rules(g).accuse.people} people you're allowed to.`,
+    ];
+    if (res.refuses)
+      paragraphs.push(
+        clocked
+          ? `${who.name} is furious about being accused and won't talk to you freely now. Any lead where they speak costs 1 more hour.`
+          : `${who.name} is upset about being accused and won't be so friendly now.`,
+      );
+    this.show('accuse');
+    this.modals.push({ title: 'Not proven', paragraphs, dismissible: true, actions: [{ label: 'Got it', primary: true, run: this.closeModal }] });
+  }
+
+  /** The case is lost: no save, no notes, and nothing about who did it. */
+  loseCase() {
+    this.modals = [];
+    window.dispatchEvent(new Event('notepad-clear'));
+    this.save();
+    this.show('lost');
+  }
+
+  /** Leaves the lost-case screen for a fresh start. */
+  afterLost() {
+    this.s = null;
+    this.townPose = null;
+    this.show('title');
+  }
+
 }

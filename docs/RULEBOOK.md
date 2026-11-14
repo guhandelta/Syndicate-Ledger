@@ -88,6 +88,15 @@ A case is an evidence board of linked leads, played against an in-game clock. Ea
 - Once the double agent is caught lying, they stop selling tips.
 - Trusting the double agent costs the player something concrete, such as an event that fires or a lead that costs more. It MUST never make the case unwinnable.
 
+**Accusations**
+
+- An accusation needs proof. The player names a person, then ticks the solved leads that prove it. The case file lists, per provable person, the leads they need (`proof`) and which people each lead points to (`pointsTo`). A right name with missing or unrelated evidence is refused.
+- Every refusal says only "Not proven", never whether the person is guilty.
+- Limits: Detective, Inspector and Chief allow 3 different people and 2 tries each; Junior allows 4 people and 3 tries each. A locked person can't be accused again, even if they are the real culprit.
+- An innocent person who is refused stops cooperating: any lead of theirs not yet started costs +1 hour (only while the clock is on). Their trust meter reads "Won't talk".
+- The case is lost when time runs out with no accusation left to make, or when nobody who can be convicted is still open to accusation. The case-lost screen reveals nothing, the save is deleted and all notes are cleared. When the clock ends the player still gets a last chance to accuse.
+- A case MUST be winnable: every provable person's `proof.needs` are leads that point to them, and the validator checks this.
+
 ## 4. Cast roles
 
 | Role | What they do | Typical reliability |
@@ -264,6 +273,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 | --- | --- |
 | 2026-11-14 | Added a What now? button to the latest game: on demand, it shows what the player can do on the current screen and what to try next (the same hint logic as the 5-minute idle tip, plus the list of options). Never gives a number away (section 9) |
 | 2026-11-14 | Added a case notebook to both the latest game and v1: a Notebook button opens a side panel to jot down suspects, clues and lies, saved in the browser as you type, with a "Stuck? Try this" list of tips. v1 is still built from its original commit with only this added (section 9) |
+| 2026-11-14 | Added hard accusation rules: proof from solved leads, 3 people and 2 tries each (Junior 4 and 3), refused innocents stop cooperating (+1 h), a case-lost ending that wipes notes and reveals nothing (sections 3, 7) |
 | 2026-11-14 | Added in-game help (the ? button or the ? / H key on every screen): how to play, the chosen rank's rules and how to think at that rank, the case's lead order, clock rumors and cast without spoilers, and controls. After 5 minutes with no key, click or tap, a corner tip says where the player is and what to do next; it points the way without giving numbers away and doesn't cost stars (section 9) |
 | 2026-11-14 | Added comic dialogue bubbles with per-voice outlines and colours, face portraits that follow the trust meter, and a greeting line per cast member (section 9) |
 | 2026-11-13 | Added story shots to the town: scripted, skippable camera shots with a caption that play once when a lead opens, a lead is solved or a timed event fires (section 9) |

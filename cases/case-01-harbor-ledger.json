@@ -48,7 +48,8 @@
       "rows": ["8pm", "9pm", "10pm", "11pm", "Midnight", "1am"],
       "speakers": ["rosa", "kane"],
       "liars": { "junior": [], "detective": [], "inspector": [], "chief": [] },
-      "fact": { "crime": "Cash moves through the fish market every night, and Vex carries the biggest bags.", "friendly": "The coins go through the fish market at night, and Vex carries the most." }
+      "fact": { "crime": "Cash moves through the fish market every night, and Vex carries the biggest bags.", "friendly": "The coins go through the fish market at night, and Vex carries the most." },
+      "pointsTo": ["vex"]
     },
     {
       "id": "L2", "type": "surveillance", "cost": 2, "opensAfter": ["L1"],
@@ -59,7 +60,8 @@
       "rooms": ["Harbor office", "Ice house", "Warehouse 9", "Fish hall", "Net loft", "Boathouse"],
       "speakers": ["juno", "vex", "kane"],
       "liars": { "junior": [], "detective": ["vex"], "inspector": ["vex"], "chief": ["vex"] },
-      "fact": { "crime": "Vex was inside Warehouse 9 at midnight, not at home as he claims.", "friendly": "Vex was in Warehouse 9 at midnight. He said he was at home!" }
+      "fact": { "crime": "Vex was inside Warehouse 9 at midnight, not at home as he claims.", "friendly": "Vex was in Warehouse 9 at midnight. He said he was at home!" },
+      "pointsTo": ["vex"]
     },
     {
       "id": "L3", "type": "ledger", "cost": 2, "opensAfter": ["L1"],
@@ -69,7 +71,8 @@
       "rows": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       "speakers": ["tip", "rosa", "kane"],
       "liars": { "junior": ["tip"], "detective": ["tip"], "inspector": ["tip"], "chief": ["tip"] },
-      "fact": { "crime": "Every payment ends up in an account owned by Crane Shipping. Tip lied to cover it.", "friendly": "All the coins go to the shipping company. Tip fibbed to hide it!" }
+      "fact": { "crime": "Every payment ends up in an account owned by Crane Shipping. Tip lied to cover it.", "friendly": "All the coins go to the shipping company. Tip fibbed to hide it!" },
+      "pointsTo": ["tip", "crane"]
     },
     {
       "id": "L4", "type": "ledger", "cost": 2, "opensAfter": ["L2", "L3"], "hard": true,
@@ -79,7 +82,8 @@
       "rows": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
       "speakers": ["vex", "rosa", "kane"],
       "liars": { "junior": ["vex"], "detective": ["vex"], "inspector": ["vex", "rosa"], "chief": ["vex", "rosa"] },
-      "fact": { "crime": "Crane staged the theft. The $90k never left his company. It was washed through the market to pay the syndicate.", "friendly": "Mr. Crane hid the coins himself and blamed someone else!" }
+      "fact": { "crime": "Crane staged the theft. The $90k never left his company. It was washed through the market to pay the syndicate.", "friendly": "Mr. Crane hid the coins himself and blamed someone else!" },
+      "pointsTo": ["crane"]
     }
   ],
   "events": [
@@ -377,5 +381,21 @@
       "title": { "crime": "Wrong arrest", "friendly": "Oops, wrong person" },
       "text": { "crime": "You arrested an innocent person. The syndicate couldn't have planned it better.", "friendly": "That person didn't do it! The gang is laughing all the way to their boat." }
     }
-  ]
+  ],
+  "proof": {
+    "crane": { "needs": ["L3", "L4"] },
+    "vex": { "needs": ["L2"] },
+    "tip": { "needs": ["L3"] }
+  },
+  "lost": {
+    "title": { "crime": "The trail goes cold", "friendly": "The gang got away" },
+    "time": {
+      "crime": "The ship sailed with the case unproven. Whatever you had, it wasn't enough to hold anyone. The files are closed and your notes go with them.",
+      "friendly": "The boat sailed away before you could prove it! The gang is gone and your notes are all wiped. Time to try again."
+    },
+    "limits": {
+      "crime": "You've named everyone you were allowed to, and none of it held up. With no one left to accuse, the case is shelved and your notes are shredded.",
+      "friendly": "You used up all your guesses and none of them could be proven. The case is closed and your notes are wiped. Time to try again."
+    }
+  }
 }

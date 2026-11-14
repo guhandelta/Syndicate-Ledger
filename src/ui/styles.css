@@ -342,3 +342,11 @@ kbd {
 .idle-tip-h { margin: 6px 0 2px; font-weight: 600; color: var(--accent); font-size: 0.85rem; }
 .idle-tip ul { margin: 0 0 4px; padding-left: 18px; font-size: 0.9rem; max-height: 34vh; overflow-y: auto; }
 .idle-tip li { margin: 2px 0; }
+
+/* ---------- accusations: proof and limits ---------- */
+.evidence { border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px 12px; margin: 12px 0; }
+.evidence legend { color: var(--accent); padding: 0 6px; font-weight: 600; }
+.evidence-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; cursor: pointer; }
+.evidence-item input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+.accuse-card:disabled { opacity: 0.5; cursor: not-allowed; }
+.accuse-tries { font-size: 0.85rem; }
