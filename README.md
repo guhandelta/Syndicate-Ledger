@@ -18,6 +18,8 @@ npm run build    # writes dist/syndicate-ledger.html, a single file that runs of
 
 Open `dist/syndicate-ledger.html` in any browser. Progress saves in the browser.
 
+**Hosting:** `npm run build:site` writes the whole website to `site/`: the latest game at `/` and the original v1 at `/v1/`. GitHub Pages, Netlify (`netlify.toml`) and Vercel (`vercel.json`) all run this same command, so any of them serves the same game. The game is one self-contained file with `#` routes, so it works at a sub-path (Pages) or at the root of a domain (Netlify, Vercel).
+
 **Town (PC):** from the evidence board, choose *Walk the town*. WASD or arrows to walk, Shift to run, E to talk or enter a door, C to switch between the angled and behind-the-detective cameras, B for the case board. Each case's town is data in `cases/<case-id>/town.json`. The same file lists the story shots: short camera shots with a caption that play once when a lead opens, a lead is solved or a timed event fires (E or Esc skips them).
 
 **Controls:** click or tap a cell, then a number. Keyboard: arrows to move, 1–6 to enter, Backspace to erase, P to toggle notes, Ctrl+Z / Ctrl+Shift+Z to undo and redo.
