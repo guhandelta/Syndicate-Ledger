@@ -2,7 +2,9 @@
   import { rules } from '../../game/state';
   import { describeClaim } from '../../game/text';
   import type { Session } from '../session.svelte';
+  import type { Voice } from '../../game/caseTypes';
   import Avatar from './Avatar.svelte';
+  import Dialogue from './Dialogue.svelte';
 
   let { session }: { session: Session } = $props();
   const p = $derived(session.puzzle);
@@ -19,6 +21,14 @@
   function unverified(i: number) {
     const who = session.person(p.statements[i].speaker);
     return r.flagLiars === 'exact' ? !p.truth[i] : r.flagLiars === 'possible' ? who.reliability !== 'honest' : false;
+  }
+
+  const friendly = $derived(session.tone === 'friendly');
+
+  /** Before the lead is solved a line sounds the way the person talks (or shifty, once the player calls it a lie). */
+  function voiceOf(i: number): Voice {
+    if (lp.solved) return p.truth[i] ? (session.person(p.statements[i].speaker).voice ?? 'speech') : 'lying';
+    return lp.marks[i] === 'lie' ? 'suspicious' : (session.person(p.statements[i].speaker).voice ?? 'speech');
   }
 
   function pick(e: Event, i: number) {
@@ -44,31 +54,29 @@
     {:else}
       {@const m = lp.marks[i]}
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
-      <li class="stmt mark-{m}" class:pickable={picking} onclick={picking ? (e) => pick(e, i) : undefined}>
-        <Avatar person={who} small />
-        <div class="stmt-body">
-          <div class="stmt-who">{who.name} {#if unverified(i)}<span class="tag">Unverified</span>{/if}</div>
-          <p>“{describeClaim(s.claim, L, p.type)}”</p>
-          {#if lp.solved}
-            <div class="verdict-tag {p.truth[i] ? 'ok' : 'bad'}">{p.truth[i] ? 'True' : 'Lie'}</div>
-          {:else}
-            <div class="mark-btns" role="group" aria-label="Your verdict">
-              <button class="btn sm" class:on-true={m === 'true'} aria-pressed={m === 'true'} onclick={() => session.mark(i, 'true')}>True</button>
-              <button class="btn sm" class:on-lie={m === 'lie'} aria-pressed={m === 'lie'} onclick={() => session.mark(i, 'lie')}>Lie</button>
-            </div>
-          {/if}
-        </div>
+      <li class="stmt said mark-{m}" class:pickable={picking} onclick={picking ? (e) => pick(e, i) : undefined}>
+        <div class="stmt-who">{who.name} {#if unverified(i)}<span class="tag">Unverified</span>{/if}</div>
+        <Dialogue person={who} voice={voiceOf(i)} {friendly} size={48}>
+          <p>{describeClaim(s.claim, L, p.type)}</p>
+        </Dialogue>
+        {#if lp.solved}
+          <div class="verdict-tag {p.truth[i] ? 'ok' : 'bad'}">{p.truth[i] ? 'True' : 'Lie'}</div>
+        {:else}
+          <div class="mark-btns" role="group" aria-label="Your verdict">
+            <button class="btn sm" class:on-true={m === 'true'} aria-pressed={m === 'true'} onclick={() => session.mark(i, 'true')}>True</button>
+            <button class="btn sm" class:on-lie={m === 'lie'} aria-pressed={m === 'lie'} onclick={() => session.mark(i, 'lie')}>Lie</button>
+          </div>
+        {/if}
       </li>
     {/if}
   {/each}
   {#each lp.paidTips as tip}
     {@const who = session.person(tip.speaker)}
-    <li class="stmt paid">
-      <Avatar person={who} small />
-      <div class="stmt-body">
-        <div class="stmt-who">{who.name} <span class="tag paid-tag">Paid tip</span></div>
-        <p>“{describeClaim(tip.claim, L, p.type)}”</p>
-      </div>
+    <li class="stmt said paid">
+      <div class="stmt-who">{who.name} <span class="tag paid-tag">Paid tip</span></div>
+      <Dialogue person={who} voice="whisper" {friendly} size={48}>
+        <p>{describeClaim(tip.claim, L, p.type)}</p>
+      </Dialogue>
     </li>
   {/each}
 </ul>
