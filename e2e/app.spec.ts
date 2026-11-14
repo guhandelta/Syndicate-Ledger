@@ -124,14 +124,14 @@ test('the case notebook keeps notes across reloads, and typing in it does not to
   await expect(notes).toBeFocused();
   await page.getByRole('button', { name: '+ Clue' }).click();
   await page.keyboard.type('Rosa 2 at 8pm');
-  await expect(notes).toHaveValue('Clue: Rosa 2 at 8pm');
+  await expect(notes).toHaveValue('Clue (lead and fact): Rosa 2 at 8pm');
   await expect(page.locator('table.grid .val')).toHaveCount(filled);
   await expect(page.getByText('Saved')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(notes).toBeHidden();
   await page.reload();
   await page.getByRole('button', { name: 'Notebook', exact: true }).click();
-  await expect(notes).toHaveValue('Clue: Rosa 2 at 8pm');
+  await expect(notes).toHaveValue('Clue (lead and fact): Rosa 2 at 8pm');
   await expectAccessible(page);
 });
 

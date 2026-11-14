@@ -13,21 +13,78 @@ export interface NotepadOptions {
   right?: number;
 }
 
-const TIPS = [
-  'Start with the row or column that already has the most numbers in it.',
-  'In a cash ledger, a small zone often has only one or two ways to add up. Try those first.',
-  'Read each statement against your grid. If it can’t be true, that person is lying.',
-  'You’re told how many statements are lies. If you’ve found that many, everyone else is telling the truth.',
-  'Still stuck? Spend a favor on an ally inside the lead: your old partner explains the next step.',
-  'Write down each fact as you prove it here, so you can see who it points to before you accuse anyone.',
+const TIPS: { title: string; items: string[] }[] = [
+  {
+    title: 'How the grid works',
+    items: [
+      'Every row and every column holds each number exactly once. A 5×5 grid uses 1 to 5, a 6×6 uses 1 to 6.',
+      'Rows are the hours of the night. Columns are the people. A ledger cell is the money that person moved that hour; a camera-log cell is the room they were in.',
+      'A zone is a group of cells with a total in its top-left corner. The numbers in it must add up to that total, and none repeats inside it.',
+      'A row or column always adds up to the same total: 15 for 5×5, 21 for 6×6. If a zone covers most of a row, the leftover cells are easy to find.',
+    ],
+  },
+  {
+    title: 'Where to start',
+    items: [
+      'Small zones first. Two cells that add to 3 can only be 1 and 2. Three cells that add to 6 can only be 1, 2 and 3.',
+      'Then use the row and column totals: if four cells of a row are in one zone, the fifth cell is the row total minus the zone total.',
+      'Use each witness statement as a clue. “Kane at 8pm and 11pm add up to $3k” means those two cells are 1 and 2.',
+      'Switch Notes on (key P) and pencil the possible numbers in a cell. When only one is left, write it in.',
+    ],
+  },
+  {
+    title: 'Marking the statements',
+    items: [
+      'Fill the grid first, then test each statement against it. If it matches, mark True; if it can’t be true, mark Lie.',
+      'The lead tells you how many statements are lies. Once you have found that many, everyone else is telling the truth.',
+      'Catching a liar earns a favor and builds your case, so a wrong mark is worth rechecking.',
+    ],
+  },
+  {
+    title: 'Favors and the clock',
+    items: [
+      'Spend a favor on an ally inside a lead: one lists what a zone can hold, one explains the next step, one reveals a cell, one checks a statement.',
+      'Favors are limited, so keep them for the cell or statement that is truly blocking you.',
+      'On a ranked clock every lead costs hours. Watch the rumors on the board: some people leave and some events hit leads you haven’t started.',
+    ],
+  },
+  {
+    title: 'Before you accuse',
+    items: [
+      'An accusation needs proof: you name one person, then tick the solved leads that show it. The right name with weak proof is refused and costs a try.',
+      'You can only accuse a few people, and each only a couple of times. An innocent person you accuse stops being so helpful.',
+      'Write each proven fact here with the lead it came from, so you know which leads point at your suspect.',
+    ],
+  },
 ];
 
 const QUICK: [string, string][] = [
   ['Suspect', 'Suspect: '],
-  ['Clue', 'Clue: '],
-  ['Lie', 'Caught lying: '],
+  ['Clue', 'Clue (lead and fact): '],
+  ['Lie', 'Caught lying (who, which lead): '],
+  ['Alibi', 'Alibi (who, where, when): '],
   ['To check', 'To check: '],
 ];
+
+const SHEET = [
+  'CASE SHEET',
+  '',
+  'SUSPECTS (who, what I suspect):',
+  '- ',
+  '',
+  'WHAT I HAVE PROVED (fact, which lead):',
+  '- ',
+  '',
+  'LIES CAUGHT (who, which lead):',
+  '- ',
+  '',
+  'STILL TO CHECK:',
+  '- ',
+  '',
+  'MY ACCUSATION (who, and which solved leads prove it):',
+  '- ',
+  '',
+].join('\n');
 
 const CSS = `
 .np-btn { position: fixed; bottom: 16px; z-index: 15; height: 48px; padding: 0 16px; border-radius: 24px;
@@ -54,7 +111,9 @@ const CSS = `
 .np-saved { color: var(--muted, #a3a9b8); font-size: .8rem; }
 .np-tips { margin: 0 16px 14px; border-top: 1px solid var(--line, #333c52); padding-top: 8px; font-size: .9rem; }
 .np-tips summary { cursor: pointer; color: var(--accent, #d4a24c); font-weight: 600; padding: 4px 0; }
-.np-tips ul { margin: 6px 0 0; padding-left: 18px; max-height: 30vh; overflow-y: auto; }
+.np-tipbody { max-height: 36vh; overflow-y: auto; }
+.np-tips h3 { margin: 10px 0 2px; font-size: .9rem; color: var(--accent, #d4a24c); }
+.np-tips ul { margin: 2px 0 0; padding-left: 18px; }
 .np-tips li { margin: 4px 0; }
 `;
 
@@ -89,15 +148,17 @@ export function mountNotepad({ storageKey, right = 16 }: NotepadOptions) {
     <div class="np-head"><h2>Case notebook</h2><button type="button" class="np-x" aria-label="Close notebook">✕</button></div>
     <p class="np-sub">Jot down suspects, clues and who lied. It saves in this browser as you type.</p>
     <div class="np-quick" role="group" aria-label="Start a line"></div>
-    <textarea class="np-text" aria-label="Your notes" spellcheck="true" placeholder="What have you found so far?"></textarea>
+    <textarea class="np-text" aria-label="Your notes" spellcheck="true" placeholder="What have you found so far? Press + Case sheet for a ready layout."></textarea>
     <div class="np-foot"><span class="np-saved" aria-live="polite"></span><button type="button" class="np-clear">Clear notes</button></div>
-    <details class="np-tips"><summary>Stuck? Try this</summary><ul></ul></details>`;
+    <details class="np-tips"><summary>Stuck? Read this</summary><div class="np-tipbody"></div></details>`;
 
   const text = panel.querySelector<HTMLTextAreaElement>('.np-text')!;
   const saved = panel.querySelector<HTMLElement>('.np-saved')!;
   const clear = panel.querySelector<HTMLButtonElement>('.np-clear')!;
   const quick = panel.querySelector<HTMLElement>('.np-quick')!;
-  panel.querySelector('.np-tips ul')!.innerHTML = TIPS.map((t) => `<li>${t}</li>`).join('');
+  panel.querySelector('.np-tipbody')!.innerHTML = TIPS.map(
+    (g) => `<h3>${g.title}</h3><ul>${g.items.map((t) => `<li>${t}</li>`).join('')}</ul>`,
+  ).join('');
   text.value = load();
 
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -119,6 +180,18 @@ export function mountNotepad({ storageKey, right = 16 }: NotepadOptions) {
     clear.textContent = 'Clear notes';
     save();
   });
+
+  const sheetBtn = document.createElement('button');
+  sheetBtn.type = 'button';
+  sheetBtn.textContent = '+ Case sheet';
+  sheetBtn.addEventListener('click', () => {
+    const v = text.value;
+    text.value = v + (v && !v.endsWith('\n') ? '\n\n' : '') + SHEET;
+    text.focus();
+    text.setSelectionRange(text.value.length, text.value.length);
+    save();
+  });
+  quick.appendChild(sheetBtn);
 
   for (const [label, line] of QUICK) {
     const b = document.createElement('button');
