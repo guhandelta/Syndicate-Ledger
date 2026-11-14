@@ -73,3 +73,42 @@ test('screens have no serious accessibility problems', async ({ page }) => {
   await clearDialogs(page);
   await expectAccessible(page);
 });
+
+test('help opens from anywhere and follows the chosen rank', async ({ page }) => {
+  await page.goto(GAME_URL);
+  await page.getByRole('radio', { name: /Chief/ }).click();
+  await page.getByRole('button', { name: 'Help', exact: true }).click();
+  const help = page.getByRole('dialog', { name: /Help/ });
+  await expect(help).toContainText('Chief rank');
+  await help.getByRole('tab', { name: 'Your rank' }).click();
+  await expect(help).toContainText('11 hours over 3 days');
+  await expectAccessible(page);
+  await page.keyboard.press('Escape');
+  await expect(help).toBeHidden();
+
+  await startCase(page, 'junior');
+  await page.keyboard.press('?');
+  await help.getByRole('tab', { name: 'The case' }).click();
+  await expect(help).toContainText('Open now');
+  await expect(help).not.toContainText('hours');
+  await help.getByRole('button', { name: 'Close help' }).click();
+  await expect(help).toBeHidden();
+});
+
+test('a tip pops up after 5 minutes without a move, and says what to do there', async ({ page }) => {
+  await page.clock.install();
+  await startCase(page, 'inspector');
+  await page.clock.fastForward('04:00');
+  await expect(page.getByRole('status', { name: 'Tip' })).toBeHidden();
+  await page.clock.fastForward('01:10');
+  const tip = page.getByRole('status', { name: 'Tip' });
+  await expect(tip).toContainText('The evidence board');
+  await expect(tip).toContainText('Open Fish market cash book');
+  await tip.getByRole('button', { name: 'Dismiss tip' }).click();
+  await expect(tip).toBeHidden();
+  // any click starts the countdown again
+  await page.clock.fastForward('03:00');
+  await page.mouse.click(5, 300);
+  await page.clock.fastForward('03:00');
+  await expect(tip).toBeHidden();
+});

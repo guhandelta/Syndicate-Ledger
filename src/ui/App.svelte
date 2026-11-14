@@ -8,6 +8,8 @@
   import Accuse from './components/Accuse.svelte';
   import Verdict from './components/Verdict.svelte';
   import ModalView from './components/Modal.svelte';
+  import Help from './components/Help.svelte';
+  import IdleTip from './components/IdleTip.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -33,7 +35,21 @@
 
   const MOVES: Record<string, [number, number]> = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
 
+  // Corner tips: check every few seconds whether the player has been still for 5 minutes.
+  $effect(() => {
+    const timer = setInterval(() => session.checkIdle(), 5000);
+    return () => clearInterval(timer);
+  });
+
   function onKey(e: KeyboardEvent) {
+    session.poke();
+    if (session.helpOpen) return;
+    const typing = e.target instanceof HTMLElement && e.target.closest('input, textarea, select');
+    if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === '?' || e.key === 'h' || e.key === 'H')) {
+      session.openHelp();
+      e.preventDefault();
+      return;
+    }
     const top = session.modals[0];
     if (top) {
       if (e.key === 'Escape' && top.dismissible) session.closeModal();
@@ -61,7 +77,7 @@
   }
 </script>
 
-<svelte:window onkeydown={onKey} />
+<svelte:window onkeydown={onKey} onpointerdown={() => session.poke()} onwheel={() => session.poke()} />
 
 {#if session.screen === 'title' || !session.game}
   <Title {session} />
@@ -85,4 +101,14 @@
   {#key session.modals[0]}
     <ModalView modal={session.modals[0]} />
   {/key}
+{/if}
+
+<button class="help-fab" aria-label="Help" title="Help (?)" onclick={() => session.openHelp()}>?</button>
+
+{#if session.idleTip && !session.helpOpen}
+  <IdleTip {session} hint={session.idleTip} />
+{/if}
+
+{#if session.helpOpen}
+  <Help {session} />
 {/if}

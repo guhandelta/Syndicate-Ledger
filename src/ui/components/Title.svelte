@@ -44,6 +44,7 @@
         <li>Witnesses make statements. You're told how many are lies. Only one answer fits, and it tells you who lied.</li>
         <li>Mark every statement True or Lie, fill the grid, then close the lead.</li>
       </ul>
+      <button class="btn sm" onclick={() => session.openHelp('play')}>Full help (?)</button>
     </details>
   </div>
 </main>

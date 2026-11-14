@@ -124,7 +124,7 @@
   const MOVE = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
 
   function onKeyDown(e: KeyboardEvent) {
-    if (session.modals.length || !scene) return;
+    if (session.modals.length || session.helpOpen || !scene) return;
     if (MOVE.has(e.code)) {
       if (!talking && !shot) scene.setKey(e.code, true);
       if (e.code.startsWith('Arrow')) e.preventDefault();
@@ -193,7 +193,7 @@
   // A dialog (news, an offer, a closed lead) stops the walk until it is answered.
   $effect(() => {
     if (!scene) return;
-    const blocked = session.modals.length > 0;
+    const blocked = session.modals.length > 0 || session.helpOpen;
     if (blocked) scene.clearKeys();
     scene.paused = blocked || !!talking || !!shot;
   });

@@ -9,6 +9,7 @@ import {
 import { gridLabels, t, type Tone } from '../game/text';
 import type { Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
+import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
 import { findWrong, zoneCombos } from './puzzleHelpers';
 
 export type Screen = 'title' | 'intro' | 'board' | 'town' | 'puzzle' | 'accuse' | 'verdict';
@@ -91,6 +92,11 @@ export class Session {
   titlePreset = $state<Preset>('inspector');
   /** Where closing a lead or backing out returns to. */
   hub = $state<Hub>('board');
+  helpOpen = $state(false);
+  helpTab = $state<'play' | 'rank' | 'case' | 'controls'>('play');
+  /** The corner tip shown after the player has been still for a while (src/ui/idleHint.ts). */
+  idleTip = $state<IdleHint | null>(null);
+  lastActive = Date.now();
 
   constructor(cf: CaseFile, book: PuzzleBook, town: Town | null = null) {
     this.cf = cf;
@@ -131,6 +137,32 @@ export class Session {
     this.save();
   }
 
+  // ---------- help and idle tips ----------
+
+  openHelp = (tab?: Session['helpTab']) => {
+    if (tab) this.helpTab = tab;
+    this.idleTip = null;
+    this.helpOpen = true;
+  };
+
+  /** Any key, click or tap: the player is active, so the idle countdown starts again. */
+  poke() {
+    this.lastActive = Date.now();
+  }
+
+  dismissIdle() {
+    this.idleTip = null;
+    this.poke();
+  }
+
+  /** Called on a timer: shows a tip for the current screen once the player has been still for IDLE_MS. */
+  checkIdle(now = Date.now()) {
+    if (this.idleTip || this.helpOpen || now - this.lastActive < IDLE_MS) return;
+    this.idleTip = idleHint({
+      game: this.game, screen: this.screen, leadId: this.leadId, town: this.town, dialog: this.modals.length > 0, tone: this.tone,
+    });
+  }
+
   // ---------- navigation ----------
 
   route(): string {
@@ -153,12 +185,14 @@ export class Session {
 
   show(screen: Exclude<Screen, 'puzzle'>) {
     this.screen = screen;
+    this.idleTip = null;
     this.leadId = null;
     if (screen === 'board' || screen === 'town') this.hub = screen;
   }
 
   private openLead(id: string) {
     this.leadId = id;
+    this.idleTip = null;
     this.screen = 'puzzle';
     this.pui = freshPui();
   }
