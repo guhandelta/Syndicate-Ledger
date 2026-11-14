@@ -7,12 +7,16 @@
   "scripts": {
     "dev": "vite",
     "build": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && vite build && node -e \"require('fs').renameSync('dist/index.html', 'dist/syndicate-ledger.html')\"",
+    "build:site": "bash scripts/build-site.sh",
     "preview": "vite preview",
     "test": "vitest run",
     "generate": "tsx scripts/generate-puzzles.ts",
     "validate": "tsx scripts/validate-case.ts",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "e2e": "playwright test"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

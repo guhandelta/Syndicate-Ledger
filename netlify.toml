@@ -1,0 +1,19 @@
+# Netlify: builds the same site as GitHub Pages (latest game at /, original v1 at /v1/).
+[build]
+  command = "npm run build:site"
+  publish = "site"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# /v1 without a slash goes to the v1 game.
+[[redirects]]
+  from = "/v1"
+  to = "/v1/"
+  status = 301
+
+# The game routes with #hashes, so any other unknown path just opens the latest game.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -22,26 +22,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run validate
-      - run: npm run build
-      - name: Prepare site
-        run: |
-          mkdir -p site
-          cp dist/syndicate-ledger.html site/index.html
-          cp dist/syndicate-ledger.html site/syndicate-ledger.html
-      # v1 (the pre-Svelte game) stays playable at /v1/, built from its exact commit.
-      - uses: actions/checkout@v4
-        with:
-          ref: 7c7e0e0aadb24fe06ece3cd86459af6cdb0e6056
-          path: v1src
-      - name: Build v1
-        working-directory: v1src
-        run: |
-          npm ci
-          npm run build
-      - name: Add v1 to the site
-        run: |
-          mkdir -p site/v1
-          cp v1src/dist/syndicate-ledger.html site/v1/index.html
+      # Same script Netlify and Vercel run: latest game at /, original v1 at /v1/.
+      - run: npm run build:site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
