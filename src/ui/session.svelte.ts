@@ -1,6 +1,7 @@
 import { nextStep } from '../engine/logic';
 import type { Cell } from '../engine/types';
-import type { CaseEvent, CaseFile, CastMember, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
+import type { CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text } from '../game/caseTypes';
+import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
   accuse, addFlag, buyTip, checkLead, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
   type Game, type GameState,
@@ -188,8 +189,18 @@ export class Session {
     for (const ev of evs) {
       if (ev.effect.type === 'endCase')
         this.modals.push({ title: 'Time is up', paragraphs: [this.T(ev.message)], dismissible: false, actions: [{ label: 'Make your accusation', primary: true, run: this.goAccuse }] });
-      else this.info('Breaking news', [this.T(ev.message)], 'Got it');
+      else {
+        this.info('Breaking news', [this.T(ev.message)], 'Got it');
+        this.clueModals(pendingClues(this.g, { kind: 'event', event: ev.id }));
+      }
     }
+  }
+
+  /** Nudges for clues the player missed. Each one shows once, except accusation nudges. */
+  private clueModals(clues: MissedClue[]) {
+    if (!clues.length) return;
+    markCluesShown(this.g, clues);
+    for (const c of clues) this.info("Detective's instinct", [this.T(c.message)], 'Got it');
   }
 
   // ---------- title and board ----------
@@ -421,6 +432,10 @@ export class Session {
       'marks-incomplete': 'Mark every statement as True or Lie before closing the lead.',
       'marks-wrong': "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
     };
+    if (res === 'marks-wrong' || res === 'marks-incomplete') {
+      const kind = res === 'marks-wrong' ? 'wrong-mark' : 'unmarked';
+      this.clueModals(markMistakes(g, id).filter((ev) => ev.kind === kind).flatMap((ev) => pendingClues(g, ev)));
+    }
     if (res !== 'solved') {
       this.pui.message = msgs[res];
       return;
@@ -469,7 +484,10 @@ export class Session {
   askAccuse(who: CastMember) {
     this.modals.push({
       title: `Accuse ${who.name}?`,
-      paragraphs: ['This ends the case. There is no going back.'],
+      paragraphs: [
+        'This ends the case. There is no going back.',
+        ...pendingClues(this.g, { kind: 'accuse', person: who.id }).map((c) => this.T(c.message)),
+      ],
       dismissible: true,
       actions: [
         { label: 'Cancel', run: this.closeModal },

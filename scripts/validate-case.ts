@@ -55,6 +55,21 @@ if (!cf.leads.some((l) => l.opensAfter.length === 0)) fail('no lead is open at t
 for (const ev of cf.events) if (!ev.rumor) fail(`event ${ev.id} has no rumor (events must be shown ahead of time)`);
 
 // clock: full bust reachable on the default (Inspector) clock without informants
+const eventIds = new Set(cf.events.map((e) => e.id));
+for (const clue of cf.missedClues ?? []) {
+  const w = clue.when;
+  if (!clue.presets.length) fail(`missed clue ${clue.id} has no presets`);
+  if (w.kind === 'wrong-mark' || w.kind === 'unmarked') {
+    if (!leadIds.has(w.lead)) fail(`missed clue ${clue.id}: unknown lead ${w.lead}`);
+    if (!castIds.has(w.speaker)) fail(`missed clue ${clue.id}: unknown speaker ${w.speaker}`);
+  }
+  if (w.kind === 'event' && !eventIds.has(w.event)) fail(`missed clue ${clue.id}: unknown event ${w.event}`);
+  if (w.kind === 'accuse') {
+    if (w.person && !castIds.has(w.person)) fail(`missed clue ${clue.id}: unknown person ${w.person}`);
+    for (const l of [w.unsolved, w.solved]) if (l && !leadIds.has(l)) fail(`missed clue ${clue.id}: unknown lead ${l}`);
+  }
+}
+
 const total = cf.clock.days * cf.clock.hoursPerDay;
 const allLeads = cf.leads.reduce((s, l) => s + l.cost, 0);
 if (allLeads > total) fail(`working every lead takes ${allLeads} hours but the clock has ${total}`);

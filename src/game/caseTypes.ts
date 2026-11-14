@@ -93,6 +93,39 @@ export interface Ending {
   text: Text;
 }
 
+/** What the game observed, matched against a clue's `when`. */
+export type ClueEvent =
+  | { kind: 'wrong-mark'; lead: string; speaker: string; marked: 'true' | 'lie' }
+  | { kind: 'unmarked'; lead: string; speaker: string }
+  | { kind: 'event'; event: string }
+  | { kind: 'accuse'; person: string };
+
+/** Condition for a clue. Every field present must hold. */
+export type ClueWhen =
+  | { kind: 'wrong-mark'; lead: string; speaker: string; marked: 'true' | 'lie' }
+  | { kind: 'unmarked'; lead: string; speaker: string }
+  | { kind: 'event'; event: string; flag?: string }
+  | {
+      kind: 'accuse';
+      person?: string;
+      /** The lead must still be unsolved. */
+      unsolved?: string;
+      /** The lead must be solved. */
+      solved?: string;
+      /** The flag must not be set yet. */
+      missingFlag?: string;
+      /** The accused has no statement in any solved lead. */
+      unchecked?: boolean;
+    };
+
+/** A nudge shown when the player misses a clue. Shown at most once, except accusation nudges. */
+export interface MissedClue {
+  id: string;
+  presets: Preset[];
+  when: ClueWhen;
+  message: Text;
+}
+
 export interface CaseFile {
   id: string;
   title: Text;
@@ -105,6 +138,7 @@ export interface CaseFile {
   events: CaseEvent[];
   offers: Offer[];
   endings: Ending[];
+  missedClues?: MissedClue[];
 }
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
