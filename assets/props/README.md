@@ -1,6 +1,6 @@
 # Props
 
-Prop art for the Case 1 town, in three sets. Each file is named after the prop it shows, in kebab-case. Set 1 is in this folder now; sets 2 and 3 will be added the same way.
+Prop art for the Case 1 town, in sets. Each file is named after the prop it shows, in kebab-case. Set 1 and the final set are in this folder; any other sets will be added the same way.
 
 ## Set 1
 
@@ -24,3 +24,22 @@ Prop art for the Case 1 town, in three sets. Each file is named after the prop i
 The cash envelopes image includes a black duffel bag, and `duffel-bag.png` is a separate olive waxed one. Keep them as separate files.
 
 These are concept images. They guide the scene build and are not loaded by the game.
+
+## Final set
+
+| File | Prop | Where it appears |
+| --- | --- | --- |
+| `folded-newspaper.png` | Folded *Harbor Gazette* headline: "Shipowner found dead at the harbor" | Lead reveal |
+| `frosted-glass-door.png` | Office door with frosted glass and a gold anchor "OFFICE" sign | Office doors |
+| `harbormaster-ledger.png` | Blue leather ledger titled "Harbormaster's Ledger" | Harbor office |
+| `ledger-held-to-chest.png` | Low-poly figure holding the ledger to their chest | Character hold pose |
+| `magnifier-lamp.png` | Brass magnifier desk lamp | Detective's office |
+| `model-ship-case.png` | Model ship in a glass display case | Shipowner's office |
+| `mooring-bollard.png` | Iron mooring bollard | Dock |
+| `pencil.png` | Oversized yellow pencil | Desk and clue scenes |
+| `rowboat.png` | Wooden rowboat with oars and rope | Boathouse |
+| `safe.png` | Dark steel safe with a brass dial | Cash and evidence |
+| `street-lamp.png` | Iron street lamp with a lantern and a rope | Town streets |
+| `tide-chart.png` | Harbor tide chart for Greybay | Harbor office |
+| `wooden-crate.png` | Wooden shipping crate with an anchor stamp | Warehouse and dock |
+| `work-gloves.png` | Pair of brown leather work gloves | Dock work |
