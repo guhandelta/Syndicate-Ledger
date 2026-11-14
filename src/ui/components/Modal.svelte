@@ -18,6 +18,10 @@
       <Dialogue person={modal.speaker} voice={modal.voice ?? modal.speaker.voice ?? 'speech'} friendly={modal.friendly} size={72}>
         {#each modal.paragraphs as p}<p>{unquote(p)}</p>{/each}
       </Dialogue>
+    {:else if modal.thought}
+      <Dialogue voice="thought" side="right" size={48}>
+        {#each modal.paragraphs as p}<p>{p}</p>{/each}
+      </Dialogue>
     {:else}
       {#each modal.paragraphs as p}<p>{p}</p>{/each}
     {/if}

@@ -1,6 +1,6 @@
 import { nextStep } from '../engine/logic';
 import type { Cell } from '../engine/types';
-import type { CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text } from '../game/caseTypes';
+import type { CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
   accuse, addFlag, buyTip, checkLead, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
@@ -29,6 +29,8 @@ export interface Modal {
   note?: string;
   /** Shows the text as this person's dialogue, in a bubble beside their face (offers). */
   speaker?: CastMember;
+  /** Shows the text as the detective's own thought bubble (no speaker). */
+  thought?: boolean;
   /** How the speaker says it; defaults to how they usually talk. */
   voice?: Voice;
   /** Use the Junior portraits. */
@@ -200,7 +202,15 @@ export class Session {
   private clueModals(clues: MissedClue[]) {
     if (!clues.length) return;
     markCluesShown(this.g, clues);
-    for (const c of clues) this.info("Detective's instinct", [this.T(c.message)], 'Got it');
+    for (const c of clues) {
+      this.modals.push({
+        title: "Detective's instinct",
+        paragraphs: [this.T(c.message)],
+        thought: true,
+        dismissible: true,
+        actions: [{ label: 'Got it', primary: true, run: this.closeModal }],
+      });
+    }
   }
 
   // ---------- title and board ----------
