@@ -100,6 +100,257 @@
       "decline": { "crime": "Tip shrugs. \"Your loss, detective.\"", "friendly": "Tip shrugs. \"Suit yourself!\"" }
     }
   ],
+  "missedClues": [
+    {
+      "id": "L1-1",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "wrong-mark",
+        "lead": "L1",
+        "speaker": "rosa",
+        "marked": "lie"
+      },
+      "message": {
+        "crime": "Something about Rosa's story bothered you, and your instinct is off this time. Her cash book is accurate, so take her at her word.",
+        "friendly": "Rosa's notebook is right and your hunch was wrong. Trust her and look again!"
+      }
+    },
+    {
+      "id": "L1-2",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "wrong-mark",
+        "lead": "L1",
+        "speaker": "kane",
+        "marked": "lie"
+      },
+      "message": {
+        "crime": "Kane's gruff manner put you on edge. That is not evidence. His statement holds up, so take him at his word.",
+        "friendly": "Kane is grumpy, but he's telling the truth! Try again."
+      }
+    },
+    {
+      "id": "L2-1",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "event",
+        "event": "juno-leaves"
+      },
+      "message": {
+        "crime": "Juno clocked out and left town before you reached her. Her camera notes are gone unless you track her down.",
+        "friendly": "Juno went on holiday before you asked her. Find her to get her notes back!"
+      }
+    },
+    {
+      "id": "L2-2",
+      "presets": [
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "wrong-mark",
+        "lead": "L2",
+        "speaker": "vex",
+        "marked": "true"
+      },
+      "message": {
+        "crime": "Vex talked her way past you, and you let her. Smooth talk is not an alibi. Check which room she says she was in.",
+        "friendly": "Vex says some silly things. Check her room again!"
+      }
+    },
+    {
+      "id": "L2-3",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "accuse",
+        "unsolved": "L2"
+      },
+      "message": {
+        "crime": "You haven't cracked the dock camera log yet. Whoever was in those rooms is the one you need to know about. Don't point the finger yet.",
+        "friendly": "The camera log still has secrets. Solve it first!"
+      }
+    },
+    {
+      "id": "L3-1",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "wrong-mark",
+        "lead": "L3",
+        "speaker": "tip",
+        "marked": "true"
+      },
+      "message": {
+        "crime": "Tip was too eager to help, and you took his word for it. Keen helpers often sell what they hear. Recheck his payments.",
+        "friendly": "Tip is very eager to help. Check his notes carefully!"
+      }
+    },
+    {
+      "id": "L3-2",
+      "presets": [
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "unmarked",
+        "lead": "L3",
+        "speaker": "tip"
+      },
+      "message": {
+        "crime": "You never checked all of Tip's payments. A double agent hides in the lines you skipped. Go back and mark every one.",
+        "friendly": "Did you check all of Tip's notes? Look again!"
+      }
+    },
+    {
+      "id": "L4-1",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "wrong-mark",
+        "lead": "L4",
+        "speaker": "vex",
+        "marked": "true"
+      },
+      "message": {
+        "crime": "Vex lies to protect the boss, and you believed her anyway. Her word can't open this ledger. Mark her statements again.",
+        "friendly": "Vex fibbed to protect her boss. Look at her words again!"
+      }
+    },
+    {
+      "id": "L4-2",
+      "presets": [
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "wrong-mark",
+        "lead": "L4",
+        "speaker": "rosa",
+        "marked": "true"
+      },
+      "message": {
+        "crime": "Rosa made an honest mistake in her ledger, and in this case the mistake hides the truth. You took it at face value. Check the numbers again."
+      }
+    },
+    {
+      "id": "L4-3",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "event",
+        "event": "warehouse-burns"
+      },
+      "message": {
+        "crime": "Warehouse 9 burned overnight. The harbormaster's ledger survived, but tracing it now costs you extra hours. You should have opened it sooner.",
+        "friendly": "The warehouse burned, but the book is safe. It will take more time!"
+      }
+    },
+    {
+      "id": "L4-4",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "accuse",
+        "person": "crane",
+        "unsolved": "L4"
+      },
+      "message": {
+        "crime": "You never cracked the harbormaster's ledger. Without it you can't tie the warehouse to the boss. Open it first.",
+        "friendly": "The harbormaster's book still has secrets. Open it first!"
+      }
+    },
+    {
+      "id": "X-1",
+      "presets": [
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "event",
+        "event": "warehouse-burns",
+        "flag": "tip-trap"
+      },
+      "message": {
+        "crime": "Tip swore he would guard Warehouse 9 for one favor, and it burned anyway. Never trust a man who sells his promises.",
+        "friendly": "Tip promised to guard Warehouse 9, but it still burned!"
+      }
+    },
+    {
+      "id": "X-2",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "accuse",
+        "unchecked": true
+      },
+      "message": {
+        "crime": "You are about to accuse someone whose statements you never checked. Read what they told you before you point the finger.",
+        "friendly": "Check what they told you before you point!"
+      }
+    },
+    {
+      "id": "X-3",
+      "presets": [
+        "junior",
+        "detective",
+        "inspector",
+        "chief"
+      ],
+      "when": {
+        "kind": "accuse",
+        "person": "crane",
+        "solved": "L4",
+        "missingFlag": "tip-exposed"
+      },
+      "message": {
+        "crime": "You have the boss in your sights, but the proof is incomplete. Tip's record still hides a double-agent lie. Expose it first, or Crane walks.",
+        "friendly": "Crane is close, but Tip's secret is still hidden. Find it first!"
+      }
+    }
+  ],
   "endings": [
     {
       "id": "full-bust", "accuse": ["crane"], "requires": ["L4", "tip-exposed"],
