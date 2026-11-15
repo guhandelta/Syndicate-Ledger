@@ -19,6 +19,8 @@ const fail = (msg: string) => errors.push(msg);
 const castIds = new Set(cf.cast.map((c) => c.id));
 const leadIds = new Set(cf.leads.map((l) => l.id));
 const nonAllies = cf.cast.filter((c) => c.role !== 'ally');
+// the biggest grid any preset builds (Chief, 7x7): every lead needs that many people, rows and rooms
+const MAX_SIZE = Math.max(...PRESETS.map((p) => PRESET_RULES[p].size));
 
 if (nonAllies.length < 5 || nonAllies.length > 8) fail(`cast has ${nonAllies.length} non-ally characters; the rule book wants 5 to 8`);
 if (cf.cast.filter((c) => c.role === 'boss').length !== 1) fail('a case needs exactly one boss');
@@ -41,8 +43,8 @@ for (const o of cf.offers) {
 for (const lead of cf.leads) {
   for (const id of [...lead.columns, ...lead.speakers]) if (!castIds.has(id)) fail(`${lead.id}: unknown person ${id}`);
   for (const id of lead.opensAfter) if (!leadIds.has(id)) fail(`${lead.id}: opensAfter unknown lead ${id}`);
-  if (lead.columns.length < 6 || lead.rows.length < 6) fail(`${lead.id}: needs 6 columns and 6 rows so every preset can be built`);
-  if (lead.type === 'surveillance' && (lead.rooms?.length ?? 0) < 6) fail(`${lead.id}: surveillance leads need 6 rooms`);
+  if (lead.columns.length < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: needs ${MAX_SIZE} columns and ${MAX_SIZE} rows so every preset can be built`);
+  if (lead.type === 'surveillance' && (lead.rooms?.length ?? 0) < MAX_SIZE) fail(`${lead.id}: surveillance leads need ${MAX_SIZE} rooms`);
   for (const preset of PRESETS)
     for (const liar of lead.liars[preset] ?? []) {
       if (!lead.speakers.includes(liar)) fail(`${lead.id}:${preset}: liar ${liar} is not a speaker`);

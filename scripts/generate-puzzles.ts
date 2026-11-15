@@ -25,8 +25,10 @@ for (const lead of cf.leads)
       speakers,
       liarRange: rules.liarRange,
       maxGrade: lead.opensAfter.length === 0 ? Math.min(rules.maxGrade, 3) : rules.maxGrade,
-      minGrade: lead.hard && rules.size === 6 ? 3 : 1,
-      maxStatements: rules.size === 4 ? 5 : rules.size === 5 ? 7 : 8,
+      minGrade: lead.hard && rules.size >= 6 ? 3 : 1,
+      maxStatements: rules.size === 4 ? 5 : rules.size === 5 ? 7 : rules.size === 6 ? 8 : 9,
+      // a 7x7 opener needs a few filled cells to stay at the gentle opening grade
+      ledgerGivens: lead.type === 'ledger' && lead.opensAfter.length === 0 && rules.size >= 7 ? 7 : 0,
       seed: hash(`${cf.id}:${lead.id}:${preset}`),
     });
     const check = verifyUnique(p);

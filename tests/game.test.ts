@@ -68,7 +68,7 @@ describe('case 1', () => {
 });
 
 describe('accusation rules', () => {
-  const play = (preset: 'junior' | 'inspector' = 'inspector') => {
+  const play = (preset: 'junior' | 'detective' | 'inspector' | 'chief' = 'inspector') => {
     const g = newGame(cf, book, preset);
     for (const id of ['L1', 'L2', 'L3', 'L4']) { startLead(g, id); solve(g, id); }
     return g;
@@ -89,10 +89,15 @@ describe('accusation rules', () => {
     expect(submitAccusation(g, 'crane', ['L3', 'L4']).kind).toBe('blocked');
   });
 
-  it('caps the people who can be accused', () => {
-    const g = play();
-    for (const p of ['vex', 'tip', 'kane']) submitAccusation(g, p, []);
-    expect(accuseStatus(g, 'crane')).toBe('no-room');
+  it('caps the people who can be accused, more at bigger grids', () => {
+    const cases = [['detective', ['vex', 'tip', 'kane']], ['inspector', ['vex', 'tip', 'kane', 'rosa']], ['chief', ['vex', 'tip', 'kane', 'rosa', 'juno']]] as const;
+    for (const [preset, people] of cases) {
+      const g = play(preset);
+      for (const p of people.slice(0, -1)) submitAccusation(g, p, []);
+      expect(accuseStatus(g, 'crane'), preset).not.toBe('no-room');
+      submitAccusation(g, people[people.length - 1], []);
+      expect(accuseStatus(g, 'crane'), preset).toBe('no-room');
+    }
   });
 
   it('makes a wrongly accused innocent stop cooperating', () => {

@@ -4,7 +4,7 @@ A detective logic puzzle. Crack the syndicate's ledgers, catch the liars, and cl
 
 Each lead is a Sudoku-style grid: rows are times, columns are people, and every number appears once per row and column. Ledger grids track cash with sum zones. Camera grids track who was in which room. Witnesses make statements, and you're told how many are lies. Only one answer fits, and it tells you who lied.
 
-The game ships with one case, **The Harbor Ledger**, playable at four ranks from Junior (age 7+, 4×4, friendly story) to Chief (adult, 6×6, tight clock).
+The game ships with one case, **The Harbor Ledger**, playable at four ranks from Junior (age 7+, 4×4, friendly story) to Chief (adult, 7×7, liars given only as a range).
 
 ## Play
 
