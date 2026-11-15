@@ -81,7 +81,7 @@ test('help opens from anywhere and follows the chosen rank', async ({ page }) =>
   const help = page.getByRole('dialog', { name: /Help/ });
   await expect(help).toContainText('Chief rank');
   await help.getByRole('tab', { name: 'Your rank' }).click();
-  await expect(help).toContainText('11 hours over 3 days');
+  await expect(help).toContainText('12 hours over 3 days');
   await expectAccessible(page);
   await page.keyboard.press('Escape');
   await expect(help).toBeHidden();

@@ -125,7 +125,7 @@
         {:else if preset === 'inspector'}
           <p>Nobody is tagged, so treat every statement as a maybe. Work out which statements must be true for the zones to add up, then the lie stands out. Watch the clock: each lead costs hours, and some leads lose witnesses if you wait.</p>
         {:else}
-          <p>You get few favors, a short clock and no warning before some events. Plan the order of your leads before opening any, and don't spend favors early. You only know a range of how many lie, so prove each statement from the grid.</p>
+          <p>The grids are 7×7, you get few favors and some events come with no warning. Plan the order of your leads before opening any, and don't spend favors early. You only know a range of how many lie, so prove each statement from the grid.</p>
         {/if}
         {#if !g}<p class="muted">Pick a different rank on the start screen to read about it here.</p>{/if}
       {:else if session.helpTab === 'case'}

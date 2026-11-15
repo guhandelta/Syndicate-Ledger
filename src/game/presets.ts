@@ -24,5 +24,5 @@ export const PRESET_RULES: Record<Preset, PresetRules> = {
   junior: { label: 'Junior', age: '7+', size: 4, flagLiars: 'exact', clock: 'off', extraHours: 0, events: 'hints', mistakes: 'instant', startFavors: 6, tone: 'friendly', liarRange: false, maxGrade: 2, accuse: { people: 4, perPerson: 3 } },
   detective: { label: 'Detective', age: '10+', size: 5, flagLiars: 'possible', clock: 'generous', extraHours: 2, events: 'rumors', mistakes: 'on-request', startFavors: 4, tone: 'crime', liarRange: false, maxGrade: 3, accuse: { people: 3, perPerson: 2 } },
   inspector: { label: 'Inspector', age: '14+', size: 6, flagLiars: 'none', clock: 'normal', extraHours: 0, events: 'rumors', mistakes: 'off', startFavors: 3, tone: 'crime', liarRange: false, maxGrade: 4, accuse: { people: 3, perPerson: 2 } },
-  chief: { label: 'Chief', age: 'Adult', size: 6, flagLiars: 'none', clock: 'tight', extraHours: -1, events: 'some-hidden', mistakes: 'off', startFavors: 2, tone: 'crime', liarRange: true, maxGrade: 4, accuse: { people: 3, perPerson: 2 } },
+  chief: { label: 'Chief', age: 'Adult', size: 7, flagLiars: 'none', clock: 'normal', extraHours: 0, events: 'some-hidden', mistakes: 'off', startFavors: 2, tone: 'crime', liarRange: true, maxGrade: 4, accuse: { people: 3, perPerson: 2 } },
 };
