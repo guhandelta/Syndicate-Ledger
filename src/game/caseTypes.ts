@@ -158,7 +158,30 @@ export interface CaseFile {
   proof?: Record<string, Proof>;
   lost?: LostCase;
   missedClues?: MissedClue[];
+  /**
+   * Each rank's own story around the case's main crime. A rank story replaces only the fields it sets;
+   * the rest comes from the case file above. See docs/RULEBOOK.md section 11.
+   */
+  rankStories?: Partial<Record<Preset, RankStory>>;
+  /** Shown once every rank's part of the case is uncovered. */
+  closing?: { title: Text; text: Text };
 }
+
+/** The piece of the main crime one rank story uncovers. The case closes when every rank's part is uncovered. */
+export interface CasePart {
+  title: Text;
+  /** The question this rank's part answers, e.g. "Who did it?". */
+  question: Text;
+  /** What the player learns when they solve it. */
+  reveal: Text;
+}
+
+/** The story-level fields a rank story may replace. */
+export const STORY_FIELDS = ['title', 'setup', 'leads', 'events', 'offers', 'endings', 'proof', 'lost', 'missedClues'] as const;
+export type StoryField = (typeof STORY_FIELDS)[number];
+
+/** One rank's story: its part of the crime, plus any story fields it replaces. */
+export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>;
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
 export type PuzzleBook = Record<string, GeneratedPuzzle>;

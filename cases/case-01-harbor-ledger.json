@@ -400,5 +400,54 @@
       "crime": "You've named everyone you were allowed to, and none of it held up. With no one left to accuse, the case is shelved and your notes are shredded.",
       "friendly": "You used up all your guesses and none of them could be proven. The case is closed and your notes are wiped. Time to try again."
     }
+  },
+  "rankStories": {
+    "junior": {
+      "part": {
+        "title": {
+          "crime": "The friendly face",
+          "friendly": "The friendly face"
+        },
+        "question": {
+          "crime": "What really happened at the harbor?",
+          "friendly": "What happened to the festival coins?"
+        },
+        "reveal": {
+          "crime": "The money never left the harbor by accident. Someone everyone trusts moved it, and the people who looked guilty were only scared.",
+          "friendly": "The coins did not get lost. Someone everyone likes hid them, and the people who looked sneaky were just scared."
+        }
+      }
+    },
+    "detective": {
+      "part": {
+        "title": "The cash trail",
+        "question": "Who did it?",
+        "reveal": "Tip was playing both sides, and the fish market books lead to Crane's own private ledger. Crane robbed his own safe."
+      }
+    },
+    "inspector": {
+      "part": {
+        "title": "The cover story",
+        "question": "How did they hide it?",
+        "reveal": "Crane's alibi for the night of the safe was bought. The gate book was written to order."
+      }
+    },
+    "chief": {
+      "part": {
+        "title": "The inside leak",
+        "question": "Who is really behind it, and who is helping from inside?",
+        "reveal": "The money was due to leave on a pilot-guided ship by a quiet channel, and someone close to the police was passing your plans to Crane."
+      }
+    }
+  },
+  "closing": {
+    "title": {
+      "crime": "Case closed: The Harbor Ledger",
+      "friendly": "Case closed: The Missing Festival Coins"
+    },
+    "text": {
+      "crime": "Every part of the case is uncovered. Crane robbed his own safe, washed the money through the fish market, bought an alibi and paid people inside to keep it all quiet. Port Calder's harbor is clean again.",
+      "friendly": "You found every part of the mystery! The festival coins are back, the sneaky gang is caught and Port Calder can have its party."
+    }
   }
 }

@@ -6,8 +6,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
-import { PRESETS, VOICES, type CaseFile, type PuzzleBook, type Voice } from '../src/game/caseTypes';
+import { PRESETS, VOICES, type CaseFile, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
+import { caseForRank, partOf } from '../src/game/rankStory';
 import { validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
 
@@ -17,10 +18,7 @@ const errors: string[] = [];
 const fail = (msg: string) => errors.push(msg);
 
 const castIds = new Set(cf.cast.map((c) => c.id));
-const leadIds = new Set(cf.leads.map((l) => l.id));
 const nonAllies = cf.cast.filter((c) => c.role !== 'ally');
-// the biggest grid any preset builds (Chief, 7x7): every lead needs that many people, rows and rooms
-const MAX_SIZE = Math.max(...PRESETS.map((p) => PRESET_RULES[p].size));
 
 if (nonAllies.length < 5 || nonAllies.length > 8) fail(`cast has ${nonAllies.length} non-ally characters; the rule book wants 5 to 8`);
 if (cf.cast.filter((c) => c.role === 'boss').length !== 1) fail('a case needs exactly one boss');
@@ -35,87 +33,113 @@ for (const c of cf.cast) {
   if (badVoice(c.voice)) fail(`${c.id}: unknown voice "${c.voice}"`);
   if (badVoice(c.greeting?.voice)) fail(`${c.id}: greeting has unknown voice "${c.greeting?.voice}"`);
 }
-for (const o of cf.offers) {
-  if (badVoice(o.voice)) fail(`offer ${o.id}: unknown voice "${o.voice}"`);
-  if (!castIds.has(o.from)) fail(`offer ${o.id}: from unknown person ${o.from}`);
-}
+/** Checks one story (the case file, or a rank's own story over it) for the ranks that play it. */
+function checkStory(cf: CaseFile, presets: Preset[], label: string) {
+  const fail = (msg: string) => errors.push(label ? `${label}: ${msg}` : msg);
+  const leadIds = new Set(cf.leads.map((l) => l.id));
+  // the biggest grid these ranks build (Chief, 7x7): every lead needs that many people, rows and rooms
+  const MAX_SIZE = Math.max(...presets.map((p) => PRESET_RULES[p].size));
 
-for (const lead of cf.leads) {
-  for (const id of [...lead.columns, ...lead.speakers]) if (!castIds.has(id)) fail(`${lead.id}: unknown person ${id}`);
-  for (const id of lead.opensAfter) if (!leadIds.has(id)) fail(`${lead.id}: opensAfter unknown lead ${id}`);
-  if (lead.columns.length < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: needs ${MAX_SIZE} columns and ${MAX_SIZE} rows so every preset can be built`);
-  if (lead.type === 'surveillance' && (lead.rooms?.length ?? 0) < MAX_SIZE) fail(`${lead.id}: surveillance leads need ${MAX_SIZE} rooms`);
-  for (const preset of PRESETS)
-    for (const liar of lead.liars[preset] ?? []) {
-      if (!lead.speakers.includes(liar)) fail(`${lead.id}:${preset}: liar ${liar} is not a speaker`);
-      const who = cf.cast.find((c) => c.id === liar);
-      if (who?.reliability === 'honest') fail(`${lead.id}:${preset}: ${liar} is honest but listed as a liar`);
+  for (const o of cf.offers) {
+    if (badVoice(o.voice)) fail(`offer ${o.id}: unknown voice "${o.voice}"`);
+    if (!castIds.has(o.from)) fail(`offer ${o.id}: from unknown person ${o.from}`);
+  }
+
+  for (const lead of cf.leads) {
+    for (const id of [...lead.columns, ...lead.speakers]) if (!castIds.has(id)) fail(`${lead.id}: unknown person ${id}`);
+    for (const id of lead.opensAfter) if (!leadIds.has(id)) fail(`${lead.id}: opensAfter unknown lead ${id}`);
+    if (lead.columns.length < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: needs ${MAX_SIZE} columns and ${MAX_SIZE} rows so every preset can be built`);
+    if (lead.type === 'surveillance' && (lead.rooms?.length ?? 0) < MAX_SIZE) fail(`${lead.id}: surveillance leads need ${MAX_SIZE} rooms`);
+    for (const preset of presets)
+      for (const liar of lead.liars[preset] ?? []) {
+        if (!lead.speakers.includes(liar)) fail(`${lead.id}:${preset}: liar ${liar} is not a speaker`);
+        const who = cf.cast.find((c) => c.id === liar);
+        if (who?.reliability === 'honest') fail(`${lead.id}:${preset}: ${liar} is honest but listed as a liar`);
+      }
+  }
+  if (!cf.leads.some((l) => l.opensAfter.length === 0)) fail('no lead is open at the start');
+
+  const personIds = castIds;
+  for (const l of cf.leads) for (const w of l.pointsTo ?? []) if (!personIds.has(w)) fail(`lead ${l.id}: pointsTo ${w} is not a person`);
+  for (const [who, pr] of Object.entries(cf.proof ?? {})) {
+    if (!personIds.has(who)) fail(`proof: ${who} is not a person`);
+    if (!pr.needs.length) fail(`proof: ${who} needs no evidence`);
+    for (const id of pr.needs) {
+      const l = cf.leads.find((x) => x.id === id);
+      if (!l) fail(`proof: ${who} needs unknown lead ${id}`);
+      else if (!l.pointsTo?.includes(who)) fail(`proof: lead ${id} does not point to ${who}`);
     }
-}
-if (!cf.leads.some((l) => l.opensAfter.length === 0)) fail('no lead is open at the start');
+  }
+  if (!cf.lost) fail('case has no "lost" text for the case-lost screen');
+  if (!Object.keys(cf.proof ?? {}).length) fail('case has no provable person');
 
-const personIds = castIds;
-for (const l of cf.leads) for (const w of l.pointsTo ?? []) if (!personIds.has(w)) fail(`lead ${l.id}: pointsTo ${w} is not a person`);
-for (const [who, pr] of Object.entries(cf.proof ?? {})) {
-  if (!personIds.has(who)) fail(`proof: ${who} is not a person`);
-  if (!pr.needs.length) fail(`proof: ${who} needs no evidence`);
-  for (const id of pr.needs) {
-    const l = cf.leads.find((x) => x.id === id);
-    if (!l) fail(`proof: ${who} needs unknown lead ${id}`);
-    else if (!l.pointsTo?.includes(who)) fail(`proof: lead ${id} does not point to ${who}`);
+  for (const ev of cf.events) if (!ev.rumor) fail(`event ${ev.id} has no rumor (events must be shown ahead of time)`);
+
+  // clock: full bust reachable on the default (Inspector) clock without informants
+  const eventIds = new Set(cf.events.map((e) => e.id));
+  for (const clue of cf.missedClues ?? []) {
+    const w = clue.when;
+    if (!clue.presets.length) fail(`missed clue ${clue.id} has no presets`);
+    if (w.kind === 'wrong-mark' || w.kind === 'unmarked') {
+      if (!leadIds.has(w.lead)) fail(`missed clue ${clue.id}: unknown lead ${w.lead}`);
+      if (!castIds.has(w.speaker)) fail(`missed clue ${clue.id}: unknown speaker ${w.speaker}`);
+    }
+    if (w.kind === 'event' && !eventIds.has(w.event)) fail(`missed clue ${clue.id}: unknown event ${w.event}`);
+    if (w.kind === 'accuse') {
+      if (w.person && !castIds.has(w.person)) fail(`missed clue ${clue.id}: unknown person ${w.person}`);
+      for (const l of [w.unsolved, w.solved]) if (l && !leadIds.has(l)) fail(`missed clue ${clue.id}: unknown lead ${l}`);
+    }
+  }
+
+  const total = cf.clock.days * cf.clock.hoursPerDay;
+  const allLeads = cf.leads.reduce((s, l) => s + l.cost, 0);
+  if (allLeads > total) fail(`working every lead takes ${allLeads} hours but the clock has ${total}`);
+  for (const preset of presets) {
+    const t = total + PRESET_RULES[preset].extraHours;
+    if (PRESET_RULES[preset].clock !== 'off' && allLeads > t) fail(`${preset}: working every lead takes ${allLeads} hours but the clock has ${t}`);
+  }
+
+  // puzzles
+  const bookPath = join(dirname(file), cf.id, 'puzzles.json');
+  if (!existsSync(bookPath)) fail(`missing ${bookPath}; run npm run generate`);
+  else {
+    const book: PuzzleBook = JSON.parse(readFileSync(bookPath, 'utf8'));
+    for (const lead of cf.leads)
+      for (const preset of presets) {
+        const key = `${lead.id}:${preset}`;
+        const p = book[key];
+        if (!p) { fail(`${key}: no puzzle`); continue; }
+        const rules = PRESET_RULES[preset];
+        if (p.size !== rules.size) fail(`${key}: size ${p.size}, preset wants ${rules.size}`);
+        if (p.type !== lead.type) fail(`${key}: type ${p.type}, lead is ${lead.type}`);
+        const check = verifyUnique(p);
+        if (!check.ok) fail(`${key}: ${check.reason}`);
+        const grade = gradePuzzle(p, p.truth);
+        if (grade === 0 || grade > rules.maxGrade) fail(`${key}: needs technique ${grade || 'guessing'}, preset allows ${rules.maxGrade}`);
+        const lies = p.statements.filter((s, i) => !p.truth[i]).map((s) => s.speaker).sort();
+        const expected = [...(lead.liars[preset] ?? [])].sort();
+        if (lies.join() !== expected.join()) fail(`${key}: liars are [${lies}] but the case says [${expected}]`);
+        for (const s of new Set(lead.speakers)) if (!p.statements.some((x) => x.speaker === s)) fail(`${key}: ${s} says nothing`);
+      }
   }
 }
-if (!cf.lost) fail('case has no "lost" text for the case-lost screen');
-if (!Object.keys(cf.proof ?? {}).length) fail('case has no provable person');
 
-for (const ev of cf.events) if (!ev.rumor) fail(`event ${ev.id} has no rumor (events must be shown ahead of time)`);
-
-// clock: full bust reachable on the default (Inspector) clock without informants
-const eventIds = new Set(cf.events.map((e) => e.id));
-for (const clue of cf.missedClues ?? []) {
-  const w = clue.when;
-  if (!clue.presets.length) fail(`missed clue ${clue.id} has no presets`);
-  if (w.kind === 'wrong-mark' || w.kind === 'unmarked') {
-    if (!leadIds.has(w.lead)) fail(`missed clue ${clue.id}: unknown lead ${w.lead}`);
-    if (!castIds.has(w.speaker)) fail(`missed clue ${clue.id}: unknown speaker ${w.speaker}`);
-  }
-  if (w.kind === 'event' && !eventIds.has(w.event)) fail(`missed clue ${clue.id}: unknown event ${w.event}`);
-  if (w.kind === 'accuse') {
-    if (w.person && !castIds.has(w.person)) fail(`missed clue ${clue.id}: unknown person ${w.person}`);
-    for (const l of [w.unsolved, w.solved]) if (l && !leadIds.has(l)) fail(`missed clue ${clue.id}: unknown lead ${l}`);
-  }
-}
-
-const total = cf.clock.days * cf.clock.hoursPerDay;
-const allLeads = cf.leads.reduce((s, l) => s + l.cost, 0);
-if (allLeads > total) fail(`working every lead takes ${allLeads} hours but the clock has ${total}`);
+// every rank plays a story: group the ranks that play the same one and check each story once
+const stories = new Map<CaseFile, Preset[]>();
 for (const preset of PRESETS) {
-  const t = total + PRESET_RULES[preset].extraHours;
-  if (PRESET_RULES[preset].clock !== 'off' && allLeads > t) fail(`${preset}: working every lead takes ${allLeads} hours but the clock has ${t}`);
+  const sc = caseForRank(cf, preset);
+  stories.set(sc, [...(stories.get(sc) ?? []), preset]);
 }
+for (const [sc, presets] of stories) checkStory(sc, presets, sc === cf ? '' : presets.join('+'));
 
-// puzzles
-const bookPath = join(dirname(file), cf.id, 'puzzles.json');
-if (!existsSync(bookPath)) fail(`missing ${bookPath}; run npm run generate`);
-else {
-  const book: PuzzleBook = JSON.parse(readFileSync(bookPath, 'utf8'));
-  for (const lead of cf.leads)
-    for (const preset of PRESETS) {
-      const key = `${lead.id}:${preset}`;
-      const p = book[key];
-      if (!p) { fail(`${key}: no puzzle`); continue; }
-      const rules = PRESET_RULES[preset];
-      if (p.size !== rules.size) fail(`${key}: size ${p.size}, preset wants ${rules.size}`);
-      if (p.type !== lead.type) fail(`${key}: type ${p.type}, lead is ${lead.type}`);
-      const check = verifyUnique(p);
-      if (!check.ok) fail(`${key}: ${check.reason}`);
-      const grade = gradePuzzle(p, p.truth);
-      if (grade === 0 || grade > rules.maxGrade) fail(`${key}: needs technique ${grade || 'guessing'}, preset allows ${rules.maxGrade}`);
-      const lies = p.statements.filter((s, i) => !p.truth[i]).map((s) => s.speaker).sort();
-      const expected = [...(lead.liars[preset] ?? [])].sort();
-      if (lies.join() !== expected.join()) fail(`${key}: liars are [${lies}] but the case says [${expected}]`);
-      for (const s of new Set(lead.speakers)) if (!p.statements.some((x) => x.speaker === s)) fail(`${key}: ${s} says nothing`);
-    }
+for (const key of Object.keys(cf.rankStories ?? {})) if (!PRESETS.includes(key as Preset)) fail(`rankStories: unknown rank ${key}`);
+if (cf.rankStories) {
+  for (const preset of PRESETS) {
+    const part = partOf(cf, preset);
+    if (!part) fail(`rankStories: ${preset} has no part of the case`);
+    else if (!part.title || !part.question || !part.reveal) fail(`rankStories: ${preset} part needs a title, question and reveal`);
+  }
+  if (!cf.closing) fail('rankStories: case has no "closing" text for when every part is uncovered');
 }
 
 // A case may have a walkable town. If it does, the town must match the case.
@@ -131,4 +155,4 @@ if (errors.length) {
   for (const e of errors) console.error('  - ' + e);
   process.exit(1);
 }
-console.log(`✓ ${cf.id} passes the rule book checks (${cf.leads.length} leads × ${PRESETS.length} presets${hasTown ? ', town checked' : ''})`);
+console.log(`✓ ${cf.id} passes the rule book checks (${stories.size} ${stories.size === 1 ? 'story' : 'stories'}, ${cf.leads.length} leads × ${PRESETS.length} presets${hasTown ? ', town checked' : ''})`);

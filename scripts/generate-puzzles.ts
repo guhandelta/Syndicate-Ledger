@@ -8,14 +8,19 @@ import { dirname, join } from 'node:path';
 import { generatePuzzle, verifyUnique } from '../src/engine/generator';
 import { PRESETS, type CaseFile, type PuzzleBook } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
+import { caseForRank } from '../src/game/rankStory';
 
 const file = process.argv[2] ?? 'cases/case-01-harbor-ledger.json';
 const cf: CaseFile = JSON.parse(readFileSync(file, 'utf8'));
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
 
+// each rank plays its own story's leads (the case file's when the story keeps them), lead by lead
+const jobs = PRESETS.flatMap((preset) => caseForRank(cf, preset).leads.map((lead) => ({ lead, preset })));
+const order = [...new Set(jobs.map((j) => j.lead.id))];
+jobs.sort((a, b) => order.indexOf(a.lead.id) - order.indexOf(b.lead.id) || PRESETS.indexOf(a.preset) - PRESETS.indexOf(b.preset));
+
 const book: PuzzleBook = {};
-for (const lead of cf.leads)
-  for (const preset of PRESETS) {
+for (const { lead, preset } of jobs) {
     const rules = PRESET_RULES[preset];
     const liars = lead.liars[preset];
     const speakers = lead.speakers.map((id) => ({ id, lies: liars.filter((l) => l === id).length }));

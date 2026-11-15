@@ -7,6 +7,7 @@ import {
   submitAccusation,
   type Game, type GameState,
 } from '../game/state';
+import { caseForRank, parseProgress, progressKey, recordPart, type CaseProgress } from '../game/rankStory';
 import { gridLabels, t, type Tone } from '../game/text';
 import type { Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
@@ -73,12 +74,22 @@ export function loadSave(cf: CaseFile): GameState | null {
   }
 }
 
+/** Reads which rank stories of a case are solved. */
+export function loadProgress(cf: CaseFile): CaseProgress {
+  try {
+    return parseProgress(cf, localStorage.getItem(progressKey(cf.id)));
+  } catch {
+    return parseProgress(cf, null);
+  }
+}
+
 /**
  * All UI state for one case. Game rules stay in src/game/state.ts: this class only calls them
  * on the reactive game state and keeps track of screens, dialogs and the puzzle cursor.
  */
 export class Session {
-  readonly cf: CaseFile;
+  /** The case file as written. Play uses `cf`, the rank's own story over it. */
+  readonly base: CaseFile;
   readonly book: PuzzleBook;
   /** The walkable place for this case, if it has one. */
   readonly town: Town | null;
@@ -103,13 +114,21 @@ export class Session {
   /** The tip was asked for (What now? button), so it also lists what the player can do here. */
   tipAsked = $state(false);
   lastActive = Date.now();
+  /** Which rank stories of this case are solved, kept across games (src/game/rankStory.ts). */
+  progress = $state<CaseProgress>({ caseId: '', parts: {} });
 
   constructor(cf: CaseFile, book: PuzzleBook, town: Town | null = null) {
-    this.cf = cf;
+    this.base = cf;
     this.book = book;
     this.town = town;
     this.s = loadSave(cf);
     if (this.s) this.titlePreset = this.s.preset;
+    this.progress = loadProgress(cf);
+  }
+
+  /** The case as the current rank plays it: the running game's rank, or the one picked on the title screen. */
+  get cf(): CaseFile {
+    return caseForRank(this.base, this.s?.preset ?? this.titlePreset);
   }
 
   get game(): Game | null {
@@ -578,7 +597,11 @@ export class Session {
     const g = this.g;
     const res = submitAccusation(g, who.id, this.evidence);
     this.modals = [];
-    if (res.kind === 'accepted') return this.show('verdict');
+    if (res.kind === 'accepted') {
+      // only the full bust uncovers this rank's part of the case
+      if (g.s.endingId === g.cf.endings[0].id) this.savePart(g.s.preset, g.s.endingId);
+      return this.show('verdict');
+    }
     if (res.kind === 'blocked') return;
     if (res.lost) return this.loseCase();
     const clocked = rules(g).clock !== 'off';
@@ -597,6 +620,16 @@ export class Session {
       );
     this.show('accuse');
     this.modals.push({ title: 'Not proven', paragraphs, dismissible: true, actions: [{ label: 'Got it', primary: true, run: this.closeModal }] });
+  }
+
+  /** Records this rank's part of the case as uncovered. */
+  savePart(preset: Preset, ending: string) {
+    this.progress = recordPart(this.base, this.progress, preset, ending);
+    try {
+      localStorage.setItem(progressKey(this.base.id), JSON.stringify($state.snapshot(this.progress)));
+    } catch {
+      /* storage unavailable: the part counts for this visit only */
+    }
   }
 
   /** The case is lost: no save, no notes, and nothing about who did it. */
