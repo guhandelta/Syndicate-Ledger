@@ -1,6 +1,7 @@
 <script lang="ts">
   import { PRESETS, type Preset } from '../../game/caseTypes';
   import { PRESET_RULES } from '../../game/presets';
+  import { clockOn, hoursLeft } from '../../game/state';
   import type { Session } from '../session.svelte';
 
   let { session }: { session: Session } = $props();
@@ -12,6 +13,11 @@
     chief: '7×7 grids, you only know a range of liars.',
   };
   const hasSave = $derived(!!session.s && !session.s.endingId);
+  /** A returning player sees the welcome-back page until they choose to start a new case. */
+  let picking = $state(false);
+  const showPicker = $derived(!hasSave || picking);
+  const solved = $derived(hasSave ? Object.values(session.s!.leads).filter((l) => l.solved).length : 0);
+  const total = $derived(hasSave ? Object.keys(session.s!.leads).length : 0);
 </script>
 
 <main class="title-screen">
@@ -19,21 +25,33 @@
     <p class="eyebrow">Case file 01</p>
     <h1>Syndicate Ledger</h1>
     <p class="lede">Crack the syndicate's books. Catch the liars. Close the case before the ship sails.</p>
-    <h2 class="small-h">Choose your rank</h2>
-    <div class="preset-grid" role="radiogroup" aria-label="Difficulty">
-      {#each PRESETS as p}
-        {@const r = PRESET_RULES[p]}
-        <button class="preset" class:on={session.titlePreset === p} role="radio" aria-checked={session.titlePreset === p} onclick={() => (session.titlePreset = p)}>
-          <span class="preset-name">{r.label}</span><span class="preset-age">{r.age}</span><span class="preset-desc">{DESC[p]}</span>
-        </button>
-      {/each}
-    </div>
-    <div class="title-actions">
-      {#if hasSave}
+    {#if showPicker}
+      <h2 class="small-h">Choose your rank</h2>
+      <div class="preset-grid" role="radiogroup" aria-label="Difficulty">
+        {#each PRESETS as p}
+          {@const r = PRESET_RULES[p]}
+          <button class="preset" class:on={session.titlePreset === p} role="radio" aria-checked={session.titlePreset === p} onclick={() => (session.titlePreset = p)}>
+            <span class="preset-name">{r.label}</span><span class="preset-age">{r.age}</span><span class="preset-desc">{DESC[p]}</span>
+          </button>
+        {/each}
+      </div>
+      {#if hasSave}<p class="lede">Starting a new case replaces your saved {PRESET_RULES[session.s!.preset].label} case.</p>{/if}
+      <div class="title-actions">
+        <button class="btn primary" onclick={() => session.newCase()}>Open the case</button>
+        {#if hasSave}<button class="btn" onclick={() => (picking = false)}>Back to my case</button>{/if}
+      </div>
+    {:else}
+      <h2 class="small-h">Welcome back, {PRESET_RULES[session.s!.preset].label}</h2>
+      <ul class="welcome-stats">
+        <li>{solved} of {total} leads solved</li>
+        <li>{clockOn(session.g) ? `${hoursLeft(session.g)} hours left on the clock` : 'No clock on this rank'}</li>
+        <li>{session.s!.favors} {session.s!.favors === 1 ? 'favor' : 'favors'} in hand</li>
+      </ul>
+      <div class="title-actions">
         <button class="btn primary" onclick={() => session.continueCase()}>Continue case ({PRESET_RULES[session.s!.preset].label})</button>
-      {/if}
-      <button class="btn" class:primary={!hasSave} onclick={() => session.newCase()}>{hasSave ? 'Start over' : 'Open the case'}</button>
-    </div>
+        <button class="btn" onclick={() => (picking = true)}>Start a new case</button>
+      </div>
+    {/if}
     <details class="how">
       <summary>How to play</summary>
       <ul>
