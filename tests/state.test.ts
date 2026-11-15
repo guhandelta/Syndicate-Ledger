@@ -287,7 +287,8 @@ describe('accusations', () => {
     expect(submitAccusation(g, 'crane', ['L3', 'L4'])).toEqual({ kind: 'blocked', why: 'locked' });
     submitAccusation(g, 'vex', []);
     submitAccusation(g, 'tip', []);
-    expect(accusedPeople(g)).toEqual(['crane', 'vex', 'tip']);
+    submitAccusation(g, 'rosa', []);
+    expect(accusedPeople(g)).toEqual(['crane', 'vex', 'tip', 'rosa']);
     expect(accuseStatus(g, 'kane')).toBe('no-room');
     expect(submitAccusation(g, 'kane', [])).toEqual({ kind: 'blocked', why: 'no-room' });
     expect(canStillWin(g)).toBe(true);

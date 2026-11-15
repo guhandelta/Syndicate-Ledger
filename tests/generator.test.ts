@@ -26,6 +26,12 @@ describe('generator options and failures', () => {
     expect(verifyUnique(hard)).toEqual({ ok: true });
   });
 
+  it('can start a ledger puzzle from a few given cells', () => {
+    const p = generatePuzzle(base({ size: 5, ledgerGivens: 3, seed: 4 }), 600);
+    expect(p.givens).toHaveLength(3);
+    expect(verifyUnique(p)).toEqual({ ok: true });
+  });
+
   it('makes a surveillance puzzle and uses everyone as a speaker when all are liars', () => {
     const p = generatePuzzle(base({ size: 5, type: 'surveillance', speakers: [{ id: 'a', lies: 1 }, { id: 'b', lies: 1 }], seed: 9 }), 600);
     expect(p.type).toBe('surveillance');

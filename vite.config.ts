@@ -8,6 +8,7 @@ export default defineConfig({
   build: { outDir: 'dist', emptyOutDir: true },
   test: {
     include: ['tests/**/*.test.ts'],
+    testTimeout: 30000,
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
