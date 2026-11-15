@@ -176,7 +176,7 @@ Junior version: the Gold Coin Festival prize chest is empty, and the Tidewater G
 | Kane Hollis | Suspect | Honest | Dock foreman; looks guilty, isn't |
 | Rosa Diaz | Witness | Mistaken | Fish market owner; sometimes rushed |
 | Juno Park | Witness | Honest | Night guard; leaves town at the start of Day 2 |
-| The Harbor Pilot | Witness | Honest | Guides ships in and out; the 7th person in every grid, so seen only at Chief (7×7). Name is a placeholder |
+| Capt. Ilango Thangaraj | Witness | Honest | Harbor pilot; guides ships in and out. The 7th person in every grid, so seen only at Chief (7×7) |
 | "Tip" Callahan | Informant | Double agent | Helpful at first, then works for the boss |
 | Silas Crane | Boss | Never speaks | Shipping owner who staged the theft |
 | Mara Quill | Ally | Honest | Accountant |
@@ -207,7 +207,7 @@ The budget is 3 days of 4 working hours, 12 hours in total. Working all four lea
 | --- | --- |
 | Full bust | Accuse Crane with L4 solved and Tip exposed |
 | The boss walks | Accuse Vex or Tip, or accuse Crane without the full trail |
-| Wrong arrest | Accuse Kane, Rosa, Juno or the Harbor Pilot |
+| Wrong arrest | Accuse Kane, Rosa, Juno or Capt. Ilango |
 
 The verdict screen MUST explain every lie the player caught or missed, and who each liar was protecting.
 
@@ -273,7 +273,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 | Date | Change |
 | --- | --- |
 | 2026-11-15 | Accusation limits grow with the grid: Inspector allows 4 different people and Chief 5 (2 tries each); Junior (4 people, 3 tries) and Detective (3 people, 2 tries) are unchanged (section 3) |
-| 2026-11-15 | Chief now plays 7×7 grids on the Inspector clock (no more −1 hour). Every lead gains a 7th person (the Harbor Pilot, a new honest witness), a 7th row, and camera grids a 7th room (Crane Shipping). The 7×7 opening ledger starts with 7 cells filled in so it stays at the opening grade (sections 2, 5, 6) |
+| 2026-11-15 | Chief now plays 7×7 grids on the Inspector clock (no more −1 hour). Every lead gains a 7th person (Capt. Ilango Thangaraj, the harbor pilot, a new honest witness), a 7th row, and camera grids a 7th room (Crane Shipping). The 7×7 opening ledger starts with 7 cells filled in so it stays at the opening grade (sections 2, 5, 6) |
 | 2026-11-14 | Added a What now? button to the latest game: on demand, it shows what the player can do on the current screen and what to try next (the same hint logic as the 5-minute idle tip, plus the list of options). Never gives a number away (section 9) |
 | 2026-11-14 | Added a case notebook to both the latest game and v1: a Notebook button opens a side panel to jot down suspects, clues and lies, saved in the browser as you type, with a "Stuck? Try this" list of tips. v1 is still built from its original commit with only this added (section 9) |
 | 2026-11-14 | Added hard accusation rules: proof from solved leads, 3 people and 2 tries each (Junior 4 and 3), refused innocents stop cooperating (+1 h), a case-lost ending that wipes notes and reveals nothing (sections 3, 7) |
