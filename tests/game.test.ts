@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { CaseFile, PuzzleBook } from '../src/game/caseTypes';
 import { PRESETS } from '../src/game/caseTypes';
-import { accuse, accuseStatus, submitAccusation, addFlag, checkLead, hoursLeft, newGame, puzzleOf, solveLead, spendHours, startLead, trustOf } from '../src/game/state';
+import { enumerate } from '../src/engine/solver';
+import { evalClaim } from '../src/engine/claims';
+import { fireEvents, accuse, accuseStatus, submitAccusation, addFlag, checkLead, hoursLeft, newGame, puzzleOf, solveLead, spendHours, startLead, trustOf } from '../src/game/state';
 import { verifyUnique } from '../src/engine/generator';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
@@ -107,4 +109,22 @@ describe('accusation rules', () => {
     for (const p of ['vex', 'tip', 'crane']) { submitAccusation(g, p, []); submitAccusation(g, p, []); }
     expect(g.s.lost).toBe('limits');
   });
+});
+
+describe('witness leaves', () => {
+  for (const preset of PRESETS) {
+    it(`keeps L2 solvable with one answer at ${preset} after Juno leaves`, () => {
+      const g = newGame(cf, book, preset);
+      g.s.hoursUsed = 4;
+      const fired = fireEvents(g);
+      expect(fired.map((e) => e.id)).toContain('juno-leaves');
+      const p = puzzleOf(g, 'L2');
+      const lp = g.s.leads.L2;
+      const said = p.statements.filter((s) => s.speaker !== 'juno');
+      const grids = enumerate({ size: p.size, zones: p.zones, givens: [...p.givens, ...lp.revealed.map(([r, c]) => ({ cell: [r, c] as [number, number], value: p.solution[r][c] }))] }, 10_000);
+      const fits = grids.filter((x) => p.liarCounts.includes(said.filter((s) => !evalClaim(s.claim, x)).length));
+      expect(fits).toHaveLength(1);
+      expect(fits[0]).toEqual(p.solution);
+    });
+  }
 });

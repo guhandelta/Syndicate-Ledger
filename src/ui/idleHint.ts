@@ -1,12 +1,9 @@
 import { nextStep } from '../engine/logic';
 import type { Lead } from '../game/caseTypes';
 import { checkLead, clockOn, hoursLeft, leadCost, leadOpen, puzzleOf, type Game } from '../game/state';
-import { gridLabels, t, type Tone } from '../game/text';
+import { at as when, gridLabels, t, type Tone } from '../game/text';
 import type { Town } from '../town/townTypes';
 import { findWrong } from './puzzleHelpers';
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const when = (time: string) => (DAYS.includes(time) ? `on ${time}` : /^[A-Z][a-z]{2}$/.test(time) ? `in ${time}` : `at ${time}`);
 
 /** After this long with no key, click or tap, a nudge pops up in the corner. */
 export const IDLE_MS = 5 * 60 * 1000;

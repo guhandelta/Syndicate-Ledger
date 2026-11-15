@@ -142,13 +142,11 @@ function tailLeft(shape: BubbleShape, y: number): string {
 }
 
 function mirror(d: string, w: number): string {
-  // reflect every absolute x (and relative dx) across the box's middle
-  return d.replace(/([MLHA])([^MLHAVZa]*)|(a)([^MLHAVZa]*)/g, (m, cmd: string, args: string, rel: string, rargs: string) => {
+  // tails are only made of absolute M and L points and relative arcs (circles): reflect each across the box's middle
+  return d.replace(/([ML])([^MLa]*)|(a)([^MLa]*)/g, (m, cmd: string, args: string, rel: string, rargs: string) => {
     const nums = (cmd ? args : rargs).trim().split(/[ ,]+/).filter(Boolean).map(Number);
     if (rel) return `a${nums[0]} ${nums[1]} ${nums[2]} ${nums[3]} ${1 - nums[4]} ${f(-nums[5])} ${nums[6]}`;
-    if (cmd === 'M' || cmd === 'L') return `${cmd}${f(w - nums[0])} ${nums[1]}`;
-    if (cmd === 'H') return `H${f(w - nums[0])}`;
-    return `A${nums[0]} ${nums[1]} ${nums[2]} ${nums[3]} ${1 - nums[4]} ${f(w - nums[5])} ${nums[6]}`;
+    return `${cmd}${f(w - nums[0])} ${nums[1]}`;
   });
 }
 

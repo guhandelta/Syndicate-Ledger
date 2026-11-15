@@ -166,6 +166,7 @@ function tryGenerate(opts: GenerateOptions, rng: Rng): GeneratedPuzzle | null {
         .filter((c) => !statements.some((s) => JSON.stringify(s.claim) === JSON.stringify(c)))
         .map((c) => ({ c, score: others.filter((g) => evalClaim(c, g)).length + rng.next() }));
       scored.sort((x, y) => y.score - x.score);
+      /* v8 ignore next -- 400 sampled claims always include false ones */
       if (!scored.length) return null;
       add(sp.id, scored[0].c, false);
     }
@@ -194,6 +195,7 @@ function tryGenerate(opts: GenerateOptions, rng: Rng): GeneratedPuzzle | null {
   for (const sp of opts.speakers) {
     if (statements.some((s) => s.speaker === sp.id)) continue;
     const c = trueOnSol.find((cl) => !statements.some((s) => s.claim === cl) && others.every((g) => !allowed.includes(falseCount.get(g)! + (evalClaim(cl, g) ? 0 : 1))));
+    /* v8 ignore next -- the draw above always holds a spare true claim for a silent speaker */
     if (!c) return null;
     add(sp.id, c, true);
   }

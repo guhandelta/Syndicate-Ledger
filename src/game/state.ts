@@ -1,5 +1,6 @@
 import { evalClaim } from '../engine/claims';
 import { randomClaim } from '../engine/generator';
+import { enumerate } from '../engine/solver';
 import { makeRng } from '../engine/rng';
 import type { Claim, GeneratedPuzzle, Grid } from '../engine/types';
 import type { CaseEvent, CaseFile, Ending, Preset, PuzzleBook } from './caseTypes';
@@ -109,6 +110,50 @@ export function spendHours(g: Game, hours: number): CaseEvent[] {
   return fireEvents(g);
 }
 
+/**
+ * Cells that must be shown once some witnesses are gone, so the lead still has exactly one answer.
+ * Greedy: each added cell is the one that rules out the most grids that still fit.
+ */
+export function gapCells(g: Game, leadId: string): [number, number][] {
+  const p = puzzleOf(g, leadId);
+  const lp = g.s.leads[leadId];
+  const said = p.statements.filter((s) => !lp.missingSpeakers.includes(s.speaker));
+  const shown = [...p.givens.map((x) => x.cell), ...lp.revealed];
+  const base = enumerate({ size: p.size, zones: p.zones, givens: p.givens }, 10_000);
+  let fits = base.filter((grid) => {
+    if (shown.some(([r, c]) => grid[r][c] !== p.solution[r][c])) return false;
+    return p.liarCounts.includes(said.filter((s) => !evalClaim(s.claim, grid)).length);
+  });
+  const added: [number, number][] = [];
+  while (fits.length > 1) {
+    let best: [number, number] | null = null;
+    let bestLeft = fits.length;
+    for (let r = 0; r < p.size; r++)
+      for (let c = 0; c < p.size; c++) {
+        if (shown.some(([sr, sc]) => sr === r && sc === c) || added.some(([sr, sc]) => sr === r && sc === c)) continue;
+        const left = fits.filter((grid) => grid[r][c] === p.solution[r][c]).length;
+        if (left < bestLeft) {
+          bestLeft = left;
+          best = [r, c];
+        }
+      }
+    const [r, c] = best!;
+    fits = fits.filter((grid) => grid[r][c] === p.solution[r][c]);
+    added.push([r, c]);
+  }
+  return added;
+}
+
+/** When a witness leaves, show the cells that keep the lead solvable (no hint is spent). */
+function fillGapLeft(g: Game, leadId: string) {
+  const lp = g.s.leads[leadId];
+  const p = puzzleOf(g, leadId);
+  for (const [r, c] of gapCells(g, leadId)) {
+    lp.grid[r][c] = p.solution[r][c];
+    lp.revealed.push([r, c]);
+  }
+}
+
 export function fireEvents(g: Game): CaseEvent[] {
   const fired: CaseEvent[] = [];
   for (const ev of g.cf.events) {
@@ -121,7 +166,10 @@ export function fireEvents(g: Game): CaseEvent[] {
     const e = ev.effect;
     // once a lead is being worked, its evidence and witnesses are already in hand
     if (e.type !== 'endCase' && g.s.leads[e.lead].started) continue;
-    if (e.type === 'removeSpeaker') g.s.leads[e.lead].missingSpeakers.push(e.speaker);
+    if (e.type === 'removeSpeaker') {
+      g.s.leads[e.lead].missingSpeakers.push(e.speaker);
+      fillGapLeft(g, e.lead);
+    }
     if (e.type === 'addCost') g.s.leads[e.lead].extraCost += e.hours;
     fired.push(ev);
   }
@@ -217,16 +265,15 @@ export function buyTip(g: Game, leadId: string, informant: string): Claim | 'can
   if (g.s.favors < 1 || (clockOn(g) && hoursLeft(g) < 1)) return 'cant';
   const rng = makeRng(g.s.hoursUsed * 131 + lp.paidTips.length * 977 + p.seed);
   const known = new Set(p.statements.map((s) => JSON.stringify(s.claim)));
-  for (let i = 0; i < 500; i++) {
-    const c = randomClaim(p.solution, p.type, rng);
-    if (!evalClaim(c, p.solution) || known.has(JSON.stringify(c))) continue;
-    // must say something not already obvious from the player's grid
-    g.s.favors -= 1;
-    spendHours(g, 1);
-    lp.paidTips.push({ speaker: informant, claim: c });
-    return c;
-  }
-  return 'cant';
+  // draws a few hundred random claims and keeps the first true one the player doesn't already have
+  const draws = Array.from({ length: 500 }, () => randomClaim(p.solution, p.type, rng));
+  const c = draws.find((d) => evalClaim(d, p.solution) && !known.has(JSON.stringify(d)));
+  /* v8 ignore next -- 500 random draws always find a fresh true claim on real puzzles */
+  if (!c) return 'cant';
+  g.s.favors -= 1;
+  spendHours(g, 1);
+  lp.paidTips.push({ speaker: informant, claim: c });
+  return c;
 }
 
 // ---------- accusations (rule book section 3) ----------

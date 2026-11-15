@@ -26,19 +26,26 @@ function uncheckedBy(g: Game, personId: string): boolean {
 function matches(g: Game, w: ClueWhen, ev: ClueEvent): boolean {
   if (w.kind !== ev.kind) return false;
   switch (w.kind) {
-    case 'wrong-mark':
-      return ev.kind === 'wrong-mark' && w.lead === ev.lead && w.speaker === ev.speaker && w.marked === ev.marked;
-    case 'unmarked':
-      return ev.kind === 'unmarked' && w.lead === ev.lead && w.speaker === ev.speaker;
-    case 'event':
-      return ev.kind === 'event' && w.event === ev.event && (!w.flag || g.s.flags.includes(w.flag));
+    // the kinds were just compared, so each case can read the event as its own kind
+    case 'wrong-mark': {
+      const e = ev as Extract<ClueEvent, { kind: 'wrong-mark' }>;
+      return w.lead === e.lead && w.speaker === e.speaker && w.marked === e.marked;
+    }
+    case 'unmarked': {
+      const e = ev as Extract<ClueEvent, { kind: 'unmarked' }>;
+      return w.lead === e.lead && w.speaker === e.speaker;
+    }
+    case 'event': {
+      const e = ev as Extract<ClueEvent, { kind: 'event' }>;
+      return w.event === e.event && (!w.flag || g.s.flags.includes(w.flag));
+    }
     case 'accuse': {
-      if (ev.kind !== 'accuse') return false;
-      if (w.person && w.person !== ev.person) return false;
+      const e = ev as Extract<ClueEvent, { kind: 'accuse' }>;
+      if (w.person && w.person !== e.person) return false;
       if (w.unsolved && g.s.leads[w.unsolved].solved) return false;
       if (w.solved && !g.s.leads[w.solved].solved) return false;
       if (w.missingFlag && g.s.flags.includes(w.missingFlag)) return false;
-      if (w.unchecked && !uncheckedBy(g, ev.person)) return false;
+      if (w.unchecked && !uncheckedBy(g, e.person)) return false;
       return true;
     }
   }

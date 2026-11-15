@@ -88,4 +88,71 @@ describe('idle tips', () => {
     expect(idleHint(ctx({ game: g, screen: 'puzzle', leadId: 'L1' })).can.join(' ')).toMatch(/pick the next lead/);
     expect(idleHint(ctx({ game: g, screen: 'board', town: null })).can.join(' ')).not.toMatch(/Walk the town/);
   });
+
+  it('has words for the lost screen, the accusation and a solved lead', () => {
+    const g = newGame(cf, book, 'inspector');
+    expect(idleHint(ctx({ game: g, screen: 'lost' })).where).toBe('The case is lost');
+    expect(idleHint(ctx({ game: g, screen: 'lost' })).can.length).toBeGreaterThan(0);
+    expect(idleHint(ctx({ game: g, screen: 'accuse' })).todo).toMatch(/Some leads are still unsolved/);
+    for (const id of ['L1', 'L2', 'L3', 'L4']) solve(g, id);
+    expect(idleHint(ctx({ game: g, screen: 'accuse' })).todo).toMatch(/tick the leads that prove it/);
+    expect(idleHint(ctx({ game: g, screen: 'puzzle', leadId: 'L1' })).todo).toMatch(/This lead is solved/);
+    expect(idleHint(ctx({ game: g, screen: 'verdict' })).where).toBe('The case is closed');
+  });
+
+  it('says to check the marks when one is wrong', () => {
+    const g = newGame(cf, book, 'inspector');
+    startLead(g, 'L1');
+    const p = puzzleOf(g, 'L1');
+    g.s.leads.L1.grid = p.solution.map((r) => r.slice());
+    g.s.leads.L1.marks = p.truth.map((t) => (t ? 'lie' : 'true'));
+    expect(idleHint(ctx({ game: g, screen: 'puzzle', leadId: 'L1' })).todo).toMatch(/one of your True or Lie marks is off/);
+  });
+
+  it('falls back to the basics when no logical next step exists, and uses the right words for rooms and kids', () => {
+    const broken: PuzzleBook = JSON.parse(JSON.stringify(book));
+    broken['L1:inspector'].statements = [];
+    broken['L1:inspector'].zones = [];
+    broken['L1:inspector'].truth = [];
+    const g = newGame(cf, broken, 'inspector');
+    startLead(g, 'L1');
+    expect(idleHint(ctx({ game: g, screen: 'puzzle', leadId: 'L1' })).todo).toMatch(/appears once in every row and column/);
+
+    const rooms = newGame(cf, book, 'inspector');
+    solve(rooms, 'L1');
+    startLead(rooms, 'L2');
+    expect(idleHint(ctx({ game: rooms, screen: 'puzzle', leadId: 'L2' })).todo).toMatch(/only one room can go there/);
+
+    const kid = newGame(cf, book, 'junior');
+    startLead(kid, 'L1');
+    expect(idleHint(ctx({ game: kid, screen: 'puzzle', leadId: 'L1', tone: 'friendly' })).todo).toMatch(/only one number can go there/);
+  });
+
+  it('sends the player back to a lead they have started', () => {
+    const g = newGame(cf, book, 'inspector');
+    startLead(g, 'L1');
+    expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/Finish .*Keep working/);
+    expect(idleHint(ctx({ game: g, screen: 'town' })).todo).toMatch(/Go back into Fish hall to finish/);
+    expect(idleHint(ctx({ game: g, screen: 'town', town: { ...town, doors: [] } })).todo).toMatch(/Go back into Fish market cash book to finish/);
+    expect(idleHint(ctx({ game: g, screen: 'town', town: null })).todo).toMatch(/Go back into Fish market cash book/);
+  });
+
+  it('warns when time is short, and handles a town without the next door', () => {
+    const g = newGame(cf, book, 'inspector');
+    g.s.hoursUsed = 11;
+    expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/short on time/);
+    expect(idleHint(ctx({ game: g, screen: 'town', town: { ...town, doors: [] } })).todo).toMatch(/Walk to the glowing door/);
+  });
+
+  it('says so when nothing can be opened', () => {
+    const c: CaseFile = JSON.parse(JSON.stringify(cf));
+    for (const l of c.leads) l.opensAfter = ['L4'];
+    const g = newGame(c, book, 'inspector');
+    expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/No lead can be opened right now/);
+  });
+
+  it('falls back to the board hint on a puzzle screen with no lead chosen', () => {
+    const g = newGame(cf, book, 'inspector');
+    expect(idleHint(ctx({ game: g, screen: 'puzzle', leadId: null })).where).toBe('The evidence board');
+  });
 });

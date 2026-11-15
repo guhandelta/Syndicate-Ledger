@@ -83,14 +83,11 @@ export function npcPosition(npc: Npc, t: number, speed = 1.1): { at: Vec2; movin
   if (u < leg) d = u * speed;
   else if (u < leg + pause) return { at: pts[pts.length - 1], moving: false };
   else d = total - (u - leg - pause) * speed;
-  for (let i = 0; i < lengths.length; i++) {
-    if (d <= lengths[i]) {
-      const k = lengths[i] ? d / lengths[i] : 0;
-      return { at: [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * k, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * k], moving: true };
-    }
-    d -= lengths[i];
-  }
-  return { at: pts[pts.length - 1], moving: false };
+  // walk along the legs until the distance falls inside one; the last leg takes whatever is left, so rounding can't run past the end
+  let i = 0;
+  while (i < lengths.length - 1 && d > lengths[i]) d -= lengths[i++];
+  const k = lengths[i] ? Math.min(1, d / lengths[i]) : 0;
+  return { at: [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * k, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * k], moving: true };
 }
 
 export const npcPresent = (npc: Npc, firedEvents: string[]) => !npc.untilEvent || !firedEvents.includes(npc.untilEvent);

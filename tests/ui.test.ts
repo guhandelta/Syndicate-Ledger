@@ -13,6 +13,31 @@ describe('puzzle helpers', () => {
     expect(dupe(grid, 1, 2)).toBe(false);
   });
 
+  it('spots a repeat along a row', () => {
+    expect(dupe([[1, 1], [0, 0]], 0, 0)).toBe(true);
+  });
+
+  it('works out zone combinations around filled cells', () => {
+    const empty = () => Array.from({ length: 4 }, () => [0, 0, 0, 0]);
+    // a number already placed in a zone cell fixes that cell
+    const placed = empty();
+    placed[0][0] = 2;
+    expect(zoneCombos(4, placed, [[0, 0], [0, 1]], 5)).toEqual([[2, 3]]);
+    // a number sitting in a zone cell's column outside the zone is ruled out
+    const column = empty();
+    column[2][0] = 4;
+    column[2][1] = 4;
+    expect(zoneCombos(4, column, [[0, 0], [0, 1]], 5)).toEqual([[2, 3]]);
+    // numbers in the zone's own cells don't rule each other out through the grid
+    const own = empty();
+    own[1][0] = 3;
+    expect(zoneCombos(4, own, [[0, 0], [1, 0]], 5)).toEqual([[2, 3]]);
+    // the same number can't repeat in a row or column inside a zone, but can on a diagonal
+    expect(zoneCombos(4, empty(), [[0, 0], [0, 1]], 4)).toEqual([[1, 3]]);
+    expect(zoneCombos(4, empty(), [[0, 0], [1, 0]], 4)).toEqual([[1, 3]]);
+    expect(zoneCombos(4, empty(), [[0, 0], [1, 1]], 4)).toEqual([[1, 3], [2, 2]]);
+  });
+
   it('lists what a zone can hold given its rows and columns', () => {
     const empty = Array.from({ length: 4 }, () => [0, 0, 0, 0]);
     // two cells side by side in one row adding to 5
@@ -21,6 +46,10 @@ describe('puzzle helpers', () => {
     const withFour = empty.map((r) => r.slice());
     withFour[0][3] = 4;
     expect(zoneCombos(4, withFour, [[0, 0], [0, 1]], 5)).toEqual([[2, 3]]);
+  });
+
+  it('words the liar count for one statement', () => {
+    expect(liarLine([1], 1, false)).toBe('Exactly 1 of these statement is a lie.');
   });
 
   it('words the liar count', () => {
