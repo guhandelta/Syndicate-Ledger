@@ -272,7 +272,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
-| 2026-11-15 | Chief now plays 7×7 grids on the Inspector clock (no more −1 hour). Every lead gains a 7th person (the Harbor Pilot, a new honest witness), a 7th row, and camera grids a 7th room (Crane Shipping) (sections 2, 5, 6) |
+| 2026-11-15 | Chief now plays 7×7 grids on the Inspector clock (no more −1 hour). Every lead gains a 7th person (the Harbor Pilot, a new honest witness), a 7th row, and camera grids a 7th room (Crane Shipping). The 7×7 opening ledger starts with 7 cells filled in so it stays at the opening grade (sections 2, 5, 6) |
 | 2026-11-14 | Added a What now? button to the latest game: on demand, it shows what the player can do on the current screen and what to try next (the same hint logic as the 5-minute idle tip, plus the list of options). Never gives a number away (section 9) |
 | 2026-11-14 | Added a case notebook to both the latest game and v1: a Notebook button opens a side panel to jot down suspects, clues and lies, saved in the browser as you type, with a "Stuck? Try this" list of tips. v1 is still built from its original commit with only this added (section 9) |
 | 2026-11-14 | Added hard accusation rules: proof from solved leads, 3 people and 2 tries each (Junior 4 and 3), refused innocents stop cooperating (+1 h), a case-lost ending that wipes notes and reveals nothing (sections 3, 7) |
