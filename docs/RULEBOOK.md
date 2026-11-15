@@ -92,7 +92,7 @@ A case is an evidence board of linked leads, played against an in-game clock. Ea
 
 - An accusation needs proof. The player names a person, then ticks the solved leads that prove it. The case file lists, per provable person, the leads they need (`proof`) and which people each lead points to (`pointsTo`). A right name with missing or unrelated evidence is refused.
 - Every refusal says only "Not proven", never whether the person is guilty.
-- Limits: Detective, Inspector and Chief allow 3 different people and 2 tries each; Junior allows 4 people and 3 tries each. A locked person can't be accused again, even if they are the real culprit.
+- Limits grow with the grid, because bigger grids mean more people and more tangled stories: Junior allows 4 different people with 3 tries each; Detective 3 people, Inspector 4 and Chief 5, with 2 tries each. A locked person can't be accused again, even if they are the real culprit.
 - An innocent person who is refused stops cooperating: any lead of theirs not yet started costs +1 hour (only while the clock is on). Their trust meter reads "Won't talk".
 - The case is lost when time runs out with no accusation left to make, or when nobody who can be convicted is still open to accusation. The case-lost screen reveals nothing, the save is deleted and all notes are cleared. When the clock ends the player still gets a last chance to accuse.
 - A case MUST be winnable: every provable person's `proof.needs` are leads that point to them, and the validator checks this.
@@ -272,6 +272,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-15 | Accusation limits grow with the grid: Inspector allows 4 different people and Chief 5 (2 tries each); Junior (4 people, 3 tries) and Detective (3 people, 2 tries) are unchanged (section 3) |
 | 2026-11-15 | Chief now plays 7×7 grids on the Inspector clock (no more −1 hour). Every lead gains a 7th person (the Harbor Pilot, a new honest witness), a 7th row, and camera grids a 7th room (Crane Shipping). The 7×7 opening ledger starts with 7 cells filled in so it stays at the opening grade (sections 2, 5, 6) |
 | 2026-11-14 | Added a What now? button to the latest game: on demand, it shows what the player can do on the current screen and what to try next (the same hint logic as the 5-minute idle tip, plus the list of options). Never gives a number away (section 9) |
 | 2026-11-14 | Added a case notebook to both the latest game and v1: a Notebook button opens a side panel to jot down suspects, clues and lies, saved in the browser as you type, with a "Stuck? Try this" list of tips. v1 is still built from its original commit with only this added (section 9) |
