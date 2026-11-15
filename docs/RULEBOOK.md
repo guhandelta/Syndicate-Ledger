@@ -26,7 +26,7 @@ Every puzzle is an N×N grid filled with 1 to N, with no repeats in any row or c
 **The grid**
 
 - Rows are time slots and columns are people.
-- Sizes are 4×4, 5×5 or 6×6. A zone MUST be 1 to 5 cells, joined edge to edge, with its total shown in its top-left cell.
+- Sizes are 4×4, 5×5, 6×6 or 7×7. A zone MUST be 1 to 5 cells, joined edge to edge, with its total shown in its top-left cell.
 
 **Two kinds of grid**
 
@@ -92,7 +92,7 @@ A case is an evidence board of linked leads, played against an in-game clock. Ea
 
 - An accusation needs proof. The player names a person, then ticks the solved leads that prove it. The case file lists, per provable person, the leads they need (`proof`) and which people each lead points to (`pointsTo`). A right name with missing or unrelated evidence is refused.
 - Every refusal says only "Not proven", never whether the person is guilty.
-- Limits: Detective, Inspector and Chief allow 3 different people and 2 tries each; Junior allows 4 people and 3 tries each. A locked person can't be accused again, even if they are the real culprit.
+- Limits grow with the grid, because bigger grids mean more people and more tangled stories: Junior allows 4 different people with 3 tries each; Detective 3 people, Inspector 4 and Chief 5, with 2 tries each. A locked person can't be accused again, even if they are the real culprit.
 - An innocent person who is refused stops cooperating: any lead of theirs not yet started costs +1 hour (only while the clock is on). Their trust meter reads "Won't talk".
 - The case is lost when time runs out with no accusation left to make, or when nobody who can be convicted is still open to accusation. The case-lost screen reveals nothing, the save is deleted and all notes are cleared. When the clock ends the player still gets a last chance to accuse.
 - A case MUST be winnable: every provable person's `proof.needs` are leads that point to them, and the validator checks this.
@@ -135,10 +135,10 @@ Every case MUST play at all four presets. The plot, cast, leads and endings stay
 
 | Setting | Junior (7+) | Detective (10+) | Inspector (14+) | Chief (adult) |
 | --- | --- | --- | --- | --- |
-| Grid size | 4×4 | 5×5 | 6×6 | 6×6 |
+| Grid size | 4×4 | 5×5 | 6×6 | 7×7 |
 | Liars told as | Exact count | Exact count | Exact count | A range, such as "1 or 2" |
 | Lies flagged "Unverified" | Yes, the liar is marked | Possible liars marked | No | No |
-| Clock | Off | On, +2 hours | On | On, −1 hour |
+| Clock | Off | On, +2 hours | On | On |
 | Scheduled events | Off | Shown as rumors | Shown as rumors | Some hidden |
 | Mistake highlighting | Instant | On request | Off | Off |
 | Starting favors | 6 | 4 | 3 | 2 |
@@ -176,6 +176,7 @@ Junior version: the Gold Coin Festival prize chest is empty, and the Tidewater G
 | Kane Hollis | Suspect | Honest | Dock foreman; looks guilty, isn't |
 | Rosa Diaz | Witness | Mistaken | Fish market owner; sometimes rushed |
 | Juno Park | Witness | Honest | Night guard; leaves town at the start of Day 2 |
+| Capt. Karunakaran Velu | Witness | Honest | Harbor pilot; guides ships in and out. The 7th person in every grid, so seen only at Chief (7×7) |
 | "Tip" Callahan | Informant | Double agent | Helpful at first, then works for the boss |
 | Silas Crane | Boss | Never speaks | Shipping owner who staged the theft |
 | Mara Quill | Ally | Honest | Accountant |
@@ -206,7 +207,7 @@ The budget is 3 days of 4 working hours, 12 hours in total. Working all four lea
 | --- | --- |
 | Full bust | Accuse Crane with L4 solved and Tip exposed |
 | The boss walks | Accuse Vex or Tip, or accuse Crane without the full trail |
-| Wrong arrest | Accuse Kane, Rosa or Juno |
+| Wrong arrest | Accuse Kane, Rosa, Juno or Capt. Karunakaran |
 
 The verdict screen MUST explain every lie the player caught or missed, and who each liar was protecting.
 
@@ -271,9 +272,12 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-15 | Accusation limits grow with the grid: Inspector allows 4 different people and Chief 5 (2 tries each); Junior (4 people, 3 tries) and Detective (3 people, 2 tries) are unchanged (section 3) |
+| 2026-11-15 | Chief now plays 7×7 grids on the Inspector clock (no more −1 hour). Every lead gains a 7th person (Capt. Karunakaran Velu, the harbor pilot, a new honest witness), a 7th row, and camera grids a 7th room (Crane Shipping). The 7×7 opening ledger starts with 7 cells filled in so it stays at the opening grade (sections 2, 5, 6) |
 | 2026-11-14 | Added a What now? button to the latest game: on demand, it shows what the player can do on the current screen and what to try next (the same hint logic as the 5-minute idle tip, plus the list of options). Never gives a number away (section 9) |
 | 2026-11-14 | Added a case notebook to both the latest game and v1: a Notebook button opens a side panel to jot down suspects, clues and lies, saved in the browser as you type, with a "Stuck? Try this" list of tips. v1 is still built from its original commit with only this added (section 9) |
 | 2026-11-15 | Fixed a hole in the witness-leaves event: when Juno left, L2 could end up with more than one answer at Junior and Inspector. The camera footage now shows just enough cells to keep exactly one answer (section 3). Added 100% unit coverage of the engine, game rules, town rules and UI helpers, enforced in CI (section 9) |
+| 2026-11-14 | Made the case notebook richer: a ready-made case sheet, an Alibi line, and grouped how-to tips (the grid, where to start, statements, favors, accusing) (section 9) |
 | 2026-11-14 | Added hard accusation rules: proof from solved leads, 3 people and 2 tries each (Junior 4 and 3), refused innocents stop cooperating (+1 h), a case-lost ending that wipes notes and reveals nothing (sections 3, 7) |
 | 2026-11-14 | Added in-game help (the ? button or the ? / H key on every screen): how to play, the chosen rank's rules and how to think at that rank, the case's lead order, clock rumors and cast without spoilers, and controls. After 5 minutes with no key, click or tap, a corner tip says where the player is and what to do next; it points the way without giving numbers away and doesn't cost stars (section 9) |
 | 2026-11-14 | Added comic dialogue bubbles with per-voice outlines and colours, face portraits that follow the trust meter, and a greeting line per cast member (section 9) |

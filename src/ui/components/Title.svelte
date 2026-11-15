@@ -9,7 +9,7 @@
     junior: '4×4 grids, friendly story, the fibber is marked, no clock.',
     detective: '5×5 grids, one liar per lead, suspects are flagged.',
     inspector: '6×6 grids, liars unmarked, the clock is on.',
-    chief: '6×6 grids, you only know a range of liars, tight clock.',
+    chief: '7×7 grids, you only know a range of liars.',
   };
   const hasSave = $derived(!!session.s && !session.s.endingId);
 </script>

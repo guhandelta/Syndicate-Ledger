@@ -24,6 +24,8 @@ export interface GenerateOptions {
   /** Max grids the base clues may allow (keeps the statement step tractable for players). */
   maxBase?: number;
   maxStatements?: number;
+  /** Ledger grids only: cells shown filled in at the start, next to the zone sums (eases big grids). Default 0. */
+  ledgerGivens?: number;
   seed: number;
 }
 
@@ -75,14 +77,19 @@ function randomZones(sol: Grid, rng: Rng, bias: number): Zone[] {
     .map((cells) => ({ cells: cells.sort((a, b) => a[0] - b[0] || a[1] - b[1]), sum: cells.reduce((s, [r, c]) => s + sol[r][c], 0) }));
 }
 
-function baseClues(sol: Grid, type: GridType, rng: Rng, maxBase: number) {
+function baseClues(sol: Grid, type: GridType, rng: Rng, maxBase: number, ledgerGivens = 0) {
   const n = sol.length;
   if (type === 'ledger') {
     let bias = 0.2;
     for (let attempt = 0; attempt < 400; attempt++) {
       const zones = randomZones(sol, rng, bias);
-      const all = enumerate({ size: n, zones, givens: [] }, maxBase + 1);
-      if (all.length >= MIN_BASE && all.length <= maxBase) return { zones, givens: [] as Given[], all };
+      // only draws from the rng when asked, so existing puzzles keep their seeds
+      const givens: Given[] = !ledgerGivens ? [] : rng
+        .shuffle(Array.from({ length: n * n }, (_, i) => [Math.floor(i / n), i % n] as Cell))
+        .slice(0, ledgerGivens)
+        .map((cell) => ({ cell, value: sol[cell[0]][cell[1]] }));
+      const all = enumerate({ size: n, zones, givens }, maxBase + 1);
+      if (all.length >= MIN_BASE && all.length <= maxBase) return { zones, givens, all };
       bias += all.length > maxBase ? -0.03 : 0.03;
       bias = Math.max(-0.3, Math.min(0.6, bias));
     }
@@ -138,7 +145,7 @@ function tryGenerate(opts: GenerateOptions, rng: Rng): GeneratedPuzzle | null {
   const maxBase = opts.maxBase ?? 40;
   const maxStatements = opts.maxStatements ?? 8;
   const sol = randomLatin(n, rng);
-  const base = baseClues(sol, opts.type, rng, maxBase);
+  const base = baseClues(sol, opts.type, rng, maxBase, opts.ledgerGivens);
   if (!base) return null;
   const others = base.all.filter((g) => g.some((row, r) => row.some((v, c) => v !== sol[r][c])));
 

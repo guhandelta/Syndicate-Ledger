@@ -81,7 +81,7 @@ test('help opens from anywhere and follows the chosen rank', async ({ page }) =>
   const help = page.getByRole('dialog', { name: /Help/ });
   await expect(help).toContainText('Chief rank');
   await help.getByRole('tab', { name: 'Your rank' }).click();
-  await expect(help).toContainText('11 hours over 3 days');
+  await expect(help).toContainText('12 hours over 3 days');
   await expectAccessible(page);
   await page.keyboard.press('Escape');
   await expect(help).toBeHidden();
@@ -124,14 +124,14 @@ test('the case notebook keeps notes across reloads, and typing in it does not to
   await expect(notes).toBeFocused();
   await page.getByRole('button', { name: '+ Clue' }).click();
   await page.keyboard.type('Rosa 2 at 8pm');
-  await expect(notes).toHaveValue('Clue: Rosa 2 at 8pm');
+  await expect(notes).toHaveValue('Clue (lead and fact): Rosa 2 at 8pm');
   await expect(page.locator('table.grid .val')).toHaveCount(filled);
   await expect(page.getByText('Saved')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(notes).toBeHidden();
   await page.reload();
   await page.getByRole('button', { name: 'Notebook', exact: true }).click();
-  await expect(notes).toHaveValue('Clue: Rosa 2 at 8pm');
+  await expect(notes).toHaveValue('Clue (lead and fact): Rosa 2 at 8pm');
   await expectAccessible(page);
 });
 
