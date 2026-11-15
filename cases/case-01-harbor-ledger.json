@@ -94,7 +94,7 @@
       "id": "juno-leaves", "at": 4, "unlessSolved": "L2",
       "effect": { "type": "removeSpeaker", "lead": "L2", "speaker": "juno", "recover": { "hours": 1, "favors": 1 } },
       "rumor": { "crime": "Juno's bus ticket is for the start of Day 2.", "friendly": "Juno is going on a trip at the start of Day 2." },
-      "message": { "crime": "Juno has left town. Tracking her down for her statement will cost time and a favor.", "friendly": "Juno went on her trip! You can still call her, but it costs time and a favor." }
+      "message": { "crime": "Juno has left town. Tracking her down for her statement will cost time and a favor. If her statement left a gap, the camera footage fills it in.", "friendly": "Juno went on her trip! You can still call her, but it costs time and a favor. If a spot is now missing, the cameras show it." }
     },
     {
       "id": "warehouse-burns", "at": 8, "ifFlag": "tip-trap", "unlessSolved": "L4",

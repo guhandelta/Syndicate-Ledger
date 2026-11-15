@@ -72,3 +72,34 @@ describe('Case 1 dialogue', () => {
     }
   });
 });
+
+describe('bubble outlines on every side', () => {
+  const shapes = ['round', 'oval', 'cloud', 'burst', 'wobble', 'sharp', 'jagged'] as BubbleShape[];
+  it('draws each shape on the left, mirrored on the right, and without a tail', () => {
+    for (const shape of shapes) {
+      const left = bubblePaths(shape, 240, 90, 'left');
+      const right = bubblePaths(shape, 240, 90, 'right');
+      const none = bubblePaths(shape, 240, 90, 'none');
+      expect(left.body, shape).toBeTruthy();
+      expect(left.tail, shape).toBeTruthy();
+      expect(right.tail, shape).toBeTruthy();
+      expect(right.tail).not.toBe(left.tail);
+      expect(none.tail).toBe('');
+      expect(bubblePaths(shape, 240, 90).tail).toBe(left.tail);
+    }
+  });
+
+  it('keeps the tail inside short and tall bubbles, and draws nothing for an empty box', () => {
+    for (const shape of shapes) {
+      expect(bubblePaths(shape, 200, 20, 'left').tail).toBeTruthy();
+      expect(bubblePaths(shape, 200, 200, 'right', 500).tail).toBeTruthy();
+    }
+    expect(bubblePaths('round', 0, 50)).toEqual({ body: '', tail: '' });
+    expect(bubblePaths('round', 50, 0)).toEqual({ body: '', tail: '' });
+  });
+
+  it('handles a box so thin that a side has no length', () => {
+    for (const shape of shapes) expect(typeof bubblePaths(shape, 1, 1).body).toBe('string');
+    expect(aroundRect(0, 0, 10, 0, 2, 8).length).toBe(8);
+  });
+});

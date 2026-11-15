@@ -138,6 +138,7 @@ function contradictionPass(cand: Cand, n: number, cs: Constraint[]): boolean {
         try {
           propagate(trial, n, cs, 3);
         } catch (e) {
+          /* v8 ignore next -- only Contradiction is ever thrown by propagate */
           if (!(e instanceof Contradiction)) throw e;
           restrict(cand, r, c, ~bit);
           return true;
@@ -170,8 +171,9 @@ export function gradePuzzle(p: PuzzleSpec, truth: boolean[]): number {
       grade = 4;
     }
   } catch (e) {
-    if (e instanceof Contradiction) return 0;
-    throw e;
+    /* v8 ignore next 2 -- only Contradiction is ever thrown by propagate */
+    if (!(e instanceof Contradiction)) throw e;
+    return 0;
   }
 }
 

@@ -32,6 +32,7 @@ Open `dist/syndicate-ledger.html` in any browser. Progress saves in the browser.
 
 ```bash
 npm test                     # engine, game and UI helper tests
+npm run coverage             # same tests, and fails below 100% on the unit-testable code (see vite.config.ts for what the browser tests cover instead)
 npm run check                # type-check the TypeScript and Svelte code
 npm run build && npm run e2e # play Case 1 end to end at every rank in Chromium
 npm run generate             # regenerate every lead × rank puzzle for Case 1

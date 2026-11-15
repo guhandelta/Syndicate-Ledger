@@ -147,3 +147,85 @@ describe('accusations', () => {
     expect(ids(pendingClues(g, { kind: 'accuse', person: 'mara' }))).toContain('X-2');
   });
 });
+
+describe('clue conditions', () => {
+  const withClues = (when: object, preset: 'inspector' = 'inspector') => {
+    const c: CaseFile = JSON.parse(JSON.stringify(cf));
+    c.missedClues = [{ id: 'T', presets: [preset], when, message: 'm' } as never];
+    return newGame(c, book, preset);
+  };
+
+  it('skips statements of witnesses who left, and reports a doubted true statement as marked true', () => {
+    const g = newGame(cf, book, 'inspector');
+    const lp = g.s.leads.L2;
+    lp.missingSpeakers = ['juno'];
+    const events = markMistakes(g, 'L2');
+    expect(events.some((e) => e.kind === 'unmarked' && e.speaker === 'juno')).toBe(false);
+    fillLead(g, 'L2', wrongIndexes(g, 'L2', 'vex'));
+    const flipped = markMistakes(g, 'L2');
+    expect(flipped.find((e) => e.kind === 'wrong-mark' && e.speaker === 'vex')).toMatchObject({ marked: 'true' });
+    fillLead(g, 'L1', wrongIndexes(g, 'L1', 'rosa'));
+    expect(markMistakes(g, 'L1').find((e) => e.kind === 'wrong-mark' && e.speaker === 'rosa')).toMatchObject({ marked: 'lie' });
+  });
+
+  it('matches event clues with and without a flag', () => {
+    const plain = withClues({ kind: 'event', event: 'x' });
+    expect(pendingClues(plain, { kind: 'event', event: 'x' })).toHaveLength(1);
+    expect(pendingClues(plain, { kind: 'event', event: 'y' })).toHaveLength(0);
+    const flagged = withClues({ kind: 'event', event: 'x', flag: 'f' });
+    expect(pendingClues(flagged, { kind: 'event', event: 'x' })).toHaveLength(0);
+    flagged.s.flags.push('f');
+    expect(pendingClues(flagged, { kind: 'event', event: 'x' })).toHaveLength(1);
+  });
+
+  it('matches unmarked and wrong-mark clues only for the right lead and speaker', () => {
+    const g = withClues({ kind: 'unmarked', lead: 'L1', speaker: 'rosa' });
+    expect(pendingClues(g, { kind: 'unmarked', lead: 'L1', speaker: 'rosa' })).toHaveLength(1);
+    expect(pendingClues(g, { kind: 'unmarked', lead: 'L1', speaker: 'kane' })).toHaveLength(0);
+    expect(pendingClues(g, { kind: 'event', event: 'x' })).toHaveLength(0);
+    const w = withClues({ kind: 'wrong-mark', lead: 'L1', speaker: 'rosa', marked: 'lie' });
+    expect(pendingClues(w, { kind: 'wrong-mark', lead: 'L1', speaker: 'rosa', marked: 'lie' })).toHaveLength(1);
+    expect(pendingClues(w, { kind: 'wrong-mark', lead: 'L1', speaker: 'rosa', marked: 'true' })).toHaveLength(0);
+  });
+
+  it('matches accusation clues by person, solved leads, flags and checked statements', () => {
+    const person = withClues({ kind: 'accuse', person: 'crane' });
+    expect(pendingClues(person, { kind: 'accuse', person: 'crane' })).toHaveLength(1);
+    expect(pendingClues(person, { kind: 'accuse', person: 'vex' })).toHaveLength(0);
+    const anyone = withClues({ kind: 'accuse' });
+    expect(pendingClues(anyone, { kind: 'accuse', person: 'vex' })).toHaveLength(1);
+
+    const unsolved = withClues({ kind: 'accuse', unsolved: 'L1' });
+    expect(pendingClues(unsolved, { kind: 'accuse', person: 'vex' })).toHaveLength(1);
+    unsolved.s.leads.L1.solved = true;
+    expect(pendingClues(unsolved, { kind: 'accuse', person: 'vex' })).toHaveLength(0);
+
+    const solved = withClues({ kind: 'accuse', solved: 'L1' });
+    expect(pendingClues(solved, { kind: 'accuse', person: 'vex' })).toHaveLength(0);
+    solved.s.leads.L1.solved = true;
+    expect(pendingClues(solved, { kind: 'accuse', person: 'vex' })).toHaveLength(1);
+
+    const missing = withClues({ kind: 'accuse', missingFlag: 'f' });
+    expect(pendingClues(missing, { kind: 'accuse', person: 'vex' })).toHaveLength(1);
+    missing.s.flags.push('f');
+    expect(pendingClues(missing, { kind: 'accuse', person: 'vex' })).toHaveLength(0);
+
+    const unchecked = withClues({ kind: 'accuse', unchecked: true });
+    expect(pendingClues(unchecked, { kind: 'accuse', person: 'rosa' })).toHaveLength(1);
+    unchecked.s.leads.L1.solved = true;
+    expect(pendingClues(unchecked, { kind: 'accuse', person: 'rosa' })).toHaveLength(0);
+  });
+
+  it('shows a clue once, except accusation nudges, and has none when the case lists none', () => {
+    const g = withClues({ kind: 'event', event: 'x' });
+    expect(pendingClues(g, { kind: 'event', event: 'x' })).toHaveLength(1);
+    markCluesShown(g, pendingClues(g, { kind: 'event', event: 'x' }));
+    expect(pendingClues(g, { kind: 'event', event: 'x' })).toHaveLength(0);
+    const bare: CaseFile = JSON.parse(JSON.stringify(cf));
+    delete bare.missedClues;
+    expect(pendingClues(newGame(bare, book, 'inspector'), { kind: 'event', event: 'x' })).toEqual([]);
+    const nudge = withClues({ kind: 'accuse' });
+    markCluesShown(nudge, pendingClues(nudge, { kind: 'accuse', person: 'rosa' }));
+    expect(pendingClues(nudge, { kind: 'accuse', person: 'rosa' })).toHaveLength(1);
+  });
+});
