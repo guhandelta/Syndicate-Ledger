@@ -20,3 +20,12 @@ All views are 1024×1536 and sit on a flat grey background (no transparency yet)
 Identities follow the original character sheet, not the labels on later generated lineup sheets (those labels are wrong): Arun = orange jacket and messenger bag; Sethu = green reflective work jacket, grey beard, wool cap, clipboard; Sivaram = silver-haired businessman in a charcoal three-piece suit and long dark purple overcoat; Sakthivel = plum patched coat, purple cap and scarf, newspapers; Sgt. Devan = grey-bearded detective in a tan trench coat.
 
 The role column is a guess from each character's look; the case file still uses the original names.
+
+## New cast (stored only)
+
+| Character | Planned role | front | side-left | side-right | back |
+| --- | --- | --- | --- | --- | --- |
+| Thenmozhi Selvam | Dock clerk (Inspector and Chief stories) | ✓ | ✓ | ✓ | ✓ |
+| Captain Karunakaran Velu | Harbor pilot (Chief story only) | ✓ | ✓ | ✓ | ✓ |
+
+The player detective has no character sheet yet; see `assets/portraits/set-4/`.
