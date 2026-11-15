@@ -59,6 +59,7 @@ button { font: inherit; }
 .preset-name { font-weight: 700; font-size: 1.05rem; }
 .preset-age { color: var(--accent); font-size: 0.85rem; }
 .preset-desc { color: var(--muted); font-size: 0.88rem; }
+.welcome-stats { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 6px; font-size: 1.05rem; }
 .title-actions, .page-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
 .how { margin-top: 12px; color: var(--muted); }
 .how summary { cursor: pointer; color: var(--ink); }

@@ -37,7 +37,7 @@ function canDo(ctx: IdleContext): string[] {
   const g = ctx.game;
   if (ctx.dialog) return ['Read the message, then press one of its buttons.'];
   if (!g || ctx.screen === 'title') {
-    return ['Pick a rank: Junior is the gentlest, Chief the hardest.', 'Open the case (or Continue / Start over if you have a saved one).', 'Read How to play, or press ? for full help.'];
+    return ['Pick a rank: Junior is the gentlest, Chief the hardest.', 'Open the case, or press Continue if you have a saved one.', 'Read How to play, or press ? for full help.'];
   }
   switch (ctx.screen) {
     case 'intro':

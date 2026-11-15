@@ -25,7 +25,7 @@ export async function clearDialogs(page: Page, answers: Record<string, string> =
 export async function startCase(page: Page, preset: Preset) {
   await page.goto(GAME_URL);
   await page.getByRole('radio', { name: new RegExp(PRESET_LABEL[preset]) }).click();
-  await page.getByRole('button', { name: /Open the case|Start over/ }).click();
+  await page.getByRole('button', { name: 'Open the case' }).click();
   await page.getByRole('button', { name: 'Go to the evidence board' }).click();
   await expect(page.getByRole('heading', { name: 'Leads' })).toBeVisible();
 }

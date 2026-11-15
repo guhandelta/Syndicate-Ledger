@@ -153,3 +153,24 @@ test('the What now? button shows what to do on the current screen, on demand', a
   await expect(tip).toContainText('Look at');
   await expectAccessible(page);
 });
+
+test('a returning player sees a welcome-back page, and can still start a new case', async ({ page }) => {
+  const g = newGame(cf, book, 'inspector');
+  g.s.leads.L1.started = true;
+  g.s.leads.L1.solved = true;
+  g.s.hoursUsed = 2;
+  await page.addInitScript((save) => {
+    if (!sessionStorage.getItem('seeded')) {
+      localStorage.setItem('syndicate-ledger:save:v1', save);
+      sessionStorage.setItem('seeded', '1');
+    }
+  }, JSON.stringify(g.s));
+  await page.goto(GAME_URL);
+  await expect(page.getByRole('heading', { name: 'Welcome back, Inspector' })).toBeVisible();
+  await expect(page.getByText('1 of 4 leads solved')).toBeVisible();
+  await expect(page.getByRole('radio')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Start a new case' }).click();
+  await expect(page.getByRole('radio')).toHaveCount(4);
+  await page.getByRole('button', { name: 'Back to my case' }).click();
+  await expect(page.getByRole('button', { name: 'Continue case (Inspector)' })).toBeVisible();
+});
