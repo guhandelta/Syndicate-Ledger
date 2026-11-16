@@ -28,7 +28,6 @@
   const board = $derived(caseBoard(cf, session.progress));
   const below = (p: Preset) => PRESET_RULES[PRESETS[PRESETS.indexOf(p) - 1]]?.label;
   const pickOpen = $derived(session.unlocked(session.titlePreset));
-  const characters = $derived(cf.characters ?? []);
   /** Text on the start page is not tied to a running game, so it reads in the tone of the rank picked. */
   const T = (x: Parameters<typeof t>[0]) => t(x, PRESET_RULES[session.titlePreset].tone as 'crime' | 'friendly');
 </script>
@@ -50,23 +49,6 @@
         {/each}
       </div>
       {#if !pickOpen}<p class="lede locked-note">{PRESET_RULES[session.titlePreset].label} opens once you solve the {below(session.titlePreset)} part of the case.</p>{/if}
-      {#if characters.length}
-        <h2 class="small-h">Choose who you are</h2>
-        <div class="preset-grid" role="radiogroup" aria-label="Character">
-          {#each characters as c}
-            <button
-              class="preset"
-              class:on={session.titleCharacter === c.id}
-              role="radio"
-              aria-checked={session.titleCharacter === c.id}
-              disabled={!c.ready}
-              onclick={() => (session.titleCharacter = c.id)}
-            >
-              <span class="preset-name">{c.name}</span><span class="preset-desc">{c.ready ? T(c.blurb) : 'Coming soon'}</span>
-            </button>
-          {/each}
-        </div>
-      {/if}
       {#if hasSave}<p class="lede">Starting a new case replaces your saved {PRESET_RULES[session.s!.preset].label} case.</p>{/if}
       <div class="title-actions">
         <button class="btn primary" disabled={!pickOpen} onclick={() => session.newCase()}>Open the case</button>
