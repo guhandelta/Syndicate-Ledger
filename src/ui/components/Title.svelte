@@ -1,7 +1,7 @@
 <script lang="ts">
   import { PRESETS, type Preset } from '../../game/caseTypes';
   import { PRESET_RULES } from '../../game/presets';
-  import { caseClosed, partOf, partsTotal, partsUncovered } from '../../game/rankStory';
+  import { caseBoard, caseClosed, partsTotal, partsUncovered } from '../../game/rankStory';
   import { clockOn, hoursLeft } from '../../game/state';
   import { t } from '../../game/text';
   import type { Session } from '../session.svelte';
@@ -25,6 +25,7 @@
   const parts = $derived(partsTotal(cf));
   const found = $derived(partsUncovered(cf, session.progress));
   const closed = $derived(caseClosed(cf, session.progress));
+  const board = $derived(caseBoard(cf, session.progress));
   const below = (p: Preset) => PRESET_RULES[PRESETS[PRESETS.indexOf(p) - 1]]?.label;
   const pickOpen = $derived(session.unlocked(session.titlePreset));
   const characters = $derived(cf.characters ?? []);
@@ -90,17 +91,18 @@
           <p class="closing"><strong>{T(cf.closing.title)}</strong> {T(cf.closing.text)}</p>
         {/if}
         <ol class="parts">
-          {#each parts as p}
-            {@const part = partOf(cf, p)!}
-            {@const got = session.progress.parts[p]}
-            <li class:got class:locked={!session.unlocked(p)}>
-              <span class="part-rank">{PRESET_RULES[p].label}</span>
-              {#if got}
-                <strong>{T(part.title)}</strong> <span class="muted">{T(part.reveal)}</span>
-              {:else if session.unlocked(p)}
-                <strong>{T(part.question)}</strong> <span class="muted">Not uncovered yet.</span>
+          {#each board as row (row.preset)}
+            <li class:got={row.state === 'found'} class:locked={row.state === 'hidden'}>
+              {#if row.state === 'hidden'}
+                <span class="part-rank">Part {row.number} of {parts.length}</span>
+                <strong>???</strong> <span class="muted">Uncover the {below(row.preset)} part to see it.</span>
               {:else}
-                <strong>{T(part.question)}</strong> <span class="muted">Locked until the {below(p)} part is uncovered.</span>
+                <span class="part-rank">{PRESET_RULES[row.preset].label}</span>
+                {#if row.state === 'found'}
+                  <strong>{T(row.part!.title)}</strong> <span class="muted">{T(row.part!.reveal)}</span>
+                {:else}
+                  <strong>{T(row.part!.question)}</strong> <span class="muted">Not uncovered yet.</span>
+                {/if}
               {/if}
             </li>
           {/each}
