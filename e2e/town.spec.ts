@@ -43,8 +43,8 @@ test('walk to the fish market, talk to a witness and open the first lead from it
   await talk.getByRole('group', { name: 'Ask about someone' }).getByRole('button', { name: 'Kane Hollis' }).click();
   await expect(talk).toContainText('Kane scares my customers... I think he was near the market that night.');
   await expect(talk.locator('.tell')).toContainText('rubs her hands');
-  // the words appear one by one and the whole line ends up on screen
-  await expect(talk.locator('.spoken').last()).toHaveAttribute('data-done', 'true');
+  // the words appear one by one and the whole line ends up on screen (slow on CI while the town renders in software)
+  await expect(talk.locator('.spoken').last()).toHaveAttribute('data-done', 'true', { timeout: 20_000 });
   await page.keyboard.press('Escape');
   await expect(talk).toHaveCount(0);
 
