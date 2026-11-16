@@ -785,6 +785,29 @@
           }
         }
       },
+      "opening": [
+        {
+          "text": { "crime": "Port Calder, the morning of the Gold Coin Festival. Last night the prize chest was full of festival coins. This morning it is gone.", "friendly": "Port Calder, the morning of the Gold Coin Festival. Last night the prize chest was full of festival coins. This morning it is gone." }
+        },
+        {
+          "who": "rosa",
+          "text": { "crime": "Every coin, gone! I wrote down who carried what, but my notebook has gaps.", "friendly": "Every coin, gone! I wrote down who carried what, but my notebook has gaps." },
+          "voice": "nervous"
+        },
+        {
+          "who": "kane",
+          "text": { "crime": "A sneaky stranger did it. Nobody on this dock would.", "friendly": "A sneaky stranger did it. Nobody on this dock would." },
+          "voice": "shout"
+        },
+        {
+          "who": "tip",
+          "text": { "crime": "Don't worry, I'll help you look. People will tell you what they saw. Some might be mistaken, so check it against the numbers.", "friendly": "Don't worry, I'll help you look. People will tell you what they saw. Some might be mistaken, so check it against the numbers." },
+          "voice": "calm"
+        },
+        {
+          "text": { "crime": "Your job: find out who is telling the truth, and where the chest went.", "friendly": "Your job: find out who is telling the truth, and where the chest went." }
+        }
+      ],
       "setup": {
         "crime": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty. Everybody says it was a sneaky stranger. Tip, the harbor helper, is eager to help you look.",
         "friendly": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty! Tip, the helpful harbor kid, is happy to help you look."
@@ -800,8 +823,8 @@
             "friendly": "The festival notebook"
           },
           "intro": {
-            "crime": "Rosa keeps the market cash book. Work out how many coins each person carried each hour.",
-            "friendly": "Rosa's notebook shows who carried how many coins each hour. Fill in the grid!"
+            "crime": "Rosa keeps the market cash book, but its pages are smudged. Fill in how many coins each person carried each hour. Then check each statement beside the grid against your numbers and mark it True or Lie.",
+            "friendly": "Rosa's notebook got smudged. Fill in how many coins each person carried each hour! Then check what people say against your numbers and mark each one True or Lie."
           },
           "columns": [
             "vex",
