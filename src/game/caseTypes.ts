@@ -1,14 +1,15 @@
+import type { CipherClaim, CipherPuzzle } from '../engine/cipher';
 import type { NetClaim, NetworkPuzzle } from '../engine/network';
 import type { TimeClaim, TimelinePuzzle } from '../engine/timeline';
 import type { Claim } from '../engine/types';
 import type { GeneratedPuzzle, GridType } from '../engine/types';
 
 /** The kinds of puzzle a lead can hold: the two number grids, a timeline of moments to put in order, or a network of who was in contact with whom. */
-export type LeadType = GridType | 'timeline' | 'network';
-export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline', 'network'];
+export type LeadType = GridType | 'timeline' | 'network' | 'cipher';
+export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline', 'network', 'cipher'];
 
 /** What a witness can say, in any kind of lead. */
-export type AnyClaim = Claim | TimeClaim | NetClaim;
+export type AnyClaim = Claim | TimeClaim | NetClaim | CipherClaim;
 
 export type Preset = 'junior' | 'detective' | 'inspector' | 'chief';
 export const PRESETS: Preset[] = ['junior', 'detective', 'inspector', 'chief'];
@@ -256,7 +257,7 @@ export type StoryField = (typeof STORY_FIELDS)[number];
 export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>;
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
-export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle;
+export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle;
 export type PuzzleBook = Record<string, AnyPuzzle>;
 /** A book of grid puzzles only (Case 1 today). */
 export type GridBook = Record<string, GeneratedPuzzle>;

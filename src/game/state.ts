@@ -2,6 +2,7 @@ import { evalClaim } from '../engine/claims';
 import { randomClaim } from '../engine/generator';
 import { enumerate } from '../engine/solver';
 import { makeRng } from '../engine/rng';
+import { fittingCodes, freshTrueCipherClaim, type CipherClaim, type CipherPuzzle } from '../engine/cipher';
 import { fittingNetworks, freshTrueNetClaim, type NetClaim, type NetworkPuzzle } from '../engine/network';
 import { fittingOrders, freshTrueTimeClaim, type TimeClaim, type TimelinePuzzle } from '../engine/timeline';
 import type { Claim, GeneratedPuzzle, Grid } from '../engine/types';
@@ -31,6 +32,10 @@ export interface LeadProgress {
   links?: number[];
   /** Network leads: pairs shown as decided by an ally or after a witness left. */
   shownPairs?: number[];
+  /** Cipher leads: the digit the player put at each position of the code, 0 = empty. */
+  digits?: number[];
+  /** Cipher leads: positions shown by an ally or after a witness left. */
+  shownDigits?: number[];
 }
 
 export interface GameState {
@@ -79,6 +84,12 @@ export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset, characte
       leads[lead.id] = { ...common, grid: [], notes: [], order, shownMoments: [] };
       continue;
     }
+    if (p.type === 'cipher') {
+      const digits = p.code.map(() => 0);
+      for (const gv of p.givens) digits[gv.p] = gv.d;
+      leads[lead.id] = { ...common, grid: [], notes: [], digits, shownDigits: [] };
+      continue;
+    }
     if (p.type === 'network') {
       leads[lead.id] = { ...common, grid: [], notes: [], links: p.links.map(() => 0), shownPairs: [] };
       continue;
@@ -100,6 +111,8 @@ export const gridOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as Genera
 export const timelineOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as TimelinePuzzle;
 /** A network lead's puzzle. */
 export const networkOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as NetworkPuzzle;
+/** A cipher lead's puzzle. */
+export const cipherOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as CipherPuzzle;
 export const rules = (g: Game) => PRESET_RULES[g.s.preset];
 export const clockOn = (g: Game) => rules(g).clock !== 'off';
 export const totalHours = (g: Game) => g.cf.clock.days * g.cf.clock.hoursPerDay + rules(g).extraHours;
@@ -176,6 +189,14 @@ function fillGapLeft(g: Game, leadId: string) {
     }
     return;
   }
+  if (puzzleOf(g, leadId).type === 'cipher') {
+    const p = cipherOf(g, leadId);
+    for (const k of gapDigits(g, leadId)) {
+      lp.digits![k] = p.code[k];
+      lp.shownDigits!.push(k);
+    }
+    return;
+  }
   if (puzzleOf(g, leadId).type === 'network') {
     const p = networkOf(g, leadId);
     for (const k of gapPairs(g, leadId)) {
@@ -189,6 +210,32 @@ function fillGapLeft(g: Game, leadId: string) {
     lp.grid[r][c] = p.solution[r][c];
     lp.revealed.push([r, c]);
   }
+}
+
+/** Cipher version of gapCells: positions to show so the statements left still give one code. */
+export function gapDigits(g: Game, leadId: string): number[] {
+  const p = cipherOf(g, leadId);
+  const lp = g.s.leads[leadId];
+  const said = p.statements.filter((s) => !lp.missingSpeakers.includes(s.speaker)).map((s) => s.claim);
+  const shown = [...p.givens.map((x) => x.p), ...lp.shownDigits!];
+  const pin = (ps: number[]) => ({ ...p, givens: ps.map((k) => ({ p: k, d: p.code[k] })) });
+  let fits = fittingCodes(pin(shown), said);
+  const added: number[] = [];
+  while (fits.length > 1) {
+    let best = -1;
+    let bestLeft = fits.length;
+    for (let k = 0; k < p.size; k++) {
+      if (shown.includes(k) || added.includes(k)) continue;
+      const left = fits.filter((c) => c[k] === p.code[k]).length;
+      if (left < bestLeft) {
+        bestLeft = left;
+        best = k;
+      }
+    }
+    fits = fits.filter((c) => c[best] === p.code[best]);
+    added.push(best);
+  }
+  return added;
 }
 
 /** Network version of gapCells: pairs to show as decided so the statements left still give one network. */
@@ -297,6 +344,9 @@ export function checkLead(g: Game, leadId: string): CheckResult {
   if (p.type === 'timeline') {
     if (lp.order!.some((v) => !v)) return 'grid-incomplete';
     if (lp.order!.some((v, m) => v !== p.solution[m])) return 'grid-wrong';
+  } else if (p.type === 'cipher') {
+    if (lp.digits!.some((v) => !v)) return 'grid-incomplete';
+    if (lp.digits!.some((v, k) => v !== p.code[k])) return 'grid-wrong';
   } else if (p.type === 'network') {
     if (lp.links!.some((v) => !v)) return 'grid-incomplete';
     if (lp.links!.some((v, k) => (v === 1) !== (p.links[k] === 1))) return 'grid-wrong';
@@ -369,6 +419,16 @@ export function buyTip(g: Game, leadId: string, informant: string): AnyClaim | '
     spendHours(g, 1);
     lp.paidTips.push({ speaker: informant, claim: tc });
     return tc;
+  }
+  if (any.type === 'cipher') {
+    const have = [...any.statements.map((s) => s.claim), ...(lp.paidTips.map((x) => x.claim) as CipherClaim[])];
+    const cc = freshTrueCipherClaim(any, have, rng);
+    /* v8 ignore next -- a 4-digit code still has fresh true claims left */
+    if (!cc) return 'cant';
+    g.s.favors -= 1;
+    spendHours(g, 1);
+    lp.paidTips.push({ speaker: informant, claim: cc });
+    return cc;
   }
   if (any.type === 'network') {
     const have = [...any.statements.map((s) => s.claim), ...(lp.paidTips.map((x) => x.claim) as NetClaim[])];

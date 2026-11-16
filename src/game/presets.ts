@@ -42,3 +42,11 @@ export const NET_RULES: Record<Preset, { minBase: number; minGrade: number }> = 
   inspector: { minBase: 12, minGrade: 3 },
   chief: { minBase: 25, minGrade: 3 },
 };
+
+/** A cipher lead by rank: the fewest statements kinds it must use (no easy path) and the most statements it may take. */
+export const CIPHER_RULES: Record<Preset, { minGrade: number; maxStatements: number; givens: number }> = {
+  junior: { minGrade: 2, maxStatements: 8, givens: 0 },
+  detective: { minGrade: 3, maxStatements: 9, givens: 0 },
+  inspector: { minGrade: 3, maxStatements: 10, givens: 0 },
+  chief: { minGrade: 3, maxStatements: 13, givens: 1 },
+};

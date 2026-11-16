@@ -405,3 +405,10 @@ kbd {
 .pair-name { background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; padding: 2px 0; }
 .pair-btns { display: flex; gap: 6px; align-items: center; }
 .pair-btns .btn.on { background: var(--accent, #d9a441); color: #111; }
+
+.code { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
+.code-slot { display: grid; gap: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; }
+.code-slot.picked { border-color: var(--accent, #d9a441); }
+.code-slot.wrong, .code-slot.dup { border-color: var(--bad, #e0645c); }
+.code-pick { background: none; border: 0; color: var(--muted); font: inherit; text-align: left; cursor: pointer; padding: 0; }
+.code-digit { font-size: 1.4em; font-weight: 700; }

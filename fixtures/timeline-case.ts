@@ -3,10 +3,11 @@
  * without changing Case 1. It is only served by the dev server for the end-to-end tests (fixtures/timeline.html).
  */
 import caseFile from '../cases/case-01-harbor-ledger.json';
+import { generateCipher } from '../src/engine/cipher';
 import { generateNetwork } from '../src/engine/network';
 import { generateTimeline } from '../src/engine/timeline';
 import { PRESETS, type CaseFile, type Lead, type PuzzleBook } from '../src/game/caseTypes';
-import { MAP_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
+import { CIPHER_RULES, MAP_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
 
 const lead: Lead = {
   id: 'T1',
@@ -48,11 +49,26 @@ const net: Lead = {
   pointsTo: ['crane'],
 } as unknown as Lead;
 
+const cipher: Lead = {
+  id: 'C1',
+  type: 'cipher',
+  cost: 2,
+  opensAfter: [],
+  title: 'The chest lock',
+  intro: 'The chest opens with a code. Every digit is different. Work out the code from what the witnesses say. Not every witness is telling the truth.',
+  columns: [],
+  rows: [],
+  speakers: ['rosa', 'kane', 'tip', 'juno'],
+  liars: { junior: ['kane'], detective: ['kane'], inspector: ['kane', 'tip'], chief: ['kane', 'tip'] },
+  fact: 'The chest held the festival coins, and Tip had the key.',
+  pointsTo: ['tip'],
+} as unknown as Lead;
+
 export const timelineCase = {
   ...(caseFile as unknown as CaseFile),
   id: 'timeline-demo',
   rankStories: undefined,
-  leads: [lead, net],
+  leads: [lead, net, cipher],
   events: [],
   offers: [],
   missedClues: [],
@@ -86,5 +102,18 @@ for (const preset of PRESETS) {
     maxGrade: Math.min(PRESET_RULES[preset].maxGrade, 3),
     ...NET_RULES[preset],
     seed: n * 211,
+  });
+}
+
+for (const preset of PRESETS) {
+  const n = PRESET_RULES[preset].size;
+  const lies = cipher.liars[preset];
+  timelineBook[`C1:${preset}`] = generateCipher({
+    size: n,
+    speakers: cipher.speakers.map((id) => ({ id, lies: lies.filter((l) => l === id).length })),
+    liarRange: PRESET_RULES[preset].liarRange,
+    maxGrade: Math.min(PRESET_RULES[preset].maxGrade, 3),
+    ...CIPHER_RULES[preset],
+    seed: n * 307,
   });
 }
