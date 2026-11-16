@@ -192,10 +192,8 @@ test('ranks open in order: Junior first, the rest locked until the part below is
   await ranks.getByRole('radio', { name: /Detective/ }).click();
   await expect(page.getByText('Detective opens once you solve the Junior part of the case.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open the case' })).toBeDisabled();
-  // the detective is picked, the allies are shown but not ready yet
-  const who = page.getByRole('radiogroup', { name: 'Character' });
-  await expect(who.getByRole('radio', { name: /The detective/ })).toHaveAttribute('aria-checked', 'true');
-  await expect(who.getByRole('radio', { name: /Officer Cole/ })).toBeDisabled();
+  // no character pick: who the player plays next is revealed at the handover
+  await expect(page.getByRole('radiogroup', { name: 'Character' })).toHaveCount(0);
   await expectAccessible(page);
 
   await unlockUpTo(page, 'detective');
