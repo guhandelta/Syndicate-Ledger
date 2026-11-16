@@ -20,6 +20,10 @@ for (const preset of PRESETS) {
     const fullBust = cf.endings.find((e) => e.id === 'full-bust')!;
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(t(fullBust.title, PRESET_RULES[preset].tone));
     await expect(page.getByLabel('3 of 3 stars')).toBeVisible();
+    // the full bust uncovers this rank's part of the case, kept apart from the game save
+    const progress = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? 'null'), `syndicate-ledger:case:${cf.id}`);
+    expect(Object.keys(progress.parts)).toEqual([preset]);
+    expect(progress.parts[preset].ending).toBe('full-bust');
   });
 }
 
