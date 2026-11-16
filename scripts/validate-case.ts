@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
-import { PRESETS, VOICES, type CaseFile, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
+import { FACES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
 import { caseForRank, partOf } from '../src/game/rankStory';
 import { validateTown } from '../src/town/townLogic';

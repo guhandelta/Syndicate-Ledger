@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { VOICES, type CaseFile } from '../src/game/caseTypes';
+import { FACES, VOICES, type CaseFile } from '../src/game/caseTypes';
 import { aroundRect, bubblePaths, type BubbleShape } from '../src/ui/bubbleShape';
 import { VOICE_STYLE, expressionFor, unquote, voiceFor } from '../src/ui/voices';
 
@@ -61,14 +61,11 @@ describe('bubble outlines', () => {
 });
 
 describe('Case 1 dialogue', () => {
-  it('has a greeting and a full set of portraits for everyone in the cast', () => {
+  it('has a greeting and all seven faces for everyone in the cast', () => {
     const files = new Set(readdirSync('src/ui/portraits/crime'));
-    // new people whose art Guha is still making; they show initials and a plain figure until then
-    const awaitingArt = new Set(['karunakaran']);
     for (const c of cf.cast) {
       expect(c.greeting, c.id).toBeDefined();
-      if (awaitingArt.has(c.id)) continue;
-      for (const e of ['neutral', 'suspicious', 'caught-lying']) expect(files.has(`${c.id}-${e}.webp`), `${c.id}-${e}`).toBe(true);
+      for (const e of FACES) expect(files.has(`${c.id}-${e}.webp`), `${c.id}-${e}`).toBe(true);
     }
   });
 });

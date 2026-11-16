@@ -39,6 +39,12 @@ test('walk to the fish market, talk to a witness and open the first lead from it
   const talk = page.getByRole('dialog');
   await expect(talk.getByRole('heading')).toHaveText('Rosa Diaz');
   await expect(talk).toContainText('Has statements in: L1 Fish market cash book');
+  // ask Rosa what she thinks of Kane: the answer comes with how she says it
+  await talk.getByRole('group', { name: 'Ask about someone' }).getByRole('button', { name: 'Kane Hollis' }).click();
+  await expect(talk).toContainText('Kane scares my customers... I think he was near the market that night.');
+  await expect(talk.locator('.tell')).toContainText('rubs her hands');
+  // the words appear one by one and the whole line ends up on screen
+  await expect(talk.locator('.spoken').last()).toHaveAttribute('data-done', 'true');
   await page.keyboard.press('Escape');
   await expect(talk).toHaveCount(0);
 
@@ -47,6 +53,8 @@ test('walk to the fish market, talk to a witness and open the first lead from it
   await expect(page.getByRole('button', { name: /Camera: Behind/ })).toBeVisible();
   await page.keyboard.press('KeyB');
   await expect(page.getByRole('heading', { name: 'Leads' })).toBeVisible();
+  // what Rosa said is kept on Kane's card
+  await expect(page.getByRole('list', { name: 'What others say about Kane Hollis' })).toContainText('Rosa Diaz:');
 });
 
 test('story shots play once when new leads open, and can be skipped', async ({ page }) => {

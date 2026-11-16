@@ -1,8 +1,9 @@
-import type { Voice } from '../game/caseTypes';
+import type { Face, Voice } from '../game/caseTypes';
 import type { Trust } from '../game/state';
 import type { BubbleShape } from './bubbleShape';
 
-export type Expression = 'neutral' | 'suspicious' | 'caught-lying';
+/** A portrait face. Every person has neutral, suspicious and caught-lying; the rest fall back (src/ui/portraits.ts). */
+export type Expression = Face;
 
 export interface VoiceStyle {
   /** Outline drawn around the bubble. */

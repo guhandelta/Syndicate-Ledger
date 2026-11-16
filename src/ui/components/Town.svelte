@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { CastMember } from '../../game/caseTypes';
+  import type { CastMember, Line, Opinion } from '../../game/caseTypes';
+  import { greetingFor, hearOpinion, opinionsOf } from '../../game/talk';
   import { clockOn, leadCost, leadOpen, puzzleOf, trustOf } from '../../game/state';
   import { FIGURES } from '../../town/figures';
   import { dueShots, type Nearby } from '../../town/townLogic';
@@ -9,6 +10,7 @@
   import type { Session } from '../session.svelte';
   import { expressionFor, voiceFor } from '../voices';
   import Dialogue from './Dialogue.svelte';
+  import Spoken from './Spoken.svelte';
   import StatusBar from './StatusBar.svelte';
   import { TRUST_LABEL } from './labels';
 
@@ -22,6 +24,8 @@
   let failed = $state(false);
   let nearby = $state<Nearby | null>(null);
   let talking = $state<CastMember | null>(null);
+  /** The opinion the player last asked the person they are talking to for. */
+  let asked = $state<Opinion | null>(null);
   let explore = $state<CameraKind>('angled');
   let live = $state(false);
   /** The story shot on screen, if any. */
@@ -88,7 +92,18 @@
     else session.work(d.lead!);
   }
 
+  /** Asks the person you're talking to what they think of someone. */
+  function ask(o: Opinion) {
+    asked = o;
+    hearOpinion(g, talking!.id, o.about);
+    session.save();
+  }
+
+  /** The face for a line: what the line says, else what the voice asks for, else what the player knows of them. */
+  const faceFor = (l: Line, trust: ReturnType<typeof trustOf> | undefined) => l.face ?? (l.voice === 'lying' || l.voice === 'suspicious' ? undefined : expressionFor(trust));
+
   function endTalk() {
+    asked = null;
     talking = null;
     if (!scene) return;
     scene.paused = false;
@@ -242,17 +257,35 @@
       {#if talking}
         {@const trust = talking.role === 'ally' ? undefined : trustOf(g, talking.id)}
         {@const leads = talking.role === 'ally' ? [] : speaksIn(talking)}
+        {@const greeting = greetingFor(g, talking)}
+        {@const opinions = trust === 'refuses' ? [] : opinionsOf(g, talking)}
         <div class="town-talk" role="dialog" aria-labelledby="talk-name">
           <div class="talk-head">
             <h2 id="talk-name">{talking.name}</h2>
             <p class="talk-role">{roleLine(talking)}</p>
             <p class="talk-blurb muted">{session.T(talking.blurb)}</p>
           </div>
-          {#if talking.greeting}
-            {@const voice = voiceFor(talking.greeting.voice, trust)}
-            <Dialogue person={talking} {voice} expression={expressionFor(trust)} friendly={session.tone === 'friendly'} size={104}>
-              <p>{session.T(talking.greeting.text)}</p>
+          {#if greeting}
+            {@const voice = voiceFor(greeting.voice, trust)}
+            <Dialogue person={talking} {voice} expression={faceFor(greeting, trust)} friendly={session.tone === 'friendly'} size={104}>
+              <p><Spoken line={session.T(greeting.text)} /></p>
             </Dialogue>
+            {#if greeting.tell}<p class="tell">{session.T(greeting.tell)}</p>{/if}
+          {/if}
+          {#if opinions.length}
+            <div class="ask-about" role="group" aria-label="Ask about someone">
+              <span class="muted">Ask about:</span>
+              {#each opinions as o (o.about)}
+                <button class="btn sm" class:on={asked?.about === o.about} onclick={() => ask(o)}>{session.person(o.about).name}</button>
+              {/each}
+            </div>
+          {/if}
+          {#if asked}
+            {@const voice = voiceFor(asked.voice, trust)}
+            <Dialogue person={talking} {voice} expression={faceFor(asked, trust)} friendly={session.tone === 'friendly'} size={80}>
+              <p><Spoken line={session.T(asked.text)} /></p>
+            </Dialogue>
+            {#if asked.tell}<p class="tell">{session.T(asked.tell)}</p>{/if}
           {/if}
           <Dialogue voice="thought" side="right" size={44}>
             <p>

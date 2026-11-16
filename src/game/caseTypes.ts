@@ -17,10 +17,47 @@ export type Ability = 'forensics' | 'accountant' | 'undercover' | 'partner';
 export type Voice = 'speech' | 'calm' | 'thought' | 'shout' | 'whisper' | 'nervous' | 'suspicious' | 'lying';
 export const VOICES: Voice[] = ['speech', 'calm', 'thought', 'shout', 'whisper', 'nervous', 'suspicious', 'lying'];
 
+/**
+ * The faces a person can make. The first three are drawn for everyone; the rest fall back to the nearest one
+ * until their art exists (src/ui/portraits.ts).
+ */
+export type Face = 'neutral' | 'suspicious' | 'caught-lying' | 'nervous' | 'angry' | 'smug' | 'scared';
+export const FACES: Face[] = ['neutral', 'suspicious', 'caught-lying', 'nervous', 'angry', 'smug', 'scared'];
+
+/**
+ * When a line can be said, from what the player has done so far. Every listed part must hold.
+ * Flags are the ones the game sets: an accepted offer's id, "<id>-exposed", "refuses:<id>".
+ */
+export interface Condition {
+  solved?: string[];
+  unsolved?: string[];
+  flags?: string[];
+  notFlags?: string[];
+  /** People the player has accused, at least once. */
+  accused?: string[];
+  notAccused?: string[];
+  /** People the player has caught lying (their trust is "caught"). */
+  caught?: string[];
+  /** Who the player is playing as. */
+  character?: string[];
+}
+
 /** Something a person says out loud, and how they say it (default "speech"). */
 export interface Line {
+  /** "..." is a pause and *word* is stressed when the line is spoken. */
   text: Text;
   voice?: Voice;
+  /** The face they make while saying it. Left out, it follows the voice, then what the player knows of them. */
+  face?: Face;
+  /** A short stage direction shown with the line, such as "glances at Crane first". A hint, never proof. */
+  tell?: Text;
+  /** Said only when this holds. */
+  when?: Condition;
+}
+
+/** What one person says about another. Opinions can be biased or wrong. */
+export interface Opinion extends Line {
+  about: string;
 }
 
 export interface CastMember {
@@ -34,6 +71,10 @@ export interface CastMember {
   blurb: Text;
   /** What they say when the player walks up to them in the town. */
   greeting?: Line;
+  /** Greetings that depend on what the player has done; the first one whose condition holds wins over `greeting`. */
+  greetings?: Line[];
+  /** What they think of the others, asked about one person at a time. */
+  opinions?: Opinion[];
   /** How they usually talk; their statements use it. Default "speech". */
   voice?: Voice;
 }

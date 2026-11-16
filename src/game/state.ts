@@ -47,6 +47,8 @@ export interface GameState {
   cluesShown?: string[];
   /** Who the player is playing as (a PlayableCharacter id). Older saves have none: the detective. */
   character?: string;
+  /** Opinions the player has heard, as "<speaker>:<about>". */
+  heard?: string[];
 }
 
 export interface Game {
