@@ -10,6 +10,17 @@ const PORTRAITS: Record<string, string> = Object.fromEntries(
   Object.entries(files).map(([path, url]) => [path.replace(/^.*\/portraits\/(\w+)\/(.+)\.webp$/, '$1/$2'), url]),
 );
 
+/** The nearest face to use while a newer face's art doesn't exist yet. */
+export const FACE_FALLBACK: Record<Expression, Expression | undefined> = {
+  neutral: undefined,
+  suspicious: 'neutral',
+  'caught-lying': 'suspicious',
+  nervous: 'suspicious',
+  angry: 'suspicious',
+  scared: 'suspicious',
+  smug: 'neutral',
+};
+
 /** The best portrait there is for this person and expression, or undefined to fall back to initials. */
 export function portraitOf(castId: string, expression: Expression, friendly: boolean): string | undefined {
   const tones = friendly ? ['friendly', 'crime'] : ['crime'];
@@ -17,5 +28,6 @@ export function portraitOf(castId: string, expression: Expression, friendly: boo
     const src = PORTRAITS[`${tone}/${castId}-${expression}`];
     if (src) return src;
   }
-  return expression === 'neutral' ? undefined : portraitOf(castId, 'neutral', friendly);
+  const next = FACE_FALLBACK[expression];
+  return next ? portraitOf(castId, next, friendly) : undefined;
 }

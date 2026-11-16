@@ -361,3 +361,14 @@ kbd {
 .evidence-item input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--accent); flex: none; }
 .accuse-card:disabled { opacity: 0.5; cursor: not-allowed; }
 .accuse-tries { font-size: 0.85rem; }
+
+/* spoken lines and talk */
+.spoken { cursor: default; }
+.spoken .word.hidden { visibility: hidden; }
+.tell { font-style: italic; color: var(--muted); margin: 2px 0 8px; font-size: 0.92rem; }
+.tell::before { content: '('; }
+.tell::after { content: ')'; }
+.ask-about { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.ask-about .btn.on { border-color: var(--accent); }
+.heard { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; font-size: 0.88rem; }
+.heard li { color: var(--muted); }

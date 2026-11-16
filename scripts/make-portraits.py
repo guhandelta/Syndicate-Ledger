@@ -9,21 +9,25 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'src/ui/portraits'
 SIZE = 160
-EXPRESSIONS = ['neutral', 'suspicious', 'caught-lying']
+# The first three are drawn for everyone; the rest fall back to the nearest face in the game (src/ui/portraits.ts).
+EXPRESSIONS = ['neutral', 'suspicious', 'caught-lying', 'nervous', 'angry', 'smug', 'scared']
 
-# file name in assets -> cast id in the case file
+# file name in assets -> cast id in the case file. The player detective is not a cast member and is not shown in
+# dialogue yet; their source art (set-4 sheet, set-5 faces) needs its own crop when it is.
 CAST = {
     'dr-lin-abara': 'lin', 'juno-park': 'juno', 'kane-hollis': 'kane', 'mara-quill': 'mara',
     'officer-cole': 'cole', 'rosa-diaz': 'rosa', 'sgt-dex-okafor': 'dex', 'silas-crane': 'crane',
-    'tip-callahan': 'tip', 'vex-lorne': 'vex',
+    'tip-callahan': 'tip', 'vex-lorne': 'vex', 'thenmozhi-selvam': 'thenmozhi',
+    'captain-karunakaran-velu': 'karunakaran',
 }
 
 # Where to look, first match wins. Set 2 has the complete Rosa set; set 1 has Cole's neutral and caught-lying.
+# Set 5 has the four newer faces for everyone and all seven for Thenmozhi and Karunakaran.
 SOURCES = {
-    'crime': ['assets/portraits/set-2', 'assets/portraits/set-1', 'assets/portraits/set-3'],
+    'crime': ['assets/portraits/set-2', 'assets/portraits/set-1', 'assets/portraits/set-3', 'assets/portraits/set-5'],
     'friendly': ['assets/junior/portraits'],
 }
-PREFER = {('crime', 'officer-cole'): ['assets/portraits/set-1', 'assets/portraits/set-2']}
+PREFER = {('crime', 'officer-cole'): ['assets/portraits/set-1', 'assets/portraits/set-2', 'assets/portraits/set-5']}
 
 
 def face(src: Path) -> Image.Image:

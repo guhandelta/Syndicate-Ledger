@@ -10,22 +10,292 @@
   "cast": [
     { "id": "vex", "name": "Vex Lorne", "role": "suspect", "reliability": "liar", "protects": "crane", "voice": "calm", "color": "#c2410c",
       "blurb": { "crime": "Courier who moves the cash. Smooth talker.", "friendly": "Runs errands for the gang. Very smooth talker." },
-      "greeting": { "voice": "calm", "text": { "crime": "Relax, detective. I just carry packages. Nobody pays me to ask what's inside.", "friendly": "Hey there! I just run errands. Nothing to see here." } } },
+      "greeting": { "voice": "calm", "text": { "crime": "Relax, detective. I just carry packages. Nobody pays me to ask what's inside.", "friendly": "Hey there! I just run errands. Nothing to see here." } },
+      "greetings": [
+        {
+          "text": {
+            "crime": "I *told* you... I just carry packages. That's all.",
+            "friendly": "I *told* you... I just carry boxes. That's all!"
+          },
+          "voice": "nervous",
+          "face": "angry",
+          "tell": {
+            "crime": "his smile is gone",
+            "friendly": "he isn't smiling any more"
+          },
+          "when": {
+            "caught": [
+              "vex"
+            ]
+          }
+        }
+      ],
+      "opinions": [
+        {
+          "about": "crane",
+          "text": {
+            "crime": "Mr. Crane? Pays on time. That's all I know about him.",
+            "friendly": "Mr. Crane? He's nice to me. That's all I know."
+          },
+          "face": "smug",
+          "tell": {
+            "crime": "answers before you finish asking",
+            "friendly": "answers very fast"
+          }
+        },
+        {
+          "about": "kane",
+          "text": {
+            "crime": "Hollis? Watch that one. He's on the dock after dark... every night.",
+            "friendly": "Kane? Watch him. He's always on the dock at night!"
+          },
+          "face": "smug",
+          "tell": {
+            "crime": "leans in, like he's doing you a favor",
+            "friendly": "leans in close"
+          }
+        },
+        {
+          "about": "tip",
+          "text": {
+            "crime": "Tip sells to whoever pays most. Ask him what he sold *you*.",
+            "friendly": "Tip tells secrets to anyone. Ask what he told *you*."
+          },
+          "face": "nervous"
+        }
+      ]
+    },
     { "id": "kane", "name": "Kane Hollis", "role": "suspect", "reliability": "honest", "color": "#4d7c0f",
       "blurb": { "crime": "Dock foreman. Looks guilty, keeps to himself.", "friendly": "Dock boss. Grumpy, but fair." },
-      "greeting": { "voice": "shout", "text": { "crime": "Get off my dock unless you've got a warrant!", "friendly": "Hey! This is my dock! Watch your step!" } } },
+      "greeting": { "voice": "shout", "text": { "crime": "Get off my dock unless you've got a warrant!", "friendly": "Hey! This is my dock! Watch your step!" } },
+      "opinions": [
+        {
+          "about": "vex",
+          "text": {
+            "crime": "That courier comes and goes at night with bags he never opens. I'd look at *him*.",
+            "friendly": "That delivery boy carries bags at night and never opens them. Look at *him*."
+          },
+          "face": "angry"
+        },
+        {
+          "about": "crane",
+          "text": {
+            "crime": "Crane reported his own safe. Funny... he didn't seem upset.",
+            "friendly": "Mr. Crane lost the prize chest... but he didn't look sad."
+          },
+          "face": "suspicious",
+          "tell": {
+            "crime": "spits over the side of the pier",
+            "friendly": "shakes his head"
+          }
+        },
+        {
+          "about": "rosa",
+          "text": {
+            "crime": "Rosa counts every coin twice. If her book is wrong, someone changed it.",
+            "friendly": "Rosa counts everything twice. If her notebook is wrong, someone changed it."
+          },
+          "voice": "calm"
+        }
+      ]
+    },
     { "id": "rosa", "name": "Rosa Diaz", "role": "witness", "reliability": "mistaken", "voice": "nervous", "color": "#be185d",
       "blurb": { "crime": "Runs the fish market. Busy, sharp, sometimes rushed.", "friendly": "Runs the fish market. Always in a hurry." },
-      "greeting": { "voice": "nervous", "text": { "crime": "Detective? Make it quick, the morning catch won't sell itself.", "friendly": "Oh! Hi! Sorry, I'm super busy today!" } } },
+      "greeting": { "voice": "nervous", "text": { "crime": "Detective? Make it quick, the morning catch won't sell itself.", "friendly": "Oh! Hi! Sorry, I'm super busy today!" } },
+      "opinions": [
+        {
+          "about": "kane",
+          "text": {
+            "crime": "Kane scares my customers... I *think* he was near the market that night.",
+            "friendly": "Kane is grumpy... I *think* he was near my stall that night."
+          },
+          "voice": "nervous",
+          "face": "nervous",
+          "tell": {
+            "crime": "rubs her hands, not sure of herself",
+            "friendly": "isn't sure"
+          }
+        },
+        {
+          "about": "vex",
+          "text": {
+            "crime": "Vex? Charming boy. Always tips my fish boys.",
+            "friendly": "Vex? He's sweet. He always says hello."
+          },
+          "face": "neutral"
+        },
+        {
+          "about": "tip",
+          "text": {
+            "crime": "Tip owes half the market money. Don't lend him a thing.",
+            "friendly": "Tip borrows things and never gives them back."
+          },
+          "face": "suspicious"
+        }
+      ]
+    },
     { "id": "juno", "name": "Juno Park", "role": "witness", "reliability": "honest", "color": "#0369a1",
       "blurb": { "crime": "Night guard on the docks. Leaving town soon.", "friendly": "Night guard on the docks. Going on a trip soon." },
-      "greeting": { "voice": "speech", "text": { "crime": "I watched the docks all night. Ask now, my bus leaves soon.", "friendly": "I watched the docks all night! Ask me before my trip." } } },
+      "greeting": { "voice": "speech", "text": { "crime": "I watched the docks all night. Ask now, my bus leaves soon.", "friendly": "I watched the docks all night! Ask me before my trip." } },
+      "opinions": [
+        {
+          "about": "vex",
+          "text": {
+            "crime": "Saw Vex on the pier around three, with a bag. I wrote it down.",
+            "friendly": "I saw Vex on the pier at three, with a bag. I wrote it down."
+          },
+          "voice": "calm"
+        },
+        {
+          "about": "kane",
+          "text": {
+            "crime": "Kane was in the foreman's shed all night. I checked on him twice.",
+            "friendly": "Kane was in his shed all night. I checked twice."
+          },
+          "voice": "calm"
+        },
+        {
+          "about": "crane",
+          "text": {
+            "crime": "Crane's office light was off all night. That's all I can tell you.",
+            "friendly": "Mr. Crane's office light was off all night."
+          },
+          "face": "nervous",
+          "tell": {
+            "crime": "checks the time for her bus",
+            "friendly": "looks at her watch"
+          }
+        }
+      ]
+    },
     { "id": "tip", "name": "\"Tip\" Callahan", "role": "informant", "reliability": "double-agent", "protects": "crane", "voice": "whisper", "color": "#7e22ce",
       "blurb": { "crime": "Knows everyone. Sells what he hears, to anyone.", "friendly": "Knows everybody's business. Will tell you things... for a favor." },
-      "greeting": { "voice": "whisper", "text": { "crime": "Psst. Everything has a price in this harbor. Even what I know.", "friendly": "Psst! I know secrets... for a favor." } } },
+      "greeting": { "voice": "whisper", "text": { "crime": "Psst. Everything has a price in this harbor. Even what I know.", "friendly": "Psst! I know secrets... for a favor." } },
+      "greetings": [
+        {
+          "text": {
+            "crime": "Warehouse 9 is safe with me, detective. *Trust* me.",
+            "friendly": "Warehouse 9 is safe with me. *Promise!*"
+          },
+          "voice": "whisper",
+          "face": "smug",
+          "tell": {
+            "crime": "can't quite hide a grin",
+            "friendly": "is grinning"
+          },
+          "when": {
+            "flags": [
+              "tip-trap"
+            ]
+          }
+        }
+      ],
+      "opinions": [
+        {
+          "about": "crane",
+          "text": {
+            "crime": "Fine! Crane pays me... to sell you the *wrong* tips. Happy now?",
+            "friendly": "Okay! Mr. Crane asked me to give you the *wrong* clues. Sorry!"
+          },
+          "voice": "shout",
+          "face": "scared",
+          "when": {
+            "flags": [
+              "tip-exposed"
+            ]
+          }
+        },
+        {
+          "about": "crane",
+          "text": {
+            "crime": "Mr. Crane? Pillar of the harbor. *Nobody* says otherwise.",
+            "friendly": "Mr. Crane? Everyone likes him. *Nobody* says otherwise."
+          },
+          "voice": "whisper",
+          "face": "smug",
+          "tell": {
+            "crime": "glances over his shoulder first",
+            "friendly": "looks over his shoulder"
+          }
+        },
+        {
+          "about": "vex",
+          "text": {
+            "crime": "Vex? Small fish. He carries what he's told to carry.",
+            "friendly": "Vex? He just carries what he's told."
+          },
+          "voice": "whisper"
+        },
+        {
+          "about": "kane",
+          "text": {
+            "crime": "Kane's got a temper and an empty wallet. Make of that what you like.",
+            "friendly": "Kane is grumpy and has no money. Hmm!"
+          },
+          "voice": "whisper",
+          "face": "smug"
+        }
+      ]
+    },
     { "id": "crane", "name": "Silas Crane", "role": "boss", "reliability": "liar", "voice": "calm", "color": "#334155",
       "blurb": { "crime": "Owns Crane Shipping. Reported the theft himself.", "friendly": "Owns the big shipping company. He reported the missing coins." },
-      "greeting": { "voice": "calm", "text": { "crime": "I reported the theft myself, detective. I want this solved as much as you do.", "friendly": "I'm the one who told the police. Please find my coins!" } } },
+      "greeting": { "voice": "calm", "text": { "crime": "I reported the theft myself, detective. I want this solved as much as you do.", "friendly": "I'm the one who told the police. Please find my coins!" } },
+      "greetings": [
+        {
+          "text": {
+            "crime": "Detective... surely we can *talk* about this.",
+            "friendly": "Detective... can we *talk* about this?"
+          },
+          "face": "scared",
+          "tell": {
+            "crime": "his hand shakes on the desk",
+            "friendly": "his hands shake"
+          },
+          "when": {
+            "solved": [
+              "L4"
+            ]
+          }
+        }
+      ],
+      "opinions": [
+        {
+          "about": "tip",
+          "text": {
+            "crime": "Whatever Tip told you is a lie. That man would sell his own mother.",
+            "friendly": "Don't believe Tip. He makes things up!"
+          },
+          "voice": "shout",
+          "face": "angry",
+          "when": {
+            "solved": [
+              "L3"
+            ]
+          }
+        },
+        {
+          "about": "kane",
+          "text": {
+            "crime": "Hollis has hated me since I cut his crew's pay. Draw your own conclusions.",
+            "friendly": "Kane doesn't like me. Think about that."
+          },
+          "face": "smug",
+          "tell": {
+            "crime": "straightens his gold watch chain",
+            "friendly": "fixes his watch chain"
+          }
+        },
+        {
+          "about": "tip",
+          "text": {
+            "crime": "Tip is useful. Useful people get paid. Nothing more.",
+            "friendly": "Tip helps me sometimes. That's all."
+          },
+          "voice": "calm",
+          "face": "smug"
+        }
+      ]
+    },
     { "id": "mara", "name": "Mara Quill", "role": "ally", "ability": "accountant", "reliability": "honest", "color": "#0f766e",
       "blurb": { "crime": "Forensic accountant. Sees patterns in totals.", "friendly": "Counts things super fast." },
       "greeting": { "voice": "speech", "text": { "crime": "Bring me the totals. Numbers don't lie, even when people do.", "friendly": "Give me numbers and I'll count them super fast!" } } },
@@ -40,7 +310,30 @@
       "greeting": { "voice": "whisper", "text": { "crime": "Keep your voice down. I'm still inside the syndicate.", "friendly": "Shh! I'm a secret helper. Don't tell anyone!" } } },
     { "id": "karunakaran", "name": "Capt. Karunakaran Velu", "role": "witness", "reliability": "honest", "voice": "calm", "color": "#155e75",
       "blurb": { "crime": "Guides every ship in and out of Port Calder. Knows the sailing times.", "friendly": "Steers the big boats into the harbor. Knows when every boat leaves." },
-      "greeting": { "voice": "calm", "text": { "crime": "Tide turns at dusk on Day 3, detective. That ship goes with it.", "friendly": "The big boat leaves on Day 3 when the water rises!" } } }
+      "greeting": { "voice": "calm", "text": { "crime": "Tide turns at dusk on Day 3, detective. That ship goes with it.", "friendly": "The big boat leaves on Day 3 when the water rises!" } },
+      "opinions": [
+        {
+          "about": "crane",
+          "text": {
+            "crime": "Crane booked a berth for dusk on Day 3, and asked for the quiet channel. Ships don't usually ask.",
+            "friendly": "Mr. Crane's boat leaves at sunset on Day 3, by the quiet way out."
+          },
+          "voice": "calm",
+          "tell": {
+            "crime": "doesn't look up from the tide tables",
+            "friendly": "looks at his tide chart"
+          }
+        },
+        {
+          "about": "juno",
+          "text": {
+            "crime": "Juno keeps a better log than my harbor office. If she wrote it, it happened.",
+            "friendly": "Juno writes everything down. If she wrote it, it's true."
+          },
+          "voice": "calm"
+        }
+      ]
+    }
   ],
   "leads": [
     {
