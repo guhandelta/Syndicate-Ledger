@@ -6,14 +6,14 @@ import type { Cell } from '../engine/types';
 import type { AnyClaim, CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
-  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, cipherOf, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, leadOpen, cipherOf, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
   timelineOf,
   submitAccusation,
   type Game, type GameState,
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
 import { describeStatement, gridLabels, networkPeople, t, timelineLabels, type Tone } from '../game/text';
-import type { Pose } from '../town/townLogic';
+import { townForRank, type Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
 import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
 import { findWrong, zoneCombos } from './puzzleHelpers';
@@ -102,7 +102,8 @@ export class Session {
   readonly base: CaseFile;
   readonly book: PuzzleBook;
   /** The walkable place for this case, if it has one. */
-  readonly town: Town | null;
+  private readonly baseTown: Town | null;
+  private townCache = new Map<Preset, Town>();
   /** Where the player was standing in the town, so they return to the same spot. */
   townPose: Pose | null = null;
 
@@ -132,11 +133,20 @@ export class Session {
   constructor(cf: CaseFile, book: PuzzleBook, town: Town | null = null) {
     this.base = cf;
     this.book = book;
-    this.town = town;
+    this.baseTown = town;
     this.s = loadSave(cf);
     this.progress = loadProgress(cf);
     this.titlePreset = this.s ? this.s.preset : nextRank(cf, this.progress);
     this.titleCharacter = this.s?.character ?? cf.characters?.find((c) => c.ready)?.id ?? 'detective';
+  }
+
+  /** The town as the current rank plays it (its own lead doors). */
+  get town(): Town | null {
+    if (!this.baseTown) return null;
+    const preset = this.s?.preset ?? this.titlePreset;
+    let t = this.townCache.get(preset);
+    if (!t) this.townCache.set(preset, (t = townForRank(this.baseTown, this.cf.leads, preset)));
+    return t;
   }
 
   /** Ranks open in order: is this one open yet? */
@@ -808,6 +818,7 @@ export class Session {
     }
     const lead = this.lead;
     solveLead(g, id);
+    const next = this.cf.leads.find((l) => l.id === lead.then && leadOpen(g, l.id) && !g.s.leads[l.id].started);
     const lies = puzzleOf(g, id).truth.filter((x) => !x).length;
     this.modals.push({
       title: `Lead closed: ${this.T(lead.title)}`,
@@ -815,7 +826,9 @@ export class Session {
       fact: this.T(lead.fact),
       note: lies ? `Exposing ${lies === 1 ? 'a liar' : 'the liars'} earned you a favor.` : undefined,
       dismissible: true,
-      actions: [{ label: 'Continue', primary: true, run: this.closeModal }],
+      actions: next
+        ? [{ label: `On to: ${this.T(next.title)}`, primary: true, run: () => { this.closeModal(); this.work(next.id); } }, { label: 'Later', run: this.closeModal }]
+        : [{ label: 'Continue', primary: true, run: this.closeModal }],
     });
     this.show(this.hub);
     const offer = this.cf.offers.find((o) => o.after === id && !g.s.offersSeen.includes(o.id));

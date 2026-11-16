@@ -1,10 +1,12 @@
+import type { GeneratedPuzzle } from '../src/engine/types';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { GridBook } from '../src/game/caseTypes';
 import { gradePuzzle, nextStep } from '../src/engine/logic';
+import { book } from './caseBook';
 
-const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
-const all = Object.entries(book);
+// only the grid puzzles: timelines, networks and ciphers have their own engines and tests
+const all = Object.entries(book).filter(([, p]) => p.type === 'ledger' || p.type === 'surveillance') as [string, GeneratedPuzzle][];
 const empty = (n: number) => Array.from({ length: n }, () => Array(n).fill(0));
 
 describe('logic grading and hints', () => {

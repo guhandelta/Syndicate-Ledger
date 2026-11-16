@@ -1,3 +1,4 @@
+import type { GeneratedPuzzle } from '../src/engine/types';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { newGame } from '../src/game/state';
@@ -31,22 +32,22 @@ test('a v1 save loads and continues', async ({ page }) => {
 
 test('progress survives a reload, and back returns to the board', async ({ page }) => {
   await startCase(page, 'junior');
-  await solveLead(page, 'junior', 'L1');
+  await solveLead(page, 'junior', 'J1');
   await clearDialogs(page, { 'wants a word': 'Decline' });
-  await page.locator('article.lead', { hasText: 'L2' }).getByRole('button').click();
-  await expect(page).toHaveURL(/#\/lead\/L2$/);
+  await page.locator('article.lead', { hasText: 'J2' }).getByRole('button').click();
+  await expect(page).toHaveURL(/#\/lead\/J2$/);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/./);
-  await expect(page.locator('table.grid')).toBeVisible();
+  await expect(page.locator('ol.timeline')).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Leads' })).toBeVisible();
-  await expect(page.locator('article.lead', { hasText: 'L1' }).locator('.lead-state')).toHaveText('✓ Solved');
+  await expect(page.locator('article.lead', { hasText: 'J1' }).locator('.lead-state')).toHaveText('✓ Solved');
 });
 
 test('pencil marks, undo and redo work from the keyboard', async ({ page }) => {
   await startCase(page, 'inspector');
   await page.locator('article.lead', { hasText: 'L1' }).getByRole('button').click();
-  const p = book['L1:inspector'];
+  const p = book['L1:inspector'] as GeneratedPuzzle;
   const given = new Set(p.givens.map((x) => `${x.cell[0]},${x.cell[1]}`));
   const [r, c] = [...Array(36).keys()].map((i) => [Math.floor(i / 6), i % 6]).find(([r, c]) => !given.has(`${r},${c}`))!;
   const cell = page.locator('table.grid tbody tr').nth(r).locator('td').nth(c);
@@ -115,7 +116,7 @@ test('a tip pops up after 5 minutes without a move, and says what to do there', 
 
 test('the case notebook keeps notes across reloads, and typing in it does not touch the grid', async ({ page }) => {
   await startCase(page, 'junior');
-  await page.locator('article.lead', { hasText: 'L1' }).getByRole('button').click();
+  await page.locator('article.lead', { hasText: 'J1' }).getByRole('button').click();
   await clearDialogs(page);
   await page.locator('table.grid tbody td').first().click();
   const filled = await page.locator('table.grid .val').count();

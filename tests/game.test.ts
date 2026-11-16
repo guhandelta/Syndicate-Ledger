@@ -6,9 +6,9 @@ import { enumerate } from '../src/engine/solver';
 import { evalClaim } from '../src/engine/claims';
 import { fireEvents, accuse, accuseStatus, submitAccusation, addFlag, checkLead, gridOf as puzzleOf, hoursLeft, newGame, solveLead, spendHours, startLead, trustOf } from '../src/game/state';
 import { verifyUnique } from '../src/engine/generator';
+import { book } from './caseBook';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 
 function solve(g: ReturnType<typeof newGame>, id: string) {
   const p = puzzleOf(g, id);

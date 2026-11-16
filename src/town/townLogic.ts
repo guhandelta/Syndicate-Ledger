@@ -1,4 +1,5 @@
-import type { CaseFile } from '../game/caseTypes';
+import { PRESETS, type CaseFile, type Lead, type Preset } from '../game/caseTypes';
+import { caseForRank } from '../game/rankStory';
 import type { Building, CameraKind, CameraSettings, Door, Npc, Shot, Town, Vec2 } from './townTypes';
 
 /** Pure town rules: movement, collisions, who is nearby and where the camera goes. No rendering here. */
@@ -174,6 +175,20 @@ export function shotPose(shot: Shot, focus: Vec2, t = 0): CameraPose {
   };
 }
 
+/**
+ * The town as one rank plays it: each lead door opens that rank story's lead (`leadFor`, else `lead`),
+ * and a door whose lead this story does not have is left out.
+ */
+export function townForRank(town: Town, leads: Lead[], preset: Preset): Town {
+  const ids = new Set(leads.map((l) => l.id));
+  const doors = town.doors.flatMap((d): Door[] => {
+    if (d.goto) return [d];
+    const lead = d.leadFor?.[preset] ?? d.lead;
+    return lead && ids.has(lead) ? [{ ...d, lead }] : [];
+  });
+  return { ...town, doors };
+}
+
 /** Problems in a town file, checked against its case. An empty list means it is fine. */
 export function validateTown(town: Town, cf: CaseFile): string[] {
   const errors: string[] = [];
@@ -192,8 +207,15 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
   free(town.start.at, 'The start point');
   for (const door of town.doors) {
     free(door.at, `Door "${door.id}"`);
-    if (!!door.lead === !!door.goto) errors.push(`Door "${door.id}" needs exactly one of lead or goto`);
+    if (!!(door.lead || door.leadFor) === !!door.goto) errors.push(`Door "${door.id}" needs exactly one of lead or goto`);
     if (door.lead && !leadIds.has(door.lead)) errors.push(`Door "${door.id}" opens unknown lead ${door.lead}`);
+  }
+  // a rank story with its own leads needs a door for each of them
+  for (const rank of PRESETS) {
+    const story = caseForRank(cf, rank);
+    if (story === cf) continue;
+    const t = townForRank(town, story.leads, rank);
+    for (const l of story.leads) if (!t.doors.some((d) => d.lead === l.id)) errors.push(`${rank} story: lead ${l.id} has no door in the town`);
   }
   for (const id of leadIds) if (!town.doors.some((d) => d.lead === id)) errors.push(`Lead ${id} has no door in the town`);
   if (!town.doors.some((d) => d.goto === 'accuse')) errors.push('No door leads to the accusation');

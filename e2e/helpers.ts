@@ -3,12 +3,17 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type Preset } from '../src/game/caseTypes';
+import type { CipherPuzzle } from '../src/engine/cipher';
+import type { NetworkPuzzle } from '../src/engine/network';
+import type { TimelinePuzzle } from '../src/engine/timeline';
 import type { GeneratedPuzzle } from '../src/engine/types';
+import { caseForRank } from '../src/game/rankStory';
 
 const readJson = (file: string) => JSON.parse(readFileSync(path.resolve(file), 'utf8'));
 export const cf = readJson('cases/case-01-harbor-ledger.json') as CaseFile;
-// Case 1's leads are all grid leads
-export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle>;
+export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle>;
+/** The case as one rank plays it: its own story's leads, proof and endings. */
+export const caseFor = (preset: Preset) => caseForRank(cf, preset);
 export const GAME_URL = pathToFileURL(path.resolve('dist/syndicate-ledger.html')).href;
 
 export const PRESET_LABEL: Record<Preset, string> = { junior: 'Junior', detective: 'Detective', inspector: 'Inspector', chief: 'Chief' };
@@ -50,14 +55,25 @@ export async function solveLead(page: Page, preset: Preset, leadId: string) {
   await card.getByRole('button').click();
   await clearDialogs(page);
   const p = book[`${leadId}:${preset}`];
-  const rows = page.locator('table.grid tbody tr');
-  const given = new Set(p.givens.map((g) => `${g.cell[0]},${g.cell[1]}`));
-  for (let r = 0; r < p.size; r++)
-    for (let c = 0; c < p.size; c++) {
-      if (given.has(`${r},${c}`)) continue;
-      await rows.nth(r).locator('td').nth(c).click();
-      await page.keyboard.press(String(p.solution[r][c]));
-    }
+  if (p.type === 'timeline') {
+    const moments = page.locator('ul.moments > li.moment');
+    for (let m = 0; m < p.size; m++) await moments.nth(m).locator('select').selectOption(String(p.solution[m]));
+  } else if (p.type === 'network') {
+    const rows = page.locator('ul.pairs > li.pair');
+    for (let k = 0; k < p.links.length; k++) await rows.nth(k).getByRole('button', { name: p.links[k] ? 'In contact' : 'Never', exact: true }).click();
+  } else if (p.type === 'cipher') {
+    const slots = page.locator('ol.code > li.code-slot');
+    for (let k = 0; k < p.size; k++) await slots.nth(k).locator('select').selectOption(String(p.code[k]));
+  } else {
+    const rows = page.locator('table.grid tbody tr');
+    const given = new Set(p.givens.map((g) => `${g.cell[0]},${g.cell[1]}`));
+    for (let r = 0; r < p.size; r++)
+      for (let c = 0; c < p.size; c++) {
+        if (given.has(`${r},${c}`)) continue;
+        await rows.nth(r).locator('td').nth(c).click();
+        await page.keyboard.press(String(p.solution[r][c]));
+      }
+  }
   const stmts = page.locator('ul.stmts > li.stmt:not(.paid)');
   await expect(stmts).toHaveCount(p.statements.length);
   for (let i = 0; i < p.statements.length; i++)

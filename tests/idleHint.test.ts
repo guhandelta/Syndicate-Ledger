@@ -4,9 +4,9 @@ import type { CaseFile, GridBook } from '../src/game/caseTypes';
 import { newGame, gridOf as puzzleOf, solveLead, startLead } from '../src/game/state';
 import type { Town } from '../src/town/townTypes';
 import { idleHint, type IdleContext } from '../src/ui/idleHint';
+import { book } from './caseBook';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 const town: Town = JSON.parse(readFileSync('cases/case-01-harbor-ledger/town.json', 'utf8'));
 
 const ctx = (over: Partial<IdleContext>): IdleContext => ({ game: null, screen: 'title', leadId: null, town, dialog: false, tone: 'crime', ...over });
