@@ -299,6 +299,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-16 | Rank handovers: a rank story may have a `handover` (a short scene shown after its part is uncovered, plus one carried object that appears in the next rank's case notes) and an `opening` scene on the next rank's briefing. Lines can be conditioned on `rank`. Case 1: the CS-9 lock plate carries Junior into Detective. The carried object is shown, not yet usable as proof |
 | 2026-11-16 | Case 1 Junior plays its own story ("The friendly face"): five leads (cash book, timeline, network, map, then a code lock as a two-step finale: closing the map lead offers to go straight on to the code lead via `then`). Town doors may name a lead per rank (`leadFor`). Junior culprit is Tip. |
 | 2026-11-16 | Dialogue depth: all 7 faces for every Case 1 person (Guha's art), a face and tell per line, greetings that change with what the player did, opinions asked about one person at a time and kept on cast cards, words spoken one by one with pauses and stress (section 7) |
 | 2026-11-16 | Added the timeline lead type: put the moments of the night in order from witness statements, with the same one-answer, lies and no-easy-path rules as the grids (section 2). Case 1 has no timeline lead yet; one is played in a test case by the end-to-end tests |

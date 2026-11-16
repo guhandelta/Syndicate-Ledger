@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type GridBook } from '../src/game/caseTypes';
-import { caseBoard, caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
+import { caseBoard, carriedInto, caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
 import { newGame } from '../src/game/state';
 import { book } from './caseBook';
 
@@ -38,6 +38,22 @@ describe('rank stories', () => {
     // the game is built from the rank's own leads
     const g = newGame(junior, { ...book, 'J1:junior': book['L1:junior'] }, 'junior');
     expect(Object.keys(g.s.leads)).toEqual(['J1']);
+  });
+
+  it('the rank below hands one object over to the next rank, and the first rank has none', () => {
+    expect(carriedInto(cf, 'junior')).toBeUndefined();
+    const carried = carriedInto(cf, 'detective')!;
+    expect(carried.from).toBe('junior');
+    expect(JSON.stringify(carried.title)).toContain('stamped plate');
+    // a rank whose rank below hands nothing over gets nothing
+    expect(carriedInto(cf, 'inspector')).toBeUndefined();
+  });
+
+  it("Junior's handover scene and Detective's opening only name people in the cast", () => {
+    const ids = new Set(cf.cast.map((c) => c.id));
+    const lines = [...cf.rankStories!.junior!.handover!.scene, ...cf.rankStories!.detective!.opening!];
+    expect(lines.length).toBeGreaterThan(4);
+    for (const l of lines) if (l.who) expect(ids.has(l.who)).toBe(true);
   });
 
   it('the case closes only when every rank part is uncovered, with any character', () => {

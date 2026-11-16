@@ -2,15 +2,18 @@
   import { PRESET_RULES } from '../../game/presets';
   import type { Session } from '../session.svelte';
   import CastCard from './CastCard.svelte';
+  import Scene from './Scene.svelte';
 
   let { session }: { session: Session } = $props();
   const people = $derived(session.cf.cast.filter((c) => c.role !== 'ally'));
+  const opening = $derived(session.base.rankStories?.[session.g.s.preset]?.opening);
   const allies = $derived(session.cf.cast.filter((c) => c.role === 'ally'));
 </script>
 
 <main class="page">
   <p class="eyebrow">{PRESET_RULES[session.g.s.preset].label} · Case file 01</p>
   <h1>{session.T(session.cf.title)}</h1>
+  {#if opening}<Scene {session} lines={opening} label="The briefing" />{/if}
   <p class="setup">{session.T(session.cf.setup)}</p>
   <h2>People of interest</h2>
   <div class="cast-grid">

@@ -15,7 +15,8 @@ export function meets(g: Game, c: Condition | undefined): boolean {
     (c.accused ?? []).every(accused) &&
     !(c.notAccused ?? []).some(accused) &&
     (c.caught ?? []).every((id) => trustOf(g, id) === 'caught') &&
-    (!c.character || c.character.includes(g.s.character ?? 'detective'))
+    (!c.character || c.character.includes(g.s.character ?? 'detective')) &&
+    (!c.rank || c.rank.includes(g.s.preset))
   );
 }
 
