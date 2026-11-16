@@ -1143,6 +1143,40 @@
         "question": "Who did it?",
         "reveal": "Tip was playing both sides, and the fish market books lead to Crane's own private ledger. Crane robbed his own safe."
       },
+      "handover": {
+        "scene": [
+          {
+            "text": { "crime": "Crane sits in the interview room, hands flat on the table, and does not ask for a lawyer.", "friendly": "Crane sits in the interview room, hands flat on the table, and does not ask for a lawyer." }
+          },
+          {
+            "who": "crane",
+            "text": { "crime": "You found my ledger. Clever. Nobody finds my ledger.", "friendly": "You found my ledger. Clever. Nobody finds my ledger." },
+            "face": "smug",
+            "voice": "calm"
+          },
+          {
+            "who": "dex",
+            "text": { "crime": "He's too calm. A man in cuffs shouldn't smile like he's already won.", "friendly": "He's too calm. A man in cuffs shouldn't smile like he's already won." },
+            "voice": "whisper"
+          },
+          {
+            "who": "crane",
+            "text": { "crime": "Check the gate book, Inspector. Page forty. Then ask yourself who wrote it.", "friendly": "Check the gate book, Inspector. Page forty. Then ask yourself who wrote it." },
+            "face": "smug",
+            "voice": "calm"
+          },
+          {
+            "text": { "crime": "A page from the harbor gate book is clipped to the file. Every line on it is in the same neat hand.", "friendly": "A page from the harbor gate book is clipped to the file. Every line on it is in the same neat hand." }
+          },
+          {
+            "text": { "crime": "Next, you will see the case through the eyes of Dr. Lin Abara.", "friendly": "Next, you will look for clues as Dr. Lin Abara." }
+          }
+        ],
+        "carried": {
+          "title": { "crime": "Page forty of the gate book", "friendly": "Page forty of the gate book" },
+          "fact": { "crime": "The harbor gate book says Crane was at the dock the night of the safe. Every entry on page forty is in the same neat hand, written to order.", "friendly": "The gate book says Crane was at the dock that night. Every line on the page is in the same neat writing." }
+        }
+      },
       "opening": [
         {
           "text": {
@@ -1189,7 +1223,27 @@
         "title": "The cover story",
         "question": "How did they hide it?",
         "reveal": "Crane's alibi for the night of the safe was bought. The gate book was written to order."
-      }
+      },
+      "opening": [
+          {
+            "text": { "crime": "Gray morning at the harbor office. A young woman in a lab coat waits with the gate book open.", "friendly": "Gray morning at the harbor office. A young woman in a lab coat waits with the gate book open." }
+          },
+          {
+            "who": "lin",
+            "text": { "crime": "I'm Dr. Lin Abara. I read paper for a living, and this paper is lying.", "friendly": "I'm Dr. Lin Abara. I read paper for a living, and this paper is lying." },
+            "voice": "calm"
+          },
+          {
+            "who": "lin",
+            "text": { "crime": "Page forty. Ink from one pen, one sitting. Nobody signed in that night, so who did the writing?", "friendly": "Page forty. Ink from one pen, one sitting. Nobody signed in that night, so who did the writing?" },
+            "voice": "calm"
+          },
+          {
+            "who": "lin",
+            "text": { "crime": "The gate book is on your board. Somebody bought this alibi. How did they hide it?", "friendly": "The gate book is on your board. Somebody bought this alibi. How did they hide it?" },
+            "voice": "whisper"
+          }
+      ]
     },
     "chief": {
       "part": {

@@ -45,13 +45,14 @@ describe('rank stories', () => {
     const carried = carriedInto(cf, 'detective')!;
     expect(carried.from).toBe('junior');
     expect(JSON.stringify(carried.title)).toContain('stamped plate');
+    expect(JSON.stringify(carriedInto(cf, 'inspector')!.title)).toContain('gate book');
     // a rank whose rank below hands nothing over gets nothing
-    expect(carriedInto(cf, 'inspector')).toBeUndefined();
+    expect(carriedInto(cf, 'chief')).toBeUndefined();
   });
 
   it("Junior's handover scene and Detective's opening only name people in the cast", () => {
     const ids = new Set(cf.cast.map((c) => c.id));
-    const lines = [...cf.rankStories!.junior!.handover!.scene, ...cf.rankStories!.detective!.opening!];
+    const lines = [...cf.rankStories!.junior!.handover!.scene, ...cf.rankStories!.detective!.opening!, ...cf.rankStories!.detective!.handover!.scene, ...cf.rankStories!.inspector!.opening!];
     expect(lines.length).toBeGreaterThan(4);
     for (const l of lines) if (l.who) expect(ids.has(l.who)).toBe(true);
   });
