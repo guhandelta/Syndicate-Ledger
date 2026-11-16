@@ -1,3 +1,4 @@
+import type { CipherClaim } from '../engine/cipher';
 import type { NetClaim } from '../engine/network';
 import type { TimeClaim } from '../engine/timeline';
 import type { Claim } from '../engine/types';
@@ -131,9 +132,33 @@ export function describeNetClaim(c: NetClaim, people: string[]): string {
   }
 }
 
+const ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th'];
+
+/** Plain-language wording of a cipher claim: digits are named by their place in the code. */
+export function describeCipherClaim(c: CipherClaim): string {
+  const D = (p: number) => `the ${ORDINALS[p]} digit`;
+  switch (c.kind) {
+    case 'is':
+      return `${cap(D(c.p))} is ${c.d}.`;
+    case 'isNot':
+      return `${cap(D(c.p))} is not ${c.d}.`;
+    case 'even':
+      return `${cap(D(c.p))} is an even number.`;
+    case 'odd':
+      return `${cap(D(c.p))} is an odd number.`;
+    case 'greater':
+      return `${cap(D(c.a))} is bigger than ${D(c.b)}.`;
+    case 'sum':
+      return `${cap(D(c.a))} and ${D(c.b)} add up to ${c.total}.`;
+    case 'apart':
+      return `${cap(D(c.a))} and ${D(c.b)} are ${c.gap} apart.`;
+  }
+}
+
 /** Wording of a statement from any kind of lead. */
 export function describeStatement(cf: CaseFile, lead: Lead, p: AnyPuzzle, claim: AnyClaim, tone: Tone): string {
   if (p.type === 'timeline') return describeTimeClaim(claim as TimeClaim, timelineLabels(lead, p.size, tone));
+  if (p.type === 'cipher') return describeCipherClaim(claim as CipherClaim);
   if (p.type === 'network') return describeNetClaim(claim as NetClaim, networkPeople(cf, lead, p.size));
   return describeClaim(claim as Claim, gridLabels(cf, lead, p.size, tone), p.type);
 }

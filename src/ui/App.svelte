@@ -63,6 +63,7 @@
     }
     if (session.screen !== 'puzzle' || !session.game || !session.leadId) return;
     const k = e.key;
+    if (session.isCipher) return cipherKey(e);
     if (session.isNetwork) return networkKey(e);
     if (session.isTimeline) return timelineKey(e);
     const n = session.puzzle.size;
@@ -80,6 +81,30 @@
       e.preventDefault();
     } else if (MOVES[k]) {
       session.move(...MOVES[k]);
+      e.preventDefault();
+    }
+  }
+
+  /** Cipher keys: a number puts that digit at the picked place, 0 clears it, arrows pick another place. */
+  function cipherKey(e: KeyboardEvent) {
+    // the digit pickers handle their own keys
+    if ((e.target as HTMLElement | null)?.tagName === 'SELECT') return;
+    const k = e.key;
+    const n = session.anyPuzzle.size;
+    const pos = session.pui.pos;
+    if (/^[1-9]$/.test(k) && Number(k) <= n + 1 && pos !== null) {
+      session.placeDigit(pos, Number(k));
+      e.preventDefault();
+    } else if ((k === 'Backspace' || k === 'Delete' || k === '0') && pos !== null) {
+      session.placeDigit(pos, 0);
+      e.preventDefault();
+    } else if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'z') {
+      if (e.shiftKey) session.redo();
+      else session.undo();
+      e.preventDefault();
+    } else if (k === 'ArrowRight' || k === 'ArrowLeft' || k === 'ArrowDown' || k === 'ArrowUp') {
+      const fwd = k === 'ArrowRight' || k === 'ArrowDown';
+      session.pui.pos = ((pos ?? (fwd ? -1 : 0)) + (fwd ? 1 : n - 1)) % n;
       e.preventDefault();
     }
   }
