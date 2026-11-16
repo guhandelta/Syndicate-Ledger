@@ -1,0 +1,59 @@
+/**
+ * A test case for the timeline puzzle: Case 1's cast with one timeline lead, so the screen can be played and tested
+ * without changing Case 1. It is only served by the dev server for the end-to-end tests (fixtures/timeline.html).
+ */
+import caseFile from '../cases/case-01-harbor-ledger.json';
+import { generateTimeline } from '../src/engine/timeline';
+import { PRESETS, type CaseFile, type Lead, type PuzzleBook } from '../src/game/caseTypes';
+import { PRESET_RULES } from '../src/game/presets';
+
+const lead: Lead = {
+  id: 'T1',
+  type: 'timeline',
+  cost: 2,
+  opensAfter: [],
+  title: 'The night, minute by minute',
+  intro: 'Put the night in order. Every time has exactly one moment, and not every witness is telling the truth.',
+  columns: [],
+  rows: ['9 PM', '10 PM', '11 PM', '12 AM', '1 AM', '2 AM', '3 AM'],
+  moments: [
+    'The pier lights go out',
+    'The camera stops recording',
+    "Vex's van pulls up",
+    'A crate leaves the ice house',
+    'A call comes in to the harbor office',
+    'The alarm rings',
+    'The van drives away',
+  ],
+  speakers: ['vex', 'kane', 'rosa', 'juno'],
+  liars: { junior: ['vex'], detective: ['vex'], inspector: ['vex', 'kane'], chief: ['vex', 'kane'] },
+  fact: 'The van was at the pier before the alarm, so the alarm was no accident.',
+  pointsTo: ['vex'],
+} as unknown as Lead;
+
+export const timelineCase = {
+  ...(caseFile as unknown as CaseFile),
+  id: 'timeline-demo',
+  rankStories: undefined,
+  leads: [lead],
+  events: [],
+  offers: [],
+  missedClues: [],
+  proof: { vex: { needs: ['T1'] } },
+} as unknown as CaseFile;
+
+export const timelineBook: PuzzleBook = {};
+for (const preset of PRESETS) {
+  const n = PRESET_RULES[preset].size;
+  const lies = lead.liars[preset];
+  timelineBook[`T1:${preset}`] = generateTimeline({
+    size: n,
+    speakers: lead.speakers.map((id) => ({ id, lies: lies.filter((l) => l === id).length })),
+    liarRange: PRESET_RULES[preset].liarRange,
+    maxGrade: Math.min(PRESET_RULES[preset].maxGrade, 3),
+    minGrade: n >= 6 ? 3 : 2,
+    maxStatements: n >= 7 ? 13 : n + 4,
+    givens: n >= 7 ? 1 : 0,
+    seed: n * 101,
+  });
+}

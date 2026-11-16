@@ -81,5 +81,28 @@ export function rankUnlocked(cf: CaseFile, p: CaseProgress, preset: Preset): boo
 export const nextRank = (cf: CaseFile, p: CaseProgress): Preset =>
   PRESETS.find((r) => rankUnlocked(cf, p, r) && !p.parts[r]) ?? PRESETS[PRESETS.length - 1];
 
+/** One line of the case board on the start screen. */
+export interface BoardRow {
+  preset: Preset;
+  /** 1-based place in the case, for "Part 3 of 4". */
+  number: number;
+  /** found: its part is uncovered. open: it is the one to work on now. hidden: not reached, so nothing is given away. */
+  state: 'found' | 'open' | 'hidden';
+  part?: CasePart;
+}
+
+/**
+ * The case board shows only what the player has earned: the parts uncovered so far, the question of the rank
+ * that is open now, and hidden slots for the rest. A later rank's question stays unseen until the part below it
+ * is uncovered, because that question is built from what the earlier rank found (decided 2026-11-16).
+ */
+export function caseBoard(cf: CaseFile, p: CaseProgress): BoardRow[] {
+  return partsTotal(cf).map((preset, i) => {
+    const part = partOf(cf, preset)!;
+    if (p.parts[preset]) return { preset, number: i + 1, state: 'found', part };
+    return rankUnlocked(cf, p, preset) ? { preset, number: i + 1, state: 'open', part } : { preset, number: i + 1, state: 'hidden' };
+  });
+}
+
 /** The rank a solved part opens, if there is one above it. */
 export const rankAbove = (preset: Preset): Preset | undefined => PRESETS[PRESETS.indexOf(preset) + 1];

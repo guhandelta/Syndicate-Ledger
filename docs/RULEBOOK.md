@@ -46,6 +46,16 @@ Every puzzle is an N×N grid filled with 1 to N, with no repeats in any row or c
 - Those clues plus statements, with an allowed number of lies, MUST allow exactly one grid and exactly one set of liars.
 - A puzzle is solved when the grid is complete **and** the player has marked every statement as True or Lie. Accusing a liar is part of the solve, not a bonus.
 
+**Other kinds of lead (timeline)**
+
+A lead is not always a grid. A **timeline** lead gives N moments of the night and N times, and the player puts each moment at its own time (4, 5, 6 or 7 moments by rank, as the grid sizes).
+
+- Witnesses say when moments happened: at a time, not at a time, before another moment, right before it, or a stated number of steps apart. Some statements are lies, exactly as in the grids, and the player is told how many.
+- The same fairness rule applies: the statements with an allowed number of lies MUST leave exactly one order, `npm run validate` proves it, and the player marks every statement True or Lie before the lead closes.
+- No easy path: every timeline needs at least "before" statements (Junior), and Inspector and Chief timelines need "right before" or "steps apart". The Chief timeline starts with one moment fixed in place.
+- Allies work here too: forensics fixes a picked moment, the partner points at a wrong moment or the next one to think about, the informant sells one extra true statement, and a witness who leaves is covered by showing the moments that keep one answer.
+- A lead names its type in the case file (`"type": "timeline"`), lists its `moments` (most important first) and its `rows` as the times, and has no `columns`.
+
 **Player tools**
 
 - Pencil marks, undo and redo.
@@ -231,6 +241,9 @@ A case has one main crime, and each rank plays its own story around it (`rankSto
 - Each rank story uncovers one part of the crime: a `part` with a title, the question it answers and what the player learns. The case is closed only when every rank's part is uncovered, with any character, in any order. `closing` is the text shown then.
 - A rank story may replace the story fields `title`, `setup`, `leads`, `events`, `offers`, `endings`, `proof`, `lost` and `missedClues`. Anything it leaves out comes from the case file, so the cast and the town are shared.
 - Ranks are played in order: Junior is always open, and each rank opens once the part below it is uncovered. A solved rank can be played again, for example as another character.
+- **Lines.** Any line (greeting, opinion) can carry a `face` (neutral, suspicious, caught-lying, nervous, angry, smug, scared), a `tell` (a short stage direction, a hint and never proof) and a `when` condition (leads solved or not, flags, people accused or caught lying, the character played). `...` is a pause and `*word*` is stressed when the line is spoken.
+- **Greetings and opinions.** `greetings` are extra greetings with a `when`; the first that holds wins over `greeting`. `opinions` say what a person thinks of someone else; the player asks about one person at a time, the first opinion about that person that holds is used, and what was heard is kept on that person's card. Opinions can be biased or wrong. A person who refuses to talk gives none.
+- **The case board shows only what the player has earned.** Parts already uncovered (title and what was learned), the question of the rank that is open now, and hidden slots ("Part 3 of 4: ???") for the rest. A later rank's question MUST stay unseen until the part below it is uncovered, because that question is built from what the earlier rank found.
 - `characters` lists who the player can be (the detective or an ally). Only ones marked `ready` can be picked; the first ready one is picked by default.
 - Only the full bust (the first ending) uncovers a rank's part. Parts are saved apart from the game save, so losing one rank never wipes the others.
 - `npm run validate` checks each rank story on its own, at its own rank's grid size, and requires every rank to have a part and the case to have a `closing` once `rankStories` is used.
@@ -283,6 +296,9 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-16 | Dialogue depth: all 7 faces for every Case 1 person (Guha's art), a face and tell per line, greetings that change with what the player did, opinions asked about one person at a time and kept on cast cards, words spoken one by one with pauses and stress (section 7) |
+| 2026-11-16 | Added the timeline lead type: put the moments of the night in order from witness statements, with the same one-answer, lies and no-easy-path rules as the grids (section 2). Case 1 has no timeline lead yet; one is played in a test case by the end-to-end tests |
+| 2026-11-16 | The case board no longer lists every rank's question up front: it shows the parts uncovered so far, the question of the open rank, and hidden slots for the rest, so the story takes shape rank by rank (section 7) |
 | 2026-11-16 | Ranks open in order, Junior first. The start page shows the case so far (parts uncovered, the question of each part still hidden, locked ranks) and a character pick; only the detective is ready. A full bust shows the part it uncovered and which rank it opens (section 7) |
 | 2026-11-15 | Rank stories: each rank plays its own story around the case's main crime and uncovers one part of it; the case closes when all four parts are uncovered, with any character. Case 1's current story is its Detective story and the other ranks play it too until their own stories are written (section 7) |
 | 2026-11-15 | Accusation limits grow with the grid: Inspector allows 4 different people and Chief 5 (2 tries each); Junior (4 people, 3 tries) and Detective (3 people, 2 tries) are unchanged (section 3) |

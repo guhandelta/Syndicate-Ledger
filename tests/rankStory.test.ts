@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type GridBook } from '../src/game/caseTypes';
-import { caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
+import { caseBoard, caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
 import { newGame } from '../src/game/state';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
@@ -84,5 +84,32 @@ describe('playing as a character', () => {
   it('a new game remembers who the player is, and older games have no one set', () => {
     expect(newGame(cf, book, 'junior', 'cole').s.character).toBe('cole');
     expect('character' in newGame(cf, book, 'junior').s).toBe(false);
+  });
+});
+
+describe('the case board', () => {
+  const found = (...ranks: (typeof PRESETS)[number][]) => recordPart(cf, ranks.reduce((p, r) => recordPart(cf, p, r, 'full-bust'), emptyProgress(cf)), ranks[0], 'full-bust');
+
+  it('starts with only the first question and hidden slots, so nothing is given away', () => {
+    const rows = caseBoard(cf, emptyProgress(cf));
+    expect(rows.map((r) => r.state)).toEqual(['open', 'hidden', 'hidden', 'hidden']);
+    expect(rows.map((r) => r.number)).toEqual([1, 2, 3, 4]);
+    expect(rows[0].part).toBe(partOf(cf, 'junior'));
+    // a hidden row carries no part, so no question or reveal can leak into the screen
+    for (const r of rows.slice(1)) expect(r.part).toBeUndefined();
+  });
+
+  it('shows each part found, the next question, and hides the rest', () => {
+    const rows = caseBoard(cf, found('junior', 'detective'));
+    expect(rows.map((r) => r.state)).toEqual(['found', 'found', 'open', 'hidden']);
+    expect(rows[2].part).toBe(partOf(cf, 'inspector'));
+  });
+
+  it('has nothing left open once every part is found', () => {
+    expect(caseBoard(cf, found('junior', 'detective', 'inspector', 'chief')).map((r) => r.state)).toEqual(['found', 'found', 'found', 'found']);
+  });
+
+  it('is empty for a case without parts', () => {
+    expect(caseBoard({ ...cf, rankStories: undefined }, emptyProgress(cf))).toEqual([]);
   });
 });

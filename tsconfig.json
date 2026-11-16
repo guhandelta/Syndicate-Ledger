@@ -13,5 +13,5 @@
     "verbatimModuleSyntax": true,
     "types": ["node", "svelte", "vite/client"]
   },
-  "include": ["src", "scripts", "tests", "e2e"]
+  "include": ["src", "scripts", "tests", "e2e", "fixtures"]
 }

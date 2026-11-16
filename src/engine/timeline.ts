@@ -209,7 +209,8 @@ function tryTimeline(opts: TimelineOptions, rng: Rng): TimelinePuzzle | null {
   const order = rng.shuffle(statements.map((_, i) => i));
   const st = order.map((i) => statements[i]);
   const grade = Math.max(...st.map((s) => claimGrade(s.claim)));
-  if (grade > opts.maxGrade || grade < (opts.minGrade ?? 1)) return null;
+  // claims are only drawn up to maxGrade, so the grade can't be too high; it can be too low
+  if (grade < (opts.minGrade ?? 1)) return null;
   return { type: 'timeline', size: n, givens, statements: st, liarCounts: allowed, solution: sol, truth: order.map((i) => truth[i]), grade, seed: 0 };
 }
 
@@ -246,7 +247,7 @@ export function timelineStep(p: TimelinePuzzle, placed: number[]): { m: number; 
     for (const m of ms) {
       if (placed[m]) continue;
       const anchored = ms.every((x) => x === m || placed[x]);
-      const score = (anchored ? 0 : 10) + claimGrade(s.claim) + (s.claim.kind === 'notAt' ? 1 : 0);
+      const score = (anchored ? 0 : 10) + claimGrade(s.claim);
       if (!best || score < best.score) best = { m, statement: i, score };
     }
   });

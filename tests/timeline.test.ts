@@ -288,3 +288,43 @@ describe('idle tips on a timeline lead', () => {
     expect(tip(g)).toMatch(/Press Close this lead/);
   });
 });
+
+describe('timeline generator limits', () => {
+  it('works when every speaker lies, and without a minimum grade', () => {
+    const liars = [{ id: 'a', lies: 1 }, { id: 'b', lies: 1 }];
+    const p = generateTimeline({ size: 4, speakers: liars, maxGrade: 2, seed: 31, maxStatements: 12 });
+    expect(verifyTimeline(p)).toEqual({ ok: true });
+    expect(p.truth.filter((t) => !t)).toHaveLength(2);
+  });
+
+  it('refuses a puzzle that needs more statements than allowed because many speakers each need a line', () => {
+    const many = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((id, i) => ({ id, lies: i === 0 ? 1 : 0 }));
+    expect(() => generateTimeline({ size: 4, speakers: many, maxGrade: 2, minGrade: 2, maxStatements: 5, seed: 8 }, 5)).toThrow(/Could not generate/);
+  });
+
+  it('points the partner at a moment across many puzzles and partly placed timelines', () => {
+    for (const seed of [41, 42, 43, 44, 45, 46]) {
+      const q = generateTimeline({ size: 6, speakers: speakers(6, 2), maxGrade: 3, minGrade: 3, maxStatements: 10, seed });
+      const placed = q.solution.map((s, m) => (m % 2 ? s : 0));
+      const step = timelineStep(q, placed);
+      if (step) expect(placed[step.m]).toBe(0);
+      expect(timelineStep(q, q.solution.map(() => 0))).not.toBeNull();
+    }
+  });
+});
+
+describe('timeline minimum grade', () => {
+  it('keeps trying until the puzzle needs at least the wanted reading skill', () => {
+    for (const seed of [51, 52, 53]) {
+      const p = generateTimeline({ size: 4, speakers: speakers(4, 1), maxGrade: 3, minGrade: 3, maxStatements: 9, seed });
+      expect(p.grade).toBe(3);
+      expect(verifyTimeline(p)).toEqual({ ok: true });
+    }
+  });
+});
+
+describe('timeline impossible grade', () => {
+  it('says so when the wanted skill is higher than the claims allowed', () => {
+    expect(() => generateTimeline({ size: 4, speakers: speakers(4, 1), maxGrade: 2, minGrade: 3, seed: 1 }, 3)).toThrow(/Could not generate/);
+  });
+});
