@@ -758,6 +758,20 @@
               "crime": "A brass plate on the lock is stamped CS-9. You slip it into your notebook.",
               "friendly": "A brass plate on the lock says CS-9. You tuck it into your notebook."
             }
+          },
+          {
+            "who": "dex",
+            "text": {
+              "crime": "Good work. Now hand that plate to Officer Cole at my desk. A young officer with fresh eyes. He'll be the one to chase what Tip was hiding.",
+              "friendly": "Good work! Take that plate to Officer Cole at my desk. He's the one who will chase what Tip was hiding."
+            },
+            "voice": "calm"
+          },
+          {
+            "text": {
+              "crime": "Next, you will see the case through the eyes of Officer Cole.",
+              "friendly": "Next, you will look for clues as Officer Cole."
+            }
           }
         ],
         "carried": {
