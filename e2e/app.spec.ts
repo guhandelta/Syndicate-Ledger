@@ -180,12 +180,13 @@ test('ranks open in order: Junior first, the rest locked until the part below is
   await page.goto(GAME_URL);
   const ranks = page.getByRole('radiogroup', { name: 'Difficulty' });
   await expect(ranks.getByRole('radio', { name: /Junior/ })).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByRole('heading', { name: 'The case so far: 0 of 4 parts uncovered' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The case so far: 0 parts uncovered' })).toBeVisible();
   // the board gives nothing away: only the question to work on now, and hidden slots for the rest
   const parts = page.locator('.case-board .parts');
   await expect(parts).toContainText('What happened to the festival coins?');
-  await expect(parts).toContainText('Part 2 of 4');
+  await expect(parts).toContainText('There is more to this case');
   await expect(parts).not.toContainText('Who did it?');
+  await expect(parts).not.toContainText(/of 4/);
   await expect(parts).not.toContainText('How did they hide it?');
   await expect(parts).not.toContainText('Who is really behind it');
   await ranks.getByRole('radio', { name: /Detective/ }).click();
@@ -198,11 +199,11 @@ test('ranks open in order: Junior first, the rest locked until the part below is
   await expectAccessible(page);
 
   await unlockUpTo(page, 'detective');
-  await expect(page.getByRole('heading', { name: 'The case so far: 1 of 4 parts uncovered' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The case so far: 1 part uncovered' })).toBeVisible();
   // the part found is shown, the next question appears, and the ranks after it stay hidden
   await expect(parts).toContainText('The friendly face');
   await expect(parts).toContainText('Who did it?');
-  await expect(parts).toContainText('Part 3 of 4');
+  await expect(parts).toContainText('There is more to this case');
   await expect(parts).not.toContainText('How did they hide it?');
   await expect(ranks.getByRole('radio', { name: /Detective/ })).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByRole('button', { name: 'Open the case' })).toBeEnabled();
