@@ -28,8 +28,9 @@ for (const preset of PRESETS) {
     expect(Object.keys(progress.parts)).toEqual(PRESETS.slice(0, PRESETS.indexOf(preset) + 1));
     expect(progress.parts[preset].ending).toBe('full-bust');
     await expect(page.getByRole('heading', { name: /^Part uncovered:/ })).toBeVisible();
-    // Junior's ending hands over to Detective with a scene after the part is uncovered
-    if (preset === 'junior') await expect(page.getByLabel('After the case')).toContainText('CS-9');
+    // Junior and Detective hand over to the next rank with a scene after the part is uncovered
+    const next: Record<string, string> = { junior: 'CS-9', detective: 'gate book' };
+    if (next[preset]) await expect(page.getByLabel('After the case')).toContainText(next[preset]);
     else await expect(page.getByLabel('After the case')).toHaveCount(0);
   });
 }
