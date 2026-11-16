@@ -817,8 +817,8 @@
         }
       ],
       "setup": {
-        "crime": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty. Everybody says it was a sneaky stranger. Tip, the harbor helper, is eager to help you look.",
-        "friendly": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty! Tip, the helpful harbor kid, is happy to help you look."
+        "crime": "Port Calder is a small harbor town, and tonight is the Gold Coin Festival. Every year the town locks its prize coins in one chest on the dock, and every year nothing goes wrong. This morning the chest is empty. Nobody saw it leave, the market is full of nervous whispers, and everybody agrees it must have been a sneaky stranger. You are new in town and nobody owes you a thing, but Tip, the harbor helper, has already offered to show you around. Somebody here knows where those coins went.",
+        "friendly": "Port Calder is a little harbor town, and tonight is the Gold Coin Festival! Every year the town keeps its prize coins in one chest on the dock, and every year they are safe. This morning the chest is empty! Nobody saw a thing, the market is buzzing, and everyone says a sneaky stranger did it. You are new in town, but Tip, the helpful harbor kid, has already offered to show you around. Somebody here knows where those coins went."
       },
       "leads": [
         {
