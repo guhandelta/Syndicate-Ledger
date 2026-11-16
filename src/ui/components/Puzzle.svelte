@@ -3,6 +3,7 @@
   import { liarLine } from '../puzzleHelpers';
   import type { Session } from '../session.svelte';
   import AllyPanel from './AllyPanel.svelte';
+  import Network from './Network.svelte';
   import Grid from './Grid.svelte';
   import NumberPad from './NumberPad.svelte';
   import Statements from './Statements.svelte';
@@ -12,7 +13,7 @@
   let { session }: { session: Session } = $props();
   const lead = $derived(session.lead);
   const p = $derived(session.anyPuzzle);
-  const kind = $derived(lead.type === 'ledger' ? 'Cash ledger' : lead.type === 'surveillance' ? 'Camera log' : 'Timeline');
+  const kind = $derived(lead.type === 'ledger' ? 'Cash ledger' : lead.type === 'surveillance' ? 'Camera log' : lead.type === 'network' ? 'Network' : lead.map ? 'Map' : 'Timeline');
   const lp = $derived(session.lp);
   const pui = $derived(session.pui);
   const n = $derived(p.size);
@@ -35,7 +36,10 @@
   {/if}
   <div class="puzzle-layout">
     <div class="left">
-      {#if p.type === 'timeline'}
+      {#if p.type === 'network'}
+        <Network {session} />
+        {#if lp.solved}<p class="solved-banner">✓ Solved. {session.T(lead.fact)}</p>{/if}
+      {:else if p.type === 'timeline'}
         <Timeline {session} />
         {#if lp.solved}<p class="solved-banner">✓ Solved. {session.T(lead.fact)}</p>{/if}
       {:else}
@@ -58,7 +62,7 @@
       {#if pui.message}<div class="msg" role="status">{pui.message}</div>{/if}
       {#if !lp.solved}
         <div class="close-row">
-          {#if rules(session.g).mistakes === 'on-request'}<button class="btn" onclick={() => session.checkGrid()}>Check my {p.type === 'timeline' ? 'timeline' : 'grid'}</button>{/if}
+          {#if rules(session.g).mistakes === 'on-request'}<button class="btn" onclick={() => session.checkGrid()}>Check my {p.type === 'network' ? 'network' : p.type === 'timeline' ? (lead.map ? 'map' : 'timeline') : 'grid'}</button>{/if}
           <button class="btn primary" onclick={() => session.closeLead()}>Close this lead</button>
         </div>
       {/if}

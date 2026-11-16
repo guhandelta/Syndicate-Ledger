@@ -389,3 +389,19 @@ kbd {
 .ask-about .btn.on { border-color: var(--accent); }
 .heard { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; font-size: 0.88rem; }
 .heard li { color: var(--muted); }
+
+.corridors-note { margin: 0 0 6px; color: var(--muted); font-size: 0.9em; }
+.corridors { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 4px; }
+.corridors li { padding: 4px 8px; border: 1px dashed var(--line, #888); border-radius: 6px; font-size: 0.9em; }
+
+.counts { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 4px; }
+.counts li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; }
+.counts li.full { border-color: var(--good, #4caf7d); }
+.counts li.over { border-color: var(--bad, #e0645c); }
+.pairs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.pair { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; }
+.pair.picked { border-color: var(--accent, #d9a441); }
+.pair.wrong { border-color: var(--bad, #e0645c); }
+.pair-name { background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; padding: 2px 0; }
+.pair-btns { display: flex; gap: 6px; align-items: center; }
+.pair-btns .btn.on { background: var(--accent, #d9a441); color: #111; }
