@@ -22,8 +22,9 @@ for (const preset of PRESETS) {
     await expect(page.getByLabel('3 of 3 stars')).toBeVisible();
     // the full bust uncovers this rank's part of the case, kept apart from the game save
     const progress = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? 'null'), `syndicate-ledger:case:${cf.id}`);
-    expect(Object.keys(progress.parts)).toEqual([preset]);
+    expect(Object.keys(progress.parts)).toEqual(PRESETS.slice(0, PRESETS.indexOf(preset) + 1));
     expect(progress.parts[preset].ending).toBe('full-bust');
+    await expect(page.getByRole('heading', { name: /^Part uncovered:/ })).toBeVisible();
   });
 }
 

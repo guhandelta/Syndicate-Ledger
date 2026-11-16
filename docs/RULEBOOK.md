@@ -230,6 +230,8 @@ A case has one main crime, and each rank plays its own story around it (`rankSto
 
 - Each rank story uncovers one part of the crime: a `part` with a title, the question it answers and what the player learns. The case is closed only when every rank's part is uncovered, with any character, in any order. `closing` is the text shown then.
 - A rank story may replace the story fields `title`, `setup`, `leads`, `events`, `offers`, `endings`, `proof`, `lost` and `missedClues`. Anything it leaves out comes from the case file, so the cast and the town are shared.
+- Ranks are played in order: Junior is always open, and each rank opens once the part below it is uncovered. A solved rank can be played again, for example as another character.
+- `characters` lists who the player can be (the detective or an ally). Only ones marked `ready` can be picked; the first ready one is picked by default.
 - Only the full bust (the first ending) uncovers a rank's part. Parts are saved apart from the game save, so losing one rank never wipes the others.
 - `npm run validate` checks each rank story on its own, at its own rank's grid size, and requires every rank to have a part and the case to have a `closing` once `rankStories` is used.
 
@@ -281,6 +283,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-16 | Ranks open in order, Junior first. The start page shows the case so far (parts uncovered, the question of each part still hidden, locked ranks) and a character pick; only the detective is ready. A full bust shows the part it uncovered and which rank it opens (section 7) |
 | 2026-11-15 | Rank stories: each rank plays its own story around the case's main crime and uncovers one part of it; the case closes when all four parts are uncovered, with any character. Case 1's current story is its Detective story and the other ranks play it too until their own stories are written (section 7) |
 | 2026-11-15 | Accusation limits grow with the grid: Inspector allows 4 different people and Chief 5 (2 tries each); Junior (4 people, 3 tries) and Detective (3 people, 2 tries) are unchanged (section 3) |
 | 2026-11-15 | The start page is now only for new games. Returning players with a saved case see a Welcome back page (rank, leads solved, hours and favors left) with Continue case and Start a new case; starting over asks them to pick a rank again. |

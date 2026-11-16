@@ -59,6 +59,16 @@ button { font: inherit; }
 .preset-name { font-weight: 700; font-size: 1.05rem; }
 .preset-age { color: var(--accent); font-size: 0.85rem; }
 .preset-desc { color: var(--muted); font-size: 0.88rem; }
+.preset.locked { border-style: dashed; }
+.preset:disabled { cursor: not-allowed; border-style: dashed; color: var(--muted); }
+.lock, .done-mark { font-size: 0.85rem; }
+.done-mark { color: var(--ok); }
+.case-board .parts { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
+.case-board .parts li { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: var(--radius); padding: 8px 12px; }
+.case-board .parts li.got { border-left-color: var(--ok); }
+.case-board .parts li.locked { border-style: dashed; }
+.part-rank { display: block; color: var(--accent); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.closing { background: var(--panel-2); border-radius: var(--radius); padding: 10px 12px; }
 .welcome-stats { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 6px; font-size: 1.05rem; }
 .title-actions, .page-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
 .how { margin-top: 12px; color: var(--muted); }

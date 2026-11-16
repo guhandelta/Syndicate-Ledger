@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type PuzzleBook } from '../src/game/caseTypes';
-import { caseClosed, caseForRank, emptyProgress, parseProgress, partOf, partsTotal, partsUncovered, progressKey, recordPart } from '../src/game/rankStory';
+import { caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
 import { newGame } from '../src/game/state';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
@@ -37,7 +37,7 @@ describe('rank stories', () => {
     expect(partsTotal(cf)).toEqual(PRESETS);
     for (const [i, preset] of PRESETS.entries()) {
       expect(caseClosed(cf, p)).toBe(false);
-      p = recordPart(cf, p, preset, 'full-bust', '2026-11-15T00:00:00Z');
+      p = recordPart(cf, p, preset, 'full-bust', undefined, '2026-11-15T00:00:00Z');
       expect(partsUncovered(cf, p)).toHaveLength(i + 1);
     }
     expect(caseClosed(cf, p)).toBe(true);
@@ -51,11 +51,38 @@ describe('rank stories', () => {
   });
 
   it('reads saved progress, and ignores progress that is broken or for another case', () => {
-    const p = recordPart(cf, emptyProgress(cf), 'detective', 'full-bust', 'x');
+    const p = recordPart(cf, emptyProgress(cf), 'detective', 'full-bust', 'cole', 'x');
     expect(parseProgress(cf, JSON.stringify(p))).toEqual(p);
     expect(parseProgress(cf, '{oops')).toEqual(emptyProgress(cf));
     expect(parseProgress(cf, JSON.stringify({ ...p, caseId: 'other' }))).toEqual(emptyProgress(cf));
     expect(parseProgress(cf, null)).toEqual(emptyProgress(cf));
     expect(progressKey(cf.id)).toBe('syndicate-ledger:case:case-01-harbor-ledger');
+  });
+
+  it('ranks open in order, Junior first, each once the rank below is uncovered', () => {
+    let p = emptyProgress(cf);
+    expect(PRESETS.filter((r) => rankUnlocked(cf, p, r))).toEqual(['junior']);
+    expect(nextRank(cf, p)).toBe('junior');
+    for (const [i, preset] of PRESETS.entries()) {
+      p = recordPart(cf, p, preset, 'full-bust', 'detective', 'x');
+      expect(PRESETS.filter((r) => rankUnlocked(cf, p, r))).toEqual(PRESETS.slice(0, i + 2));
+    }
+    expect(nextRank(cf, p)).toBe('chief');
+    expect(p.parts.junior?.character).toBe('detective');
+    expect(rankAbove('junior')).toBe('detective');
+    expect(rankAbove('chief')).toBeUndefined();
+    const none: CaseFile = { ...cf, rankStories: undefined };
+    expect(PRESETS.every((r) => rankUnlocked(none, emptyProgress(none), r))).toBe(true);
+  });
+
+  it('Case 1 has the detective ready to play', () => {
+    expect(cf.characters?.find((c) => c.ready)?.id).toBe('detective');
+  });
+});
+
+describe('playing as a character', () => {
+  it('a new game remembers who the player is, and older games have no one set', () => {
+    expect(newGame(cf, book, 'junior', 'cole').s.character).toBe('cole');
+    expect('character' in newGame(cf, book, 'junior').s).toBe(false);
   });
 });

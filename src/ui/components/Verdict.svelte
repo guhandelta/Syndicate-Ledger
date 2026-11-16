@@ -1,6 +1,7 @@
 <script lang="ts">
   import { PRESET_RULES } from '../../game/presets';
   import { clockOn, puzzleOf, stars, totalHours } from '../../game/state';
+  import { caseClosed, partOf, rankAbove } from '../../game/rankStory';
   import { describeClaim, gridLabels } from '../../game/text';
   import type { Session } from '../session.svelte';
 
@@ -10,6 +11,10 @@
   const ending = $derived(cf.endings.find((e) => e.id === g.s.endingId)!);
   const st = $derived(stars(g));
   const boss = $derived(cf.cast.find((c) => c.role === 'boss')!);
+  /** A full bust uncovers this rank's part of the case and opens the next rank. */
+  const part = $derived(g.s.endingId === cf.endings[0].id ? partOf(session.base, g.s.preset) : undefined);
+  const next = $derived(rankAbove(g.s.preset));
+  const closed = $derived(caseClosed(session.base, session.progress));
 
   /** Every lie in the case, caught or missed, with who the liar was protecting (rule book section 6). */
   const lies = $derived(
@@ -44,6 +49,17 @@
       You accused <strong>{session.person(g.s.accused!).name}</strong>. The real boss was <strong>{boss.name}</strong>.
     {/if}
   </p>
+  {#if part}
+    <section class="case-board" aria-label="Part of the case uncovered">
+      <h2>Part uncovered: {session.T(part.title)}</h2>
+      <p>{session.T(part.reveal)}</p>
+      {#if closed && session.base.closing}
+        <p class="closing"><strong>{session.T(session.base.closing.title)}</strong> {session.T(session.base.closing.text)}</p>
+      {:else if next}
+        <p>The {PRESET_RULES[next].label} rank is now open. {session.T(partOf(session.base, next)!.question)}</p>
+      {/if}
+    </section>
+  {/if}
   <h2>Every lie in this case</h2>
   <ul class="lie-list">
     {#each lies as l (l.key)}

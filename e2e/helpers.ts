@@ -2,7 +2,7 @@ import { expect, type Page } from '@playwright/test';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
-import type { CaseFile, Preset, PuzzleBook } from '../src/game/caseTypes';
+import { PRESETS, type CaseFile, type Preset, type PuzzleBook } from '../src/game/caseTypes';
 
 const readJson = (file: string) => JSON.parse(readFileSync(path.resolve(file), 'utf8'));
 export const cf = readJson('cases/case-01-harbor-ledger.json') as CaseFile;
@@ -22,8 +22,20 @@ export async function clearDialogs(page: Page, answers: Record<string, string> =
   }
 }
 
+/** Ranks open in order, so playing a higher rank needs the parts below it uncovered first. */
+export async function unlockUpTo(page: Page, preset: Preset) {
+  const below = PRESETS.slice(0, PRESETS.indexOf(preset));
+  const parts = Object.fromEntries(below.map((r) => [r, { ending: 'full-bust', at: '2026-11-16T00:00:00Z', character: 'detective' }]));
+  await page.evaluate(
+    ([key, value]) => localStorage.setItem(key, value),
+    [`syndicate-ledger:case:${cf.id}`, JSON.stringify({ caseId: cf.id, parts })],
+  );
+  await page.reload();
+}
+
 export async function startCase(page: Page, preset: Preset) {
   await page.goto(GAME_URL);
+  if (preset !== 'junior') await unlockUpTo(page, preset);
   await page.getByRole('radio', { name: new RegExp(PRESET_LABEL[preset]) }).click();
   await page.getByRole('button', { name: 'Open the case' }).click();
   await page.getByRole('button', { name: 'Go to the evidence board' }).click();
