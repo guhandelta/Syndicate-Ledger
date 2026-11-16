@@ -73,6 +73,8 @@
       {#if facts.length || carried}
         <ul class="facts">
           {#if carried}<li class="carried"><strong>{session.T(carried.title)}:</strong> {session.T(carried.fact)} <span class="tag">From the {PRESET_RULES[carried.from].label} case</span></li>{/if}
+          {#if carried?.changed}<li class="carried"><strong>What changed:</strong> {session.T(carried.changed)}</li>{/if}
+          {#if carried?.open}<li class="carried"><strong>Still unanswered:</strong> {session.T(carried.open)}</li>{/if}
           {#each facts as l (l.id)}<li><strong>{session.T(l.title)}:</strong> {session.T(l.fact)}</li>{/each}
         </ul>
       {:else}
