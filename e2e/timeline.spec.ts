@@ -27,6 +27,10 @@ test('a timeline lead: put the moments at their times, mark the witnesses, close
   const stmts = page.locator('ul.stmts > li.stmt:not(.paid)');
   await expect(stmts).toHaveCount(p.statements.length);
 
+  // a map lead lists its corridors, one for each link of the floorplan
+  await expect(page.getByRole('heading', { name: 'Corridors' })).toBeVisible();
+  await expect(page.locator('ul.corridors > li')).toHaveCount(p.edges!.length);
+
   // closing early says what is missing
   await page.getByRole('button', { name: 'Close this lead' }).click();
   await expect(page.getByText('Some moments are not on the timeline yet.')).toBeVisible();

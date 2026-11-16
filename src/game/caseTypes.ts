@@ -101,6 +101,8 @@ export interface Lead {
    * `rows` are the times they can go at, and `columns` is empty.
    */
   moments?: Text[];
+  /** Timeline leads: the moments are stops on a floorplan, and the night is a walk along its corridors. */
+  map?: boolean;
   /** Timeline leads: what one step between times is called in "two hours apart". Default "hour". */
   step?: string;
   speakers: string[];

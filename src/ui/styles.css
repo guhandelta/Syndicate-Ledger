@@ -389,3 +389,7 @@ kbd {
 .ask-about .btn.on { border-color: var(--accent); }
 .heard { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 4px; font-size: 0.88rem; }
 .heard li { color: var(--muted); }
+
+.corridors-note { margin: 0 0 6px; color: var(--muted); font-size: 0.9em; }
+.corridors { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 4px; }
+.corridors li { padding: 4px 8px; border: 1px dashed var(--line, #888); border-radius: 6px; font-size: 0.9em; }

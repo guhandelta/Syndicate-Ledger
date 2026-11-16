@@ -26,3 +26,11 @@ export const PRESET_RULES: Record<Preset, PresetRules> = {
   inspector: { label: 'Inspector', age: '14+', size: 6, flagLiars: 'none', clock: 'normal', extraHours: 0, events: 'rumors', mistakes: 'off', startFavors: 3, tone: 'crime', liarRange: false, maxGrade: 4, accuse: { people: 4, perPerson: 2 } },
   chief: { label: 'Chief', age: 'Adult', size: 7, flagLiars: 'none', clock: 'normal', extraHours: 0, events: 'some-hidden', mistakes: 'off', startFavors: 2, tone: 'crime', liarRange: true, maxGrade: 4, accuse: { people: 5, perPerson: 2 } },
 };
+
+/** A map lead's floorplan by rank: extra corridors (more of them, more wrong walks) and the fewest walks that must be possible. */
+export const MAP_RULES: Record<Preset, { extraCorridors: number; minAlternatives: number }> = {
+  junior: { extraCorridors: 1, minAlternatives: 3 },
+  detective: { extraCorridors: 2, minAlternatives: 4 },
+  inspector: { extraCorridors: 4, minAlternatives: 6 },
+  chief: { extraCorridors: 5, minAlternatives: 8 },
+};

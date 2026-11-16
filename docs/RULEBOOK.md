@@ -55,7 +55,7 @@ A lead is not always a grid. A **timeline** lead gives N moments of the night an
 - No easy path: every timeline needs at least "before" statements (Junior), and Inspector and Chief timelines need "right before" or "steps apart". The Chief timeline starts with one moment fixed in place.
 - Allies work here too: forensics fixes a picked moment, the partner points at a wrong moment or the next one to think about, the informant sells one extra true statement, and a witness who leaves is covered by showing the moments that keep one answer.
 - A lead names its type in the case file (`"type": "timeline"`), lists its `moments` (most important first) and its `rows` as the times, and has no `columns`.
-- **Map** (a timeline over a floorplan): the moments are rooms joined by corridors, and the night is a walk through them, one room per time, so rooms at neighbouring times must be joined. More corridors mean more wrong walks to rule out; a map is only built when at least a set number of walks are possible, so it is never trivial. Not wired into a lead type yet: the engine is in `src/engine/timeline.ts` (`edges`).
+- **Map** (a timeline over a floorplan): the moments are rooms joined by corridors, and the night is a walk through them, one room per time, so rooms at neighbouring times must be joined. More corridors mean more wrong walks to rule out; a map is only built when at least a set number of walks are possible, so it is never trivial. A lead becomes a map by adding `"map": true` to a timeline lead; the corridors are drawn up when the puzzle is generated (more of them at higher ranks, see `MAP_RULES`) and listed on the screen.
 
 **Player tools**
 

@@ -5,11 +5,12 @@
 import caseFile from '../cases/case-01-harbor-ledger.json';
 import { generateTimeline } from '../src/engine/timeline';
 import { PRESETS, type CaseFile, type Lead, type PuzzleBook } from '../src/game/caseTypes';
-import { PRESET_RULES } from '../src/game/presets';
+import { MAP_RULES, PRESET_RULES } from '../src/game/presets';
 
 const lead: Lead = {
   id: 'T1',
   type: 'timeline',
+  map: true,
   cost: 2,
   opensAfter: [],
   title: 'The night, minute by minute',
@@ -54,6 +55,7 @@ for (const preset of PRESETS) {
     minGrade: n >= 6 ? 3 : 2,
     maxStatements: n >= 7 ? 13 : n + 4,
     givens: n >= 7 ? 1 : 0,
+    ...MAP_RULES[preset],
     seed: n * 101,
   });
 }

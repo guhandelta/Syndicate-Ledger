@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
-import { verifyTimeline } from '../src/engine/timeline';
+import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
 import { caseForRank, partOf } from '../src/game/rankStory';
@@ -121,6 +121,8 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
           const check = verifyTimeline(p);
           if (!check.ok) fail(`${key}: ${check.reason}`);
           // no easy path: every timeline needs at least "before", and only grown-up ranks get "right before" and "apart"
+          if (!!lead.map !== !!p.edges) fail(`${key}: ${lead.map ? 'a map lead needs a floorplan; run npm run generate' : 'only a map lead has a floorplan'}`);
+          if (p.edges && !isWalk(p.solution, p.edges)) fail(`${key}: the answer is not a walk along the corridors`);
           if (p.grade < 2 || p.grade > Math.min(rules.maxGrade, 3)) fail(`${key}: timeline grade ${p.grade} does not suit ${preset}`);
         } else {
           const check = verifyUnique(p);
