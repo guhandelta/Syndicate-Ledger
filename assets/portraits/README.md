@@ -1,10 +1,11 @@
 # Character portraits
 
-Head-and-shoulders portraits for the dialog and the trust meter, in three sets. Each file is named `<character>-<expression>.png`, where the expression is `neutral`, `suspicious` or `caught-lying`.
+Head-and-shoulders source portraits for the dialog and the trust meter. Each individual file is named `<character>-<expression>.png`. The original expressions are `neutral`, `suspicious`, and `caught-lying`; Case 1 also has `nervous`, `angry`, `smug`, and `scared` art.
 
 - `set-1/`: Dr. Lin Abara, Juno Park, Kane Hollis, Mara Quill and Officer Cole (all three expressions), plus Rosa Diaz (caught lying only).
 - `set-3/`: Silas Crane (neutral and suspicious, completing his set with set 2), Tip Callahan and Vex Lorne (all three expressions each).
 - `set-2/`: Rosa Diaz (all three expressions), Sgt. Dex Okafor (all three), Silas Crane (caught lying), and a second Officer Cole (suspicious).
+- `set-5/`: All seven expressions for Thenmozhi Selvam and Capt. Karunakaran Velu, plus the four additional Case 1 expressions for Silas Crane, Tip Callahan, Vex Lorne, Kane Hollis, Rosa Diaz, Juno Park, the player detective, Officer Cole, Mara Quill, Sgt. Dex Okafor, and Dr. Lin Abara (58 individual PNGs).
 
 Set 2 has the complete Rosa Diaz set, so use it for Rosa. Officer Cole appears in both sets; use set 1 for his neutral and caught-lying portraits, and choose between the two suspicious versions.
 
@@ -14,3 +15,5 @@ Every character now has at least one portrait. Silas Crane's full set is across 
 
 - `set-4/detective-neutral-suspicious-caught-off-guard.png`: expression sheet (1536x1024) with the detective's dialogue expressions.
 - `set-4/detective-junior-portrait.png`: the detective's portrait for the Junior rank.
+
+The four new detective expressions are individual files in `set-5/`. The original three detective faces remain together on the `set-4/` sheet. `set-5/` stores source art; the game's current dialogue portrait pipeline still uses its existing three-expression WebP set.
