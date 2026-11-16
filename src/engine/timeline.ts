@@ -34,6 +34,8 @@ export interface TimelinePuzzle {
   givens: TimeGiven[];
   statements: TimeStatement[];
   liarCounts: number[];
+  /** A floorplan (map puzzle): pairs of moments (rooms) joined by a corridor. The walk visits one room per slot, so rooms in neighbouring slots must be joined. Absent for a plain timeline. */
+  edges?: [number, number][];
   /** solution[m] = slot of moment m, 1..size. */
   solution: number[];
   truth: boolean[];
@@ -83,11 +85,27 @@ export function allOrders(n: number): number[][] {
   return out;
 }
 
+/** True when the order walks along corridors only: the rooms in neighbouring slots are joined. */
+export function isWalk(order: number[], edges: [number, number][]): boolean {
+  const roomAt: number[] = [];
+  order.forEach((slot, m) => (roomAt[slot] = m));
+  const joined = new Set(edges.map(([a, b]) => (a < b ? `${a},${b}` : `${b},${a}`)));
+  for (let s = 1; s < roomAt.length - 1; s++) {
+    const a = roomAt[s];
+    const b = roomAt[s + 1];
+    if (!joined.has(a < b ? `${a},${b}` : `${b},${a}`)) return false;
+  }
+  return true;
+}
+
+/** Every order the puzzle allows before any statement is heard: all orders, or only the walks of a floorplan. */
+export const candidateOrders = (n: number, edges?: [number, number][]) => (edges ? allOrders(n).filter((o) => isWalk(o, edges)) : allOrders(n));
+
 const sameOrder = (a: number[], b: number[]) => a.every((v, i) => v === b[i]);
 
 /** Orders that keep the givens and have an allowed number of false statements. */
-export function fittingOrders(p: Pick<TimelinePuzzle, 'size' | 'givens' | 'liarCounts'>, claims: TimeClaim[]): number[][] {
-  return allOrders(p.size).filter(
+export function fittingOrders(p: Pick<TimelinePuzzle, 'size' | 'givens' | 'liarCounts' | 'edges'>, claims: TimeClaim[]): number[][] {
+  return candidateOrders(p.size, p.edges).filter(
     (o) => p.givens.every((g) => o[g.m] === g.slot) && p.liarCounts.includes(claims.filter((c) => !evalTime(c, o)).length),
   );
 }
@@ -120,10 +138,34 @@ export interface TimelineOptions {
   maxStatements?: number;
   /** Moments shown in place at the start. */
   givens?: number;
+  /** Map puzzle: extra corridors beyond the walk itself (0 = none, a plain timeline). More corridors, more wrong walks. */
+  extraCorridors?: number;
+  /** Fewest orders (the answer included) that fit before the statements are heard, so it is never trivial. */
+  minAlternatives?: number;
   seed: number;
 }
 
 const key = (c: TimeClaim) => JSON.stringify(c);
+
+/** The corridors of a map: the walk itself (rooms in slot order), plus some random extras. Undefined for a plain timeline. */
+function floorplan(sol: number[], extra: number | undefined, rng: Rng): [number, number][] | undefined {
+  if (!extra) return undefined;
+  const n = sol.length;
+  const roomAt: number[] = [];
+  sol.forEach((slot, m) => (roomAt[slot] = m));
+  const edges: [number, number][] = [];
+  const has = (a: number, b: number) => edges.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+  for (let s = 1; s < n; s++) edges.push([roomAt[s], roomAt[s + 1]]);
+  const room = () => rng.int(0, n - 1);
+  for (let tries = 0, added = 0; added < extra && tries < 200; tries++) {
+    const a = room();
+    const b = room();
+    if (a === b || has(a, b)) continue;
+    edges.push([Math.min(a, b), Math.max(a, b)]);
+    added++;
+  }
+  return edges.map(([a, b]) => [Math.min(a, b), Math.max(a, b)] as [number, number]).sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+}
 
 function tryTimeline(opts: TimelineOptions, rng: Rng): TimelinePuzzle | null {
   const n = opts.size;
@@ -133,7 +175,9 @@ function tryTimeline(opts: TimelineOptions, rng: Rng): TimelinePuzzle | null {
     .shuffle(Array.from({ length: n }, (_, m) => m))
     .slice(0, opts.givens ?? 0)
     .map((m) => ({ m, slot: sol[m] }));
-  const others = allOrders(n).filter((o) => !sameOrder(o, sol) && givens.every((g) => o[g.m] === g.slot));
+  const edges = floorplan(sol, opts.extraCorridors, rng);
+  const others = candidateOrders(n, edges).filter((o) => !sameOrder(o, sol) && givens.every((g) => o[g.m] === g.slot));
+  if (others.length + 1 < (opts.minAlternatives ?? 0)) return null;
   const k = opts.speakers.reduce((s, sp) => s + sp.lies, 0);
   const allowed = opts.liarRange && k > 0 ? [k, k + 1] : [k];
 
@@ -211,7 +255,7 @@ function tryTimeline(opts: TimelineOptions, rng: Rng): TimelinePuzzle | null {
   const grade = Math.max(...st.map((s) => claimGrade(s.claim)));
   // claims are only drawn up to maxGrade, so the grade can't be too high; it can be too low
   if (grade < (opts.minGrade ?? 1)) return null;
-  return { type: 'timeline', size: n, givens, statements: st, liarCounts: allowed, solution: sol, truth: order.map((i) => truth[i]), grade, seed: 0 };
+  return { type: 'timeline', size: n, givens, ...(edges ? { edges } : {}), statements: st, liarCounts: allowed, solution: sol, truth: order.map((i) => truth[i]), grade, seed: 0 };
 }
 
 export function generateTimeline(opts: TimelineOptions, maxAttempts = 400): TimelinePuzzle {

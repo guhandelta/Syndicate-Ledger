@@ -3,7 +3,7 @@ import type { CaseFile, Lead, PuzzleBook } from '../src/game/caseTypes';
 import type { Claim } from '../src/engine/types';
 import { makeRng } from '../src/engine/rng';
 import {
-  allOrders, claimGrade, evalTime, fittingOrders, freshTrueTimeClaim, generateTimeline, momentsOf, randomTimeClaim, timelineStep, verifyTimeline, wrongMoment,
+  allOrders, candidateOrders, isWalk, claimGrade, evalTime, fittingOrders, freshTrueTimeClaim, generateTimeline, momentsOf, randomTimeClaim, timelineStep, verifyTimeline, wrongMoment,
   type TimeClaim, type TimelinePuzzle,
 } from '../src/engine/timeline';
 import { buyTip, checkLead, fireEvents, gapMoments, newGame, solveLead, startLead, timelineOf, gridOf } from '../src/game/state';
@@ -326,5 +326,34 @@ describe('timeline minimum grade', () => {
 describe('timeline impossible grade', () => {
   it('says so when the wanted skill is higher than the claims allowed', () => {
     expect(() => generateTimeline({ size: 4, speakers: speakers(4, 1), maxGrade: 2, minGrade: 3, seed: 1 }, 3)).toThrow(/Could not generate/);
+  });
+});
+
+describe('map puzzles (a timeline over a floorplan)', () => {
+  it('only walks along corridors are possible answers', () => {
+    // rooms 0-1-2-3 in a line: the walk 0,1,2,3 or back, nothing else
+    const line: [number, number][] = [[0, 1], [1, 2], [2, 3]];
+    expect(candidateOrders(4, line)).toHaveLength(2);
+    expect(isWalk([1, 2, 3, 4], line)).toBe(true);
+    expect(isWalk([2, 1, 3, 4], line)).toBe(false);
+    expect(candidateOrders(4)).toHaveLength(24);
+    expect(isWalk([1, 2, 3, 4], [[1, 0], [2, 1], [3, 2]])).toBe(true); // corridors may be written either way round
+  });
+
+  it('builds maps with one answer, every wrong walk ruled out, and corridors that lead somewhere', () => {
+    for (const [n, extra, alts] of [[4, 2, 3], [5, 3, 4], [6, 4, 6]] as const)
+      for (let seed = 1; seed <= 6; seed++) {
+        const p = generateTimeline({ size: n, speakers: speakers(3, 1), maxGrade: 3, extraCorridors: extra, minAlternatives: alts, seed });
+        expect(verifyTimeline(p)).toEqual({ ok: true });
+        expect(p.edges!.length).toBeGreaterThanOrEqual(n - 1);
+        expect(isWalk(p.solution, p.edges!)).toBe(true);
+        expect(candidateOrders(n, p.edges).length).toBeGreaterThanOrEqual(alts);
+      }
+  });
+
+  it('a plain timeline has no floorplan, and a map can be too easy to build', () => {
+    expect(generateTimeline({ size: 4, speakers: speakers(3, 1), maxGrade: 3, seed: 3 }).edges).toBeUndefined();
+    // a 3-room map can never have 50 alternative walks
+    expect(() => generateTimeline({ size: 3, speakers: speakers(3, 0), maxGrade: 3, extraCorridors: 1, minAlternatives: 50, seed: 1 }, 5)).toThrow();
   });
 });
