@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type GridBook } from '../src/game/caseTypes';
 import { caseBoard, caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
 import { newGame } from '../src/game/state';
+import { book } from './caseBook';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 
 describe('rank stories', () => {
   it('Case 1 gives every rank a part of the case, and a closing', () => {
@@ -14,12 +14,20 @@ describe('rank stories', () => {
   });
 
   it('a rank story that replaces nothing plays the case file as it is', () => {
-    for (const preset of PRESETS) expect(caseForRank(cf, preset)).toBe(cf);
+    for (const preset of PRESETS.filter((r) => r !== 'junior')) expect(caseForRank(cf, preset)).toBe(cf);
+  });
+
+  it("Junior's own story has its own leads, ending and finale link, and keeps the case file's cast", () => {
+    const junior = caseForRank(cf, 'junior');
+    expect(junior.leads.map((l) => l.id)).toEqual(['J1', 'J2', 'J3', 'J4', 'J5']);
+    expect(junior.leads.find((l) => l.id === 'J4')!.then).toBe('J5');
+    expect(junior.endings[0].requires).toEqual(['J4', 'J5']);
+    expect(junior.cast).toBe(cf.cast);
   });
 
   it("a rank story's fields replace the case file's, for that rank only", () => {
     const own = { ...cf.leads[0], id: 'J1' };
-    const test: CaseFile = { ...cf, rankStories: { ...cf.rankStories, junior: { ...cf.rankStories!.junior!, leads: [own], setup: 'Junior setup' } } };
+    const test: CaseFile = { ...cf, rankStories: { ...cf.rankStories, junior: { part: cf.rankStories!.junior!.part, leads: [own], setup: 'Junior setup' } } };
     const junior = caseForRank(test, 'junior');
     expect(junior.leads.map((l) => l.id)).toEqual(['J1']);
     expect(junior.setup).toBe('Junior setup');

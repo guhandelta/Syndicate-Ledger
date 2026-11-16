@@ -1,4 +1,4 @@
-import type { Text } from '../game/caseTypes';
+import type { Preset, Text } from '../game/caseTypes';
 
 /** A walkable place for a case. Loaded from cases/<case-id>/town.json, so a new case needs no new code. */
 
@@ -25,6 +25,8 @@ export interface Door {
   label: string;
   /** Exactly one of these: open a lead, the case board or the accusation. */
   lead?: string;
+  /** A rank story with its own leads: the lead this door opens there instead of `lead`. A door with only this is for those ranks alone. */
+  leadFor?: Partial<Record<Preset, string>>;
   goto?: 'board' | 'accuse';
 }
 

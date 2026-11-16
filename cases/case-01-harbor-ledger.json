@@ -709,6 +709,357 @@
           "crime": "The money never left the harbor by accident. Someone everyone trusts moved it, and the people who looked guilty were only scared.",
           "friendly": "The coins did not get lost. Someone everyone likes hid them, and the people who looked sneaky were just scared."
         }
+      },
+      "setup": {
+        "crime": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty. Everybody says it was a sneaky stranger. Tip, the harbor helper, is eager to help you look.",
+        "friendly": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty! Tip, the helpful harbor kid, is happy to help you look."
+      },
+      "leads": [
+        {
+          "id": "J1",
+          "type": "ledger",
+          "cost": 2,
+          "opensAfter": [],
+          "title": {
+            "crime": "Fish market cash book",
+            "friendly": "The festival notebook"
+          },
+          "intro": {
+            "crime": "Rosa keeps the market cash book. Work out how many coins each person carried each hour.",
+            "friendly": "Rosa's notebook shows who carried how many coins each hour. Fill in the grid!"
+          },
+          "columns": [
+            "vex",
+            "kane",
+            "rosa",
+            "tip",
+            "juno",
+            "crane",
+            "karunakaran"
+          ],
+          "rows": [
+            "6 PM",
+            "7 PM",
+            "8 PM",
+            "9 PM",
+            "10 PM"
+          ],
+          "speakers": [
+            "rosa",
+            "kane"
+          ],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "Coins left the festival chest in small bags, and they all went through the fish market.",
+            "friendly": "The coins left the chest in little bags, and every bag went through the fish market."
+          }
+        },
+        {
+          "id": "J2",
+          "type": "timeline",
+          "cost": 2,
+          "opensAfter": [
+            "J1"
+          ],
+          "title": {
+            "crime": "The night of the empty chest",
+            "friendly": "The night the chest went empty"
+          },
+          "intro": {
+            "crime": "Put the night in order. Every time has exactly one moment. Not every witness tells the truth.",
+            "friendly": "Put the night in order! Each time has exactly one thing that happened. Somebody might fib."
+          },
+          "columns": [],
+          "rows": [
+            "6 PM",
+            "7 PM",
+            "8 PM",
+            "9 PM",
+            "10 PM"
+          ],
+          "moments": [
+            {
+              "crime": "The festival lamps go out",
+              "friendly": "The festival lamps go out"
+            },
+            {
+              "crime": "Tip's cart rattles past the fish hall",
+              "friendly": "Tip's cart rattles past the fish hall"
+            },
+            {
+              "crime": "The chest is carried to the ice house",
+              "friendly": "The chest is carried to the ice house"
+            },
+            {
+              "crime": "Someone shouts 'Stop!' on the pier",
+              "friendly": "Someone shouts 'Stop!' on the pier"
+            },
+            {
+              "crime": "The harbor bell rings",
+              "friendly": "The harbor bell rings"
+            }
+          ],
+          "speakers": [
+            "juno",
+            "vex",
+            "kane"
+          ],
+          "liars": {
+            "junior": [
+              "vex"
+            ],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "Tip's cart was by the fish hall before the chest was carried off, so Tip was part of it.",
+            "friendly": "Tip's cart was by the fish hall before the chest moved. Tip was in on it!"
+          },
+          "pointsTo": [
+            "tip"
+          ]
+        },
+        {
+          "id": "J3",
+          "type": "network",
+          "cost": 2,
+          "opensAfter": [
+            "J1"
+          ],
+          "title": {
+            "crime": "Who whispered to whom",
+            "friendly": "Who was whispering?"
+          },
+          "intro": {
+            "crime": "The harbor office counts how many people each person spoke to. Work out who was in contact with whom.",
+            "friendly": "Everyone counted who they whispered with. Work out who whispered with whom!"
+          },
+          "columns": [
+            "tip",
+            "vex",
+            "rosa",
+            "kane",
+            "juno",
+            "crane",
+            "karunakaran"
+          ],
+          "rows": [],
+          "speakers": [
+            "tip",
+            "rosa",
+            "kane"
+          ],
+          "liars": {
+            "junior": [
+              "rosa"
+            ],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "Vex and Tip were in touch all night. Tip was not just helping.",
+            "friendly": "Vex and Tip whispered all night. Tip was not just helping!"
+          },
+          "pointsTo": [
+            "tip",
+            "vex"
+          ]
+        },
+        {
+          "id": "J4",
+          "type": "timeline",
+          "map": true,
+          "cost": 2,
+          "opensAfter": [
+            "J2",
+            "J3"
+          ],
+          "then": "J5",
+          "title": {
+            "crime": "Where the chest went",
+            "friendly": "Where did the chest go?"
+          },
+          "intro": {
+            "crime": "The chest was carried through the harbor one room at a time, along the corridors. At each time it was in one place. Find the walk.",
+            "friendly": "The chest was carried from room to room along the corridors. Work out where it was at each time!"
+          },
+          "columns": [],
+          "rows": [
+            "8 PM",
+            "9 PM",
+            "10 PM",
+            "11 PM",
+            "12 AM"
+          ],
+          "moments": [
+            {
+              "crime": "Fish hall",
+              "friendly": "Fish hall"
+            },
+            {
+              "crime": "Net loft",
+              "friendly": "Net loft"
+            },
+            {
+              "crime": "Warehouse 9",
+              "friendly": "Warehouse 9"
+            },
+            {
+              "crime": "Ice house",
+              "friendly": "Ice house"
+            },
+            {
+              "crime": "Boathouse",
+              "friendly": "Boathouse"
+            }
+          ],
+          "speakers": [
+            "rosa",
+            "kane",
+            "juno"
+          ],
+          "liars": {
+            "junior": [
+              "rosa"
+            ],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "The chest ended up in the Ice house, and Tip carried the key.",
+            "friendly": "The chest ended up in the Ice house, and Tip had the key!"
+          },
+          "pointsTo": [
+            "tip"
+          ]
+        },
+        {
+          "id": "J5",
+          "type": "cipher",
+          "cost": 2,
+          "opensAfter": [
+            "J4"
+          ],
+          "title": {
+            "crime": "The Ice house lock",
+            "friendly": "The Ice house lock"
+          },
+          "intro": {
+            "crime": "The chest is locked with a code. Every digit is different. Work out the code from what the witnesses say.",
+            "friendly": "The chest has a secret code. Every digit is different. Use what people say to find it!"
+          },
+          "columns": [],
+          "rows": [],
+          "speakers": [
+            "tip",
+            "juno",
+            "kane"
+          ],
+          "liars": {
+            "junior": [
+              "tip"
+            ],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "The chest is full of festival coins, and Tip opened it himself.",
+            "friendly": "The chest is full of festival coins, and Tip opened it himself!"
+          },
+          "pointsTo": [
+            "tip"
+          ]
+        }
+      ],
+      "events": [],
+      "offers": [],
+      "missedClues": [],
+      "endings": [
+        {
+          "id": "full-bust",
+          "accuse": [
+            "tip"
+          ],
+          "requires": [
+            "J4",
+            "J5"
+          ],
+          "title": {
+            "crime": "Full bust",
+            "friendly": "Case closed!"
+          },
+          "text": {
+            "crime": "Tip is caught at the Ice house with the festival coins. Everyone liked him, which is why nobody looked.",
+            "friendly": "Tip is caught in the Ice house with the festival coins! Everybody liked him, so nobody looked."
+          }
+        },
+        {
+          "id": "so-close",
+          "accuse": [
+            "vex"
+          ],
+          "title": {
+            "crime": "So close",
+            "friendly": "So close!"
+          },
+          "text": {
+            "crime": "You caught Vex, but the friendly face behind it slipped away.",
+            "friendly": "You caught Vex, but the one who hid the coins got away."
+          }
+        },
+        {
+          "id": "wrong-arrest",
+          "accuse": [
+            "kane",
+            "rosa",
+            "juno",
+            "karunakaran"
+          ],
+          "title": {
+            "crime": "Wrong arrest",
+            "friendly": "Oops, wrong person"
+          },
+          "text": {
+            "crime": "That person was only scared. The real culprit is laughing.",
+            "friendly": "That person was only scared! The real sneak is laughing."
+          }
+        }
+      ],
+      "proof": {
+        "tip": {
+          "needs": [
+            "J4",
+            "J5"
+          ]
+        },
+        "vex": {
+          "needs": [
+            "J3"
+          ]
+        }
+      },
+      "lost": {
+        "title": {
+          "crime": "The trail goes cold",
+          "friendly": "The gang got away"
+        },
+        "time": {
+          "crime": "The ship sailed with the case unproven. Whatever you had, it wasn't enough to hold anyone. The files are closed and your notes go with them.",
+          "friendly": "The boat sailed away before you could prove it! The gang is gone and your notes are all wiped. Time to try again."
+        },
+        "limits": {
+          "crime": "You've named everyone you were allowed to, and none of it held up. With no one left to accuse, the case is shelved and your notes are shredded.",
+          "friendly": "You used up all your guesses and none of them could be proven. The case is closed and your notes are wiped. Time to try again."
+        }
       }
     },
     "detective": {

@@ -116,6 +116,8 @@ export interface Lead {
   fact: Text;
   /** Who this lead's fact points at. An accusation may only lean on facts that point at the accused. */
   pointsTo?: string[];
+  /** The lead that follows this one at once: closing this lead offers to go straight on to it (a two-step finale). */
+  then?: string;
 }
 
 export type EventEffect =
