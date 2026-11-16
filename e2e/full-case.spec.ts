@@ -42,8 +42,10 @@ test('Detective opens with the police desk scene, the carried plate and changed 
   await page.getByRole('button', { name: 'Open the case' }).click();
   await expect(page.getByLabel('The briefing')).toContainText('Who did it?');
   await page.getByRole('button', { name: 'Go to the evidence board' }).click();
-  await expect(page.locator('.facts .carried')).toContainText('The stamped plate');
-  await expect(page.locator('.facts .carried')).toContainText('From the Junior case');
+  await expect(page.locator('.facts .carried').first()).toContainText('The stamped plate');
+  await expect(page.locator('.facts .carried').first()).toContainText('From the Junior case');
+  await expect(page.locator('.facts .carried').nth(1)).toContainText('What changed');
+  await expect(page.locator('.facts .carried').nth(2)).toContainText('Still unanswered');
 });
 
 test('a right name with weak proof is refused and costs a try', async ({ page }) => {

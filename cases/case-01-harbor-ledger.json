@@ -782,6 +782,14 @@
           "fact": {
             "crime": "The chest's lock plate is stamped CS-9, the door of a safe at Crane Shipping. It points at Crane's own safe, not at who opened it.",
             "friendly": "The chest's lock plate says CS-9. It came from a safe at Crane Shipping."
+          },
+          "changed": {
+            "crime": "Tip is caught, but he is only a runner. He never had the nerve to plan this, and the plate came from Crane's own safe. Somebody gave him orders.",
+            "friendly": "Tip is caught, but he was only the helper. The plate came from Mr. Crane's own safe. Somebody told Tip what to do."
+          },
+          "open": {
+            "crime": "Who gave Tip his orders, and why would Crane's own safe be involved?",
+            "friendly": "Who told Tip what to do, and why is Mr. Crane's safe part of this?"
           }
         }
       },

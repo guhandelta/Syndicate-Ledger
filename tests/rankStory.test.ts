@@ -44,6 +44,8 @@ describe('rank stories', () => {
     expect(carriedInto(cf, 'junior')).toBeUndefined();
     const carried = carriedInto(cf, 'detective')!;
     expect(carried.from).toBe('junior');
+    expect(JSON.stringify(carried.changed)).toContain('runner');
+    expect(JSON.stringify(carried.open)).toContain('orders');
     expect(JSON.stringify(carried.title)).toContain('stamped plate');
     expect(JSON.stringify(carriedInto(cf, 'inspector')!.title)).toContain('gate book');
     // a rank whose rank below hands nothing over gets nothing

@@ -80,7 +80,8 @@ export interface SceneLine extends Line {
  */
 export interface Handover {
   scene: SceneLine[];
-  carried?: { title: Text; fact: Text };
+  /** `changed` complicates what the rank just solved; `open` is the new question the next rank starts with. */
+  carried?: { title: Text; fact: Text; changed?: Text; open?: Text };
 }
 
 /** What one person says about another. Opinions can be biased or wrong. */
