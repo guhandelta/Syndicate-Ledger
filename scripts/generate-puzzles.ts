@@ -6,9 +6,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { generatePuzzle, verifyUnique } from '../src/engine/generator';
+import { generateNetwork, verifyNetwork } from '../src/engine/network';
 import { generateTimeline, verifyTimeline } from '../src/engine/timeline';
 import { PRESETS, type CaseFile, type PuzzleBook } from '../src/game/caseTypes';
-import { MAP_RULES, PRESET_RULES } from '../src/game/presets';
+import { MAP_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
 import { caseForRank } from '../src/game/rankStory';
 
 const file = process.argv[2] ?? 'cases/case-01-harbor-ledger.json';
@@ -45,6 +46,15 @@ for (const { lead, preset } of jobs) {
       if (!tc.ok) throw new Error(`${lead.id}:${preset} failed: ${tc.reason}`);
       book[`${lead.id}:${preset}`] = t;
       console.log(`${lead.id}:${preset.padEnd(9)} ${n} moments  ${lead.map ? 'map     ' : 'timeline'}     grade ${t.grade}  statements ${t.statements.length}  lies ${t.truth.filter((x) => !x).length}`);
+      continue;
+    }
+    if (lead.type === 'network') {
+      const n = rules.size;
+      const net = generateNetwork({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...NET_RULES[preset], seed });
+      const nc = verifyNetwork(net);
+      if (!nc.ok) throw new Error(`${lead.id}:${preset} failed: ${nc.reason}`);
+      book[`${lead.id}:${preset}`] = net;
+      console.log(`${lead.id}:${preset.padEnd(9)} ${n} people   network      grade ${net.grade}  statements ${net.statements.length}  lies ${net.truth.filter((x) => !x).length}  counts allow ${net.baseSolutions}`);
       continue;
     }
     const p = generatePuzzle({

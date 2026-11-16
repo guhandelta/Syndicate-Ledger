@@ -3,9 +3,10 @@
  * without changing Case 1. It is only served by the dev server for the end-to-end tests (fixtures/timeline.html).
  */
 import caseFile from '../cases/case-01-harbor-ledger.json';
+import { generateNetwork } from '../src/engine/network';
 import { generateTimeline } from '../src/engine/timeline';
 import { PRESETS, type CaseFile, type Lead, type PuzzleBook } from '../src/game/caseTypes';
-import { MAP_RULES, PRESET_RULES } from '../src/game/presets';
+import { MAP_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
 
 const lead: Lead = {
   id: 'T1',
@@ -32,11 +33,26 @@ const lead: Lead = {
   pointsTo: ['vex'],
 } as unknown as Lead;
 
+const net: Lead = {
+  id: 'N1',
+  type: 'network',
+  cost: 2,
+  opensAfter: [],
+  title: 'Who called whom',
+  intro: 'The phone company gives each person\'s number of contacts. Work out who was in contact with whom. Not every witness is telling the truth.',
+  columns: ['vex', 'kane', 'rosa', 'tip', 'juno', 'crane', 'karunakaran'],
+  rows: [],
+  speakers: ['rosa', 'kane', 'tip', 'juno'],
+  liars: { junior: ['kane'], detective: ['kane'], inspector: ['kane', 'tip'], chief: ['kane', 'tip'] },
+  fact: 'Crane was in touch with the van driver the night of the theft.',
+  pointsTo: ['crane'],
+} as unknown as Lead;
+
 export const timelineCase = {
   ...(caseFile as unknown as CaseFile),
   id: 'timeline-demo',
   rankStories: undefined,
-  leads: [lead],
+  leads: [lead, net],
   events: [],
   offers: [],
   missedClues: [],
@@ -57,5 +73,18 @@ for (const preset of PRESETS) {
     givens: n >= 7 ? 1 : 0,
     ...MAP_RULES[preset],
     seed: n * 101,
+  });
+}
+
+for (const preset of PRESETS) {
+  const n = PRESET_RULES[preset].size;
+  const lies = net.liars[preset];
+  timelineBook[`N1:${preset}`] = generateNetwork({
+    size: n,
+    speakers: net.speakers.map((id) => ({ id, lies: lies.filter((l) => l === id).length })),
+    liarRange: PRESET_RULES[preset].liarRange,
+    maxGrade: Math.min(PRESET_RULES[preset].maxGrade, 3),
+    ...NET_RULES[preset],
+    seed: n * 211,
   });
 }

@@ -6,9 +6,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
+import { verifyNetwork } from '../src/engine/network';
 import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
-import { PRESET_RULES } from '../src/game/presets';
+import { NET_RULES, PRESET_RULES } from '../src/game/presets';
 import { caseForRank, partOf } from '../src/game/rankStory';
 import { validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
@@ -53,6 +54,9 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
     if (lead.type === 'timeline') {
       // a timeline has a time for each moment, and the moments are the columns
       if ((lead.moments?.length ?? 0) < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: timeline leads need ${MAX_SIZE} moments and ${MAX_SIZE} times so every preset can be built`);
+    } else if (lead.type === 'network') {
+      // the people of a network are the columns; it has no times
+      if (lead.columns.length < MAX_SIZE) fail(`${lead.id}: network leads need ${MAX_SIZE} people so every preset can be built`);
     } else if (lead.columns.length < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: needs ${MAX_SIZE} columns and ${MAX_SIZE} rows so every preset can be built`);
     if (lead.type === 'surveillance' && (lead.rooms?.length ?? 0) < MAX_SIZE) fail(`${lead.id}: surveillance leads need ${MAX_SIZE} rooms`);
     for (const preset of presets)
@@ -124,6 +128,10 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
           if (!!lead.map !== !!p.edges) fail(`${key}: ${lead.map ? 'a map lead needs a floorplan; run npm run generate' : 'only a map lead has a floorplan'}`);
           if (p.edges && !isWalk(p.solution, p.edges)) fail(`${key}: the answer is not a walk along the corridors`);
           if (p.grade < 2 || p.grade > Math.min(rules.maxGrade, 3)) fail(`${key}: timeline grade ${p.grade} does not suit ${preset}`);
+        } else if (p.type === 'network') {
+          const check = verifyNetwork(p);
+          if (!check.ok) fail(`${key}: ${check.reason}`);
+          if (p.baseSolutions < NET_RULES[preset].minBase || p.grade < NET_RULES[preset].minGrade) fail(`${key}: network is too easy for ${preset} (grade ${p.grade}, counts allow ${p.baseSolutions})`);
         } else {
           const check = verifyUnique(p);
           if (!check.ok) fail(`${key}: ${check.reason}`);
