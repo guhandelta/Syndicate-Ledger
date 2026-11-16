@@ -6,9 +6,9 @@ import {
   fireEvents, gapCells, hoursLeft, leadCost, leadOpen, newGame, proofHolds, gridOf as puzzleOf, recoverSpeaker, refusing, rules, solveLead, spendFavors,
   spendHours, stars, startLead, submitAccusation, timeUp, totalHours, triesLeft, trustOf,
 } from '../src/game/state';
+import { book } from './caseBook';
 
 const cf0: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 const clone = (): CaseFile => JSON.parse(JSON.stringify(cf0));
 const fresh = (preset: 'junior' | 'detective' | 'inspector' | 'chief' = 'inspector', cf = cf0) => newGame(cf, book, preset);
 

@@ -1,3 +1,4 @@
+import type { GeneratedPuzzle } from '../src/engine/types';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { newGame } from '../src/game/state';
@@ -31,22 +32,22 @@ test('a v1 save loads and continues', async ({ page }) => {
 
 test('progress survives a reload, and back returns to the board', async ({ page }) => {
   await startCase(page, 'junior');
-  await solveLead(page, 'junior', 'L1');
+  await solveLead(page, 'junior', 'J1');
   await clearDialogs(page, { 'wants a word': 'Decline' });
-  await page.locator('article.lead', { hasText: 'L2' }).getByRole('button').click();
-  await expect(page).toHaveURL(/#\/lead\/L2$/);
+  await page.locator('article.lead', { hasText: 'J2' }).getByRole('button').click();
+  await expect(page).toHaveURL(/#\/lead\/J2$/);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/./);
-  await expect(page.locator('table.grid')).toBeVisible();
+  await expect(page.locator('ol.timeline')).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Leads' })).toBeVisible();
-  await expect(page.locator('article.lead', { hasText: 'L1' }).locator('.lead-state')).toHaveText('✓ Solved');
+  await expect(page.locator('article.lead', { hasText: 'J1' }).locator('.lead-state')).toHaveText('✓ Solved');
 });
 
 test('pencil marks, undo and redo work from the keyboard', async ({ page }) => {
   await startCase(page, 'inspector');
   await page.locator('article.lead', { hasText: 'L1' }).getByRole('button').click();
-  const p = book['L1:inspector'];
+  const p = book['L1:inspector'] as GeneratedPuzzle;
   const given = new Set(p.givens.map((x) => `${x.cell[0]},${x.cell[1]}`));
   const [r, c] = [...Array(36).keys()].map((i) => [Math.floor(i / 6), i % 6]).find(([r, c]) => !given.has(`${r},${c}`))!;
   const cell = page.locator('table.grid tbody tr').nth(r).locator('td').nth(c);
@@ -115,7 +116,7 @@ test('a tip pops up after 5 minutes without a move, and says what to do there', 
 
 test('the case notebook keeps notes across reloads, and typing in it does not touch the grid', async ({ page }) => {
   await startCase(page, 'junior');
-  await page.locator('article.lead', { hasText: 'L1' }).getByRole('button').click();
+  await page.locator('article.lead', { hasText: 'J1' }).getByRole('button').click();
   await clearDialogs(page);
   await page.locator('table.grid tbody td').first().click();
   const filled = await page.locator('table.grid .val').count();
@@ -179,12 +180,13 @@ test('ranks open in order: Junior first, the rest locked until the part below is
   await page.goto(GAME_URL);
   const ranks = page.getByRole('radiogroup', { name: 'Difficulty' });
   await expect(ranks.getByRole('radio', { name: /Junior/ })).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByRole('heading', { name: 'The case so far: 0 of 4 parts uncovered' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The case so far: 0 parts uncovered' })).toBeVisible();
   // the board gives nothing away: only the question to work on now, and hidden slots for the rest
   const parts = page.locator('.case-board .parts');
   await expect(parts).toContainText('What happened to the festival coins?');
-  await expect(parts).toContainText('Part 2 of 4');
+  await expect(parts).toContainText('There is more to this case');
   await expect(parts).not.toContainText('Who did it?');
+  await expect(parts).not.toContainText(/of 4/);
   await expect(parts).not.toContainText('How did they hide it?');
   await expect(parts).not.toContainText('Who is really behind it');
   await ranks.getByRole('radio', { name: /Detective/ }).click();
@@ -197,11 +199,11 @@ test('ranks open in order: Junior first, the rest locked until the part below is
   await expectAccessible(page);
 
   await unlockUpTo(page, 'detective');
-  await expect(page.getByRole('heading', { name: 'The case so far: 1 of 4 parts uncovered' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The case so far: 1 part uncovered' })).toBeVisible();
   // the part found is shown, the next question appears, and the ranks after it stay hidden
   await expect(parts).toContainText('The friendly face');
   await expect(parts).toContainText('Who did it?');
-  await expect(parts).toContainText('Part 3 of 4');
+  await expect(parts).toContainText('There is more to this case');
   await expect(parts).not.toContainText('How did they hide it?');
   await expect(ranks.getByRole('radio', { name: /Detective/ })).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByRole('button', { name: 'Open the case' })).toBeEnabled();

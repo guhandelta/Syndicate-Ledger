@@ -86,26 +86,27 @@
     {/if}
     {#if parts.length}
       <section class="case-board" aria-label="The case so far">
-        <h2 class="small-h">The case so far: {found.length} of {parts.length} parts uncovered</h2>
+        <h2 class="small-h">The case so far: {found.length} {found.length === 1 ? 'part' : 'parts'} uncovered</h2>
         {#if closed && cf.closing}
           <p class="closing"><strong>{T(cf.closing.title)}</strong> {T(cf.closing.text)}</p>
         {/if}
         <ol class="parts">
-          {#each board as row (row.preset)}
-            <li class:got={row.state === 'found'} class:locked={row.state === 'hidden'}>
-              {#if row.state === 'hidden'}
-                <span class="part-rank">Part {row.number} of {parts.length}</span>
-                <strong>???</strong> <span class="muted">Uncover the {below(row.preset)} part to see it.</span>
+          {#each board.filter((r) => r.state !== 'hidden') as row (row.preset)}
+            <li class:got={row.state === 'found'}>
+              <span class="part-rank">{PRESET_RULES[row.preset].label}</span>
+              {#if row.state === 'found'}
+                <strong>{T(row.part!.title)}</strong> <span class="muted">{T(row.part!.reveal)}</span>
               {:else}
-                <span class="part-rank">{PRESET_RULES[row.preset].label}</span>
-                {#if row.state === 'found'}
-                  <strong>{T(row.part!.title)}</strong> <span class="muted">{T(row.part!.reveal)}</span>
-                {:else}
-                  <strong>{T(row.part!.question)}</strong> <span class="muted">Not uncovered yet.</span>
-                {/if}
+                <strong>{T(row.part!.question)}</strong> <span class="muted">Not uncovered yet.</span>
               {/if}
             </li>
           {/each}
+          {#if board.some((r) => r.state === 'hidden')}
+            <li class="locked">
+              <span class="part-rank">More</span>
+              <strong>???</strong> <span class="muted">There is more to this case. Uncover the part above to see it.</span>
+            </li>
+          {/if}
         </ol>
       </section>
     {/if}

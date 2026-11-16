@@ -1,18 +1,19 @@
 import { nextStep } from '../engine/logic';
+import { cipherStep, wrongDigit } from '../engine/cipher';
 import { networkStep, pairs, wrongPair } from '../engine/network';
 import { timelineStep, wrongMoment } from '../engine/timeline';
 import type { Cell } from '../engine/types';
 import type { AnyClaim, CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
-  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, leadOpen, cipherOf, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
   timelineOf,
   submitAccusation,
   type Game, type GameState,
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
 import { describeStatement, gridLabels, networkPeople, t, timelineLabels, type Tone } from '../game/text';
-import type { Pose } from '../town/townLogic';
+import { townForRank, type Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
 import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
 import { findWrong, zoneCombos } from './puzzleHelpers';
@@ -60,12 +61,14 @@ export interface PuzzleUi {
   moment: number | null;
   /** Network leads: the pair of people (index in `pairs`) the player picked, for allies. */
   pair: number | null;
+  /** Cipher leads: the position of the code the player picked. */
+  pos: number | null;
 }
 
 export const SAVE_KEY = 'syndicate-ledger:save:v1';
 
 const freshPui = (): PuzzleUi => ({
-  sel: null, pencil: false, undo: [], redo: [], hint: null, flashWrong: false, zoneInfo: null, pickStatementFor: null, message: null, moment: null, pair: null,
+  sel: null, pencil: false, undo: [], redo: [], hint: null, flashWrong: false, zoneInfo: null, pickStatementFor: null, message: null, moment: null, pair: null, pos: null,
 });
 
 /** Reads a saved game. v1 saves (version 1) load as they are. */
@@ -99,7 +102,8 @@ export class Session {
   readonly base: CaseFile;
   readonly book: PuzzleBook;
   /** The walkable place for this case, if it has one. */
-  readonly town: Town | null;
+  private readonly baseTown: Town | null;
+  private townCache = new Map<Preset, Town>();
   /** Where the player was standing in the town, so they return to the same spot. */
   townPose: Pose | null = null;
 
@@ -129,11 +133,20 @@ export class Session {
   constructor(cf: CaseFile, book: PuzzleBook, town: Town | null = null) {
     this.base = cf;
     this.book = book;
-    this.town = town;
+    this.baseTown = town;
     this.s = loadSave(cf);
     this.progress = loadProgress(cf);
     this.titlePreset = this.s ? this.s.preset : nextRank(cf, this.progress);
     this.titleCharacter = this.s?.character ?? cf.characters?.find((c) => c.ready)?.id ?? 'detective';
+  }
+
+  /** The town as the current rank plays it (its own lead doors). */
+  get town(): Town | null {
+    if (!this.baseTown) return null;
+    const preset = this.s?.preset ?? this.titlePreset;
+    let t = this.townCache.get(preset);
+    if (!t) this.townCache.set(preset, (t = townForRank(this.baseTown, this.cf.leads, preset)));
+    return t;
   }
 
   /** Ranks open in order: is this one open yet? */
@@ -354,6 +367,35 @@ export class Session {
     return this.anyPuzzle.type === 'timeline';
   }
 
+  /** The open cipher lead's puzzle. */
+  get cipher() {
+    return cipherOf(this.g, this.leadId!);
+  }
+
+  get isCipher() {
+    return this.anyPuzzle.type === 'cipher';
+  }
+
+  /** Cipher: is this position fixed (a given, shown by an ally or after a witness left, or the lead is solved)? */
+  digitLocked(k: number) {
+    return this.lp.solved || this.cipher.givens.some((x) => x.p === k) || !!this.lp.shownDigits?.includes(k);
+  }
+
+  /** Cipher: puts a digit at a position (0 clears it). */
+  placeDigit(k: number, d: number) {
+    if (this.digitLocked(k)) return;
+    this.pushUndo();
+    this.lp.digits![k] = d;
+    this.pui.pos = k;
+    this.pui.hint = null;
+    this.pui.message = null;
+  }
+
+  pickPos(k: number) {
+    this.pui.pos = this.pui.pos === k ? null : k;
+    this.pui.message = null;
+  }
+
   /** The open network lead's puzzle. */
   get network() {
     return networkOf(this.g, this.leadId!);
@@ -456,7 +498,7 @@ export class Session {
 
   private snapshot() {
     const lp = this.lp;
-    return JSON.stringify({ grid: lp.grid, notes: lp.notes, order: lp.order, links: lp.links });
+    return JSON.stringify({ grid: lp.grid, notes: lp.notes, order: lp.order, links: lp.links, digits: lp.digits });
   }
 
   private pushUndo() {
@@ -471,6 +513,7 @@ export class Session {
     this.lp.notes = o.notes;
     if (o.order) this.lp.order = o.order;
     if (o.links) this.lp.links = o.links;
+    if (o.digits) this.lp.digits = o.digits;
   }
 
   undo() {
@@ -524,7 +567,10 @@ export class Session {
 
   checkGrid() {
     this.pui.flashWrong = true;
-    if (this.isNetwork) {
+    if (this.isCipher) {
+      const bad = wrongDigit(this.cipher, this.lp.digits!) >= 0;
+      this.pui.message = bad ? 'Digits in the wrong place are shown in red.' : 'Every digit you have entered so far is correct.';
+    } else if (this.isNetwork) {
       const bad = wrongPair(this.network, this.lp.links!) !== null;
       this.pui.message = bad ? 'Pairs decided the wrong way are shown in red.' : 'Everything you have decided so far is correct.';
     } else if (this.isTimeline) {
@@ -535,6 +581,45 @@ export class Session {
       this.pui.message = wrong ? 'Wrong numbers are shown in red.' : 'Everything on the grid so far is correct.';
     }
     setTimeout(() => (this.pui.flashWrong = false), 2500);
+  }
+
+  /** Allies on a cipher: forensics fills the picked position, the partner points the way. */
+  private useAllyOnCipher(ally: CastMember) {
+    const g = this.g;
+    const p = this.cipher;
+    const lp = this.lp;
+    const pui = this.pui;
+    const th = (k: number) => `the ${['1st', '2nd', '3rd', '4th', '5th', '6th', '7th'][k]} digit`;
+    if (ally.ability === 'forensics') {
+      const k = pui.pos;
+      if (k === null || this.digitLocked(k)) {
+        pui.message = `Pick a digit of the code first, then call ${ally.name}.`;
+        return;
+      }
+      if (!spendFavors(g, 1)) return;
+      this.pushUndo();
+      lp.digits![k] = p.code[k];
+      lp.shownDigits!.push(k);
+      g.s.hintsUsed++;
+      pui.message = `${ally.name} confirms: ${th(k)} is ${p.code[k]}.`;
+      return;
+    }
+    // partner
+    if (!spendFavors(g, 1)) return;
+    g.s.hintsUsed++;
+    const wrong = wrongDigit(p, lp.digits!);
+    if (wrong >= 0) {
+      pui.pos = wrong;
+      pui.message = `${ally.name}: "Hold on. Look again at ${th(wrong)}. That doesn't fit the case."`;
+      return;
+    }
+    const step = cipherStep(p, lp.digits!);
+    if (!step) {
+      pui.message = `${ally.name}: "The code looks complete. Now check each statement against it."`;
+      return;
+    }
+    pui.pos = step.pos;
+    pui.message = `${ally.name}: "Look at ${th(step.pos)}. Think about what ${this.person(p.statements[step.statement].speaker).name} said."`;
   }
 
   /** Allies on a network: forensics settles the picked pair, the partner points the way. */
@@ -625,6 +710,7 @@ export class Session {
   }
 
   useAlly(ally: CastMember) {
+    if (this.isCipher && ally.ability !== 'undercover') return this.useAllyOnCipher(ally);
     if (this.isNetwork && ally.ability !== 'undercover') return this.useAllyOnNetwork(ally);
     if (this.isTimeline && ally.ability !== 'undercover') return this.useAllyOnTimeline(ally);
     const g = this.g;
@@ -715,11 +801,12 @@ export class Session {
     const res = checkLead(g, id);
     const tl = this.isTimeline;
     const nw = this.isNetwork;
+    const cp = this.isCipher;
     const msgs: Record<string, string> = {
-      'grid-incomplete': nw ? 'Some pairs are still undecided. Mark each pair as in contact or never in contact.' : tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
-      'grid-wrong': nw ? "Something doesn't add up. At least one pair is decided the wrong way." : tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
+      'grid-incomplete': cp ? 'Some digits of the code are still empty.' : nw ? 'Some pairs are still undecided. Mark each pair as in contact or never in contact.' : tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
+      'grid-wrong': cp ? "Something doesn't add up. At least one digit of the code is wrong." : nw ? "Something doesn't add up. At least one pair is decided the wrong way." : tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
       'marks-incomplete': 'Mark every statement as True or Lie before closing the lead.',
-      'marks-wrong': nw ? "The network is right, but your read on the witnesses isn't. Check each statement against it." : tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
+      'marks-wrong': cp ? "The code is right, but your read on the witnesses isn't. Check each statement against it." : nw ? "The network is right, but your read on the witnesses isn't. Check each statement against it." : tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
     };
     if (res === 'marks-wrong' || res === 'marks-incomplete') {
       const kind = res === 'marks-wrong' ? 'wrong-mark' : 'unmarked';
@@ -731,6 +818,7 @@ export class Session {
     }
     const lead = this.lead;
     solveLead(g, id);
+    const next = this.cf.leads.find((l) => l.id === lead.then && leadOpen(g, l.id) && !g.s.leads[l.id].started);
     const lies = puzzleOf(g, id).truth.filter((x) => !x).length;
     this.modals.push({
       title: `Lead closed: ${this.T(lead.title)}`,
@@ -738,7 +826,9 @@ export class Session {
       fact: this.T(lead.fact),
       note: lies ? `Exposing ${lies === 1 ? 'a liar' : 'the liars'} earned you a favor.` : undefined,
       dismissible: true,
-      actions: [{ label: 'Continue', primary: true, run: this.closeModal }],
+      actions: next
+        ? [{ label: `On to: ${this.T(next.title)}`, primary: true, run: () => { this.closeModal(); this.work(next.id); } }, { label: 'Later', run: this.closeModal }]
+        : [{ label: 'Continue', primary: true, run: this.closeModal }],
     });
     this.show(this.hub);
     const offer = this.cf.offers.find((o) => o.after === id && !g.s.offersSeen.includes(o.id));

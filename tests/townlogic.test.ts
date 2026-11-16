@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CaseFile } from '../src/game/caseTypes';
-import { cameraPose, dueShots, forward, nearest, npcPosition, shotFocus, shotPose, step, validateTown } from '../src/town/townLogic';
+import { cameraPose, dueShots, forward, nearest, npcPosition, shotFocus, shotPose, step, townForRank, validateTown } from '../src/town/townLogic';
 import type { CameraSettings, Shot, Town } from '../src/town/townTypes';
 
 const cameras: CameraSettings = {
@@ -171,6 +171,30 @@ describe('story shots', () => {
     expect(shotPose(shot({ orbit: 90 }), [0, 0], 1).position[0]).toBeCloseTo(5);
     expect(shotPose(shot({ focus: { building: 'hall' } }), [0, 0]).target[1]).toBe(2);
     expect(shotPose(shot(), [0, 0]).target[1]).toBe(1.2);
+  });
+});
+
+describe('a town for a rank story', () => {
+  const leads = [{ id: 'J1' }, { id: 'L2' }] as CaseFile['leads'];
+  it('points doors at the story\'s leads and drops doors it has no lead for', () => {
+    const t = baseTown();
+    t.doors[0].leadFor = { junior: 'J1' };
+    t.doors.push({ id: 'extra', at: [1, 1], label: 'Extra', leadFor: { junior: 'J9' } });
+    const junior = townForRank(t, leads, 'junior');
+    expect(junior.doors.map((d) => d.lead ?? d.goto)).toEqual(['J1', 'L2', 'accuse']);
+    expect(townForRank(t, leads, 'chief').doors.map((d) => d.lead ?? d.goto)).toEqual(['L2', 'accuse']);
+  });
+  it('checks that a rank story has a door for each of its leads', () => {
+    const c = {
+      ...cf(),
+      rankStories: { junior: { part: {}, leads: [{ id: 'J1', opensAfter: [] }, { id: 'J2', opensAfter: [] }] } },
+    } as unknown as CaseFile;
+    const t = baseTown();
+    t.doors[0].leadFor = { junior: 'J1' };
+    t.doors[1].lead = 'L2';
+    expect(validateTown(t, c)).toEqual(['junior story: lead J2 has no door in the town']);
+    t.doors[1].leadFor = { junior: 'J2' };
+    expect(validateTown(t, c)).toEqual([]);
   });
 });
 

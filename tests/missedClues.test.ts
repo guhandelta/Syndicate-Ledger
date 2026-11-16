@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs';
 import type { CaseFile, ClueEvent, GridBook } from '../src/game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../src/game/missedClues';
 import { checkLead, fireEvents, newGame, gridOf as puzzleOf, solveLead, spendHours, type Game } from '../src/game/state';
+import { book } from './caseBook';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 const ids = (cs: { id: string }[]) => cs.map((c) => c.id).sort();
 
 /** Fill the grid correctly and mark every statement as its truth, except the indexes in `flip`. */

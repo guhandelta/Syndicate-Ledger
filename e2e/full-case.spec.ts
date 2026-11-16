@@ -2,22 +2,25 @@ import { expect, test } from '@playwright/test';
 import { PRESETS } from '../src/game/caseTypes';
 import { t } from '../src/game/text';
 import { PRESET_RULES } from '../src/game/presets';
-import { cf, clearDialogs, solveLead, startCase } from './helpers';
+import { caseFor, cf, clearDialogs, solveLead, startCase } from './helpers';
 
 // Rule book section 8: the full bust is reachable on the default clock without informants, at every preset.
 for (const preset of PRESETS) {
   test(`plays Case 1 to the full bust at ${preset}`, async ({ page }) => {
     await startCase(page, preset);
-    for (const lead of cf.leads) {
+    const story = caseFor(preset);
+    const boss = story.endings.find((e) => e.id === 'full-bust')!.accuse[0];
+    for (const lead of story.leads) {
       await solveLead(page, preset, lead.id);
-      await clearDialogs(page, { 'wants a word': 'Decline' });
+      // a finale's first step offers to go straight on; the test comes back to the board and opens the next lead itself
+      await clearDialogs(page, { 'wants a word': 'Decline', 'Lead closed: Where': 'Later' });
       await expect(page.locator('article.lead', { hasText: lead.id }).locator('.lead-state')).toHaveText('✓ Solved');
     }
     await page.getByRole('button', { name: 'Make an accusation' }).click();
-    await page.getByRole('button', { name: /Silas Crane/ }).click();
-    for (const id of cf.proof!.crane.needs) await page.getByLabel(t(cf.leads.find((l) => l.id === id)!.title, PRESET_RULES[preset].tone)).check();
+    await page.getByRole('button', { name: new RegExp(cf.cast.find((c) => c.id === boss)!.name) }).click();
+    for (const id of story.proof![boss].needs) await page.getByLabel(t(story.leads.find((l) => l.id === id)!.title, PRESET_RULES[preset].tone)).check();
     await page.getByRole('button', { name: 'Make the accusation' }).click();
-    const fullBust = cf.endings.find((e) => e.id === 'full-bust')!;
+    const fullBust = story.endings.find((e) => e.id === 'full-bust')!;
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(t(fullBust.title, PRESET_RULES[preset].tone));
     await expect(page.getByLabel('3 of 3 stars')).toBeVisible();
     // the full bust uncovers this rank's part of the case, kept apart from the game save
