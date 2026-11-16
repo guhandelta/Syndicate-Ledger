@@ -1,6 +1,7 @@
 import { nextStep } from '../engine/logic';
 import type { Lead } from '../game/caseTypes';
-import { checkLead, clockOn, hoursLeft, leadCost, leadOpen, puzzleOf, type Game } from '../game/state';
+import { wrongMoment } from '../engine/timeline';
+import { checkLead, clockOn, gridOf, hoursLeft, leadCost, leadOpen, puzzleOf, timelineOf, type Game } from '../game/state';
 import { at as when, gridLabels, t, type Tone } from '../game/text';
 import type { Town } from '../town/townTypes';
 import { findWrong } from './puzzleHelpers';
@@ -98,9 +99,17 @@ function whatToDo(ctx: IdleContext): Omit<IdleHint, 'can'> {
     const lp = g.s.leads[lead.id];
     const where = `Working ${leadName(lead)}`;
     if (lp.solved) return { where, todo: 'This lead is solved. Go back to pick the next one.' };
-    const p = puzzleOf(g, lead.id);
-    const L = gridLabels(g.cf, lead, p.size, tone);
     const state = checkLead(g, lead.id);
+    if (puzzleOf(g, lead.id).type === 'timeline' && (state === 'grid-incomplete' || state === 'grid-wrong')) {
+      if (wrongMoment(timelineOf(g, lead.id), lp.order!) >= 0)
+        return { where, todo: 'One of your moments is at the wrong time. Test each one against what the witnesses say, or call your partner for a pointer.' };
+      return { where, todo: 'Every moment goes at a different time. Start with what the witnesses agree on: what came before what, and what came right after.' };
+    }
+    if (state === 'marks-incomplete' && puzzleOf(g, lead.id).type === 'timeline') {
+      return { where, todo: 'Your timeline is complete. Now test each statement against it and mark it True or Lie.' };
+    }
+    const p = gridOf(g, lead.id);
+    const L = gridLabels(g.cf, lead, p.size, tone);
     if (state === 'grid-incomplete' || state === 'grid-wrong') {
       if (findWrong(p, lp.grid)) {
         return { where, todo: 'One of your numbers doesn’t fit the case. Look for it, use Check my grid if you have it, or call your partner for a pointer.' };

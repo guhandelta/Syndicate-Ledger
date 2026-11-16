@@ -361,3 +361,20 @@ kbd {
 .evidence-item input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--accent); flex: none; }
 .accuse-card:disabled { opacity: 0.5; cursor: not-allowed; }
 .accuse-tries { font-size: 0.85rem; }
+
+/* timeline leads */
+.timeline-wrap { display: grid; gap: 16px; }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: slot; }
+.timeline .slot { position: relative; padding-left: 14px; border-left: 3px solid var(--line, #3a4256); }
+.slot-btn { width: 100%; display: grid; grid-template-columns: 6.5rem 1fr; gap: 12px; align-items: center; text-align: left; padding: 10px 12px; border: 1px dashed var(--line, #3a4256); border-radius: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.slot.filled .slot-btn { border-style: solid; }
+.slot-btn:disabled { cursor: default; }
+.slot-time { font-weight: 700; }
+.slot-btn.wrong, .moment.wrong { outline: 2px solid #ff8a80; }
+.moments { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.moment { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line, #3a4256); border-radius: 10px; }
+.moment.picked { border-color: var(--accent, #c9a455); border-width: 2px; }
+.moment.placed .moment-btn { font-weight: 600; }
+.moment-btn { text-align: left; background: transparent; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 4px; }
+.moment select { font: inherit; padding: 6px 8px; border-radius: 8px; }
+.moment-when { font-size: 0.92rem; }

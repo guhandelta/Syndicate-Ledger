@@ -1,4 +1,9 @@
+import type { TimelinePuzzle } from '../engine/timeline';
 import type { GeneratedPuzzle, GridType } from '../engine/types';
+
+/** The kinds of puzzle a lead can hold: the two number grids, or a timeline of moments to put in order. */
+export type LeadType = GridType | 'timeline';
+export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline'];
 
 export type Preset = 'junior' | 'detective' | 'inspector' | 'chief';
 export const PRESETS: Preset[] = ['junior', 'detective', 'inspector', 'chief'];
@@ -40,7 +45,7 @@ export interface CastMember {
 
 export interface Lead {
   id: string;
-  type: GridType;
+  type: LeadType;
   cost: number;
   opensAfter: string[];
   hard?: boolean;
@@ -50,6 +55,13 @@ export interface Lead {
   columns: string[];
   rows: string[];
   rooms?: string[];
+  /**
+   * Timeline leads: the moments to put in order, most important first (smaller ranks take the first N).
+   * `rows` are the times they can go at, and `columns` is empty.
+   */
+  moments?: Text[];
+  /** Timeline leads: what one step between times is called in "two hours apart". Default "hour". */
+  step?: string;
   speakers: string[];
   liars: Record<Preset, string[]>;
   fact: Text;
@@ -196,4 +208,7 @@ export type StoryField = (typeof STORY_FIELDS)[number];
 export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>;
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
-export type PuzzleBook = Record<string, GeneratedPuzzle>;
+export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle;
+export type PuzzleBook = Record<string, AnyPuzzle>;
+/** A book of grid puzzles only (Case 1 today). */
+export type GridBook = Record<string, GeneratedPuzzle>;

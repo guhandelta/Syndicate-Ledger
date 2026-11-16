@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { PRESETS, type CaseFile, type PuzzleBook } from '../src/game/caseTypes';
+import { PRESETS, type CaseFile, type GridBook } from '../src/game/caseTypes';
 import { caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
 import { newGame } from '../src/game/state';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: PuzzleBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
+const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 
 describe('rank stories', () => {
   it('Case 1 gives every rank a part of the case, and a closing', () => {

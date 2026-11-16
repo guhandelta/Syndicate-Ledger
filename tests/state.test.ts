@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { CaseFile, PuzzleBook } from '../src/game/caseTypes';
+import type { CaseFile, GridBook } from '../src/game/caseTypes';
 import {
   accuse, accusedPeople, accuseStatus, addFlag, buyTip, canAccuse, canStillWin, caseOver, checkLead, clockOn, dayLabel, evidenceLeads, failedTries,
-  fireEvents, gapCells, hoursLeft, leadCost, leadOpen, newGame, proofHolds, puzzleOf, recoverSpeaker, refusing, rules, solveLead, spendFavors,
+  fireEvents, gapCells, hoursLeft, leadCost, leadOpen, newGame, proofHolds, gridOf as puzzleOf, recoverSpeaker, refusing, rules, solveLead, spendFavors,
   spendHours, stars, startLead, submitAccusation, timeUp, totalHours, triesLeft, trustOf,
 } from '../src/game/state';
 
 const cf0: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: PuzzleBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
+const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 const clone = (): CaseFile => JSON.parse(JSON.stringify(cf0));
 const fresh = (preset: 'junior' | 'detective' | 'inspector' | 'chief' = 'inspector', cf = cf0) => newGame(cf, book, preset);
 

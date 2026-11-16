@@ -6,7 +6,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
-import { PRESETS, VOICES, type CaseFile, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
+import { verifyTimeline } from '../src/engine/timeline';
+import { LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
 import { caseForRank, partOf } from '../src/game/rankStory';
 import { validateTown } from '../src/town/townLogic';
@@ -48,7 +49,11 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
   for (const lead of cf.leads) {
     for (const id of [...lead.columns, ...lead.speakers]) if (!castIds.has(id)) fail(`${lead.id}: unknown person ${id}`);
     for (const id of lead.opensAfter) if (!leadIds.has(id)) fail(`${lead.id}: opensAfter unknown lead ${id}`);
-    if (lead.columns.length < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: needs ${MAX_SIZE} columns and ${MAX_SIZE} rows so every preset can be built`);
+    if (!LEAD_TYPES.includes(lead.type)) fail(`${lead.id}: unknown type "${lead.type}"`);
+    if (lead.type === 'timeline') {
+      // a timeline has a time for each moment, and the moments are the columns
+      if ((lead.moments?.length ?? 0) < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: timeline leads need ${MAX_SIZE} moments and ${MAX_SIZE} times so every preset can be built`);
+    } else if (lead.columns.length < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: needs ${MAX_SIZE} columns and ${MAX_SIZE} rows so every preset can be built`);
     if (lead.type === 'surveillance' && (lead.rooms?.length ?? 0) < MAX_SIZE) fail(`${lead.id}: surveillance leads need ${MAX_SIZE} rooms`);
     for (const preset of presets)
       for (const liar of lead.liars[preset] ?? []) {
@@ -112,10 +117,17 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
         const rules = PRESET_RULES[preset];
         if (p.size !== rules.size) fail(`${key}: size ${p.size}, preset wants ${rules.size}`);
         if (p.type !== lead.type) fail(`${key}: type ${p.type}, lead is ${lead.type}`);
-        const check = verifyUnique(p);
-        if (!check.ok) fail(`${key}: ${check.reason}`);
-        const grade = gradePuzzle(p, p.truth);
-        if (grade === 0 || grade > rules.maxGrade) fail(`${key}: needs technique ${grade || 'guessing'}, preset allows ${rules.maxGrade}`);
+        if (p.type === 'timeline') {
+          const check = verifyTimeline(p);
+          if (!check.ok) fail(`${key}: ${check.reason}`);
+          // no easy path: every timeline needs at least "before", and only grown-up ranks get "right before" and "apart"
+          if (p.grade < 2 || p.grade > Math.min(rules.maxGrade, 3)) fail(`${key}: timeline grade ${p.grade} does not suit ${preset}`);
+        } else {
+          const check = verifyUnique(p);
+          if (!check.ok) fail(`${key}: ${check.reason}`);
+          const grade = gradePuzzle(p, p.truth);
+          if (grade === 0 || grade > rules.maxGrade) fail(`${key}: needs technique ${grade || 'guessing'}, preset allows ${rules.maxGrade}`);
+        }
         const lies = p.statements.filter((s, i) => !p.truth[i]).map((s) => s.speaker).sort();
         const expected = [...(lead.liars[preset] ?? [])].sort();
         if (lies.join() !== expected.join()) fail(`${key}: liars are [${lies}] but the case says [${expected}]`);

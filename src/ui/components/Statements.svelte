@@ -1,15 +1,13 @@
 <script lang="ts">
   import { rules } from '../../game/state';
-  import { describeClaim } from '../../game/text';
   import type { Session } from '../session.svelte';
   import type { Voice } from '../../game/caseTypes';
   import Avatar from './Avatar.svelte';
   import Dialogue from './Dialogue.svelte';
 
   let { session }: { session: Session } = $props();
-  const p = $derived(session.puzzle);
+  const p = $derived(session.anyPuzzle);
   const lp = $derived(session.lp);
-  const L = $derived(session.labels);
   const r = $derived(rules(session.g));
   const picking = $derived(!!session.pui.pickStatementFor);
 
@@ -57,7 +55,7 @@
       <li class="stmt said mark-{m}" class:pickable={picking} onclick={picking ? (e) => pick(e, i) : undefined}>
         <div class="stmt-who">{who.name} {#if unverified(i)}<span class="tag">Unverified</span>{/if}</div>
         <Dialogue person={who} voice={voiceOf(i)} {friendly} size={48}>
-          <p>{describeClaim(s.claim, L, p.type)}</p>
+          <p>{session.describe(s.claim)}</p>
         </Dialogue>
         {#if lp.solved}
           <div class="verdict-tag {p.truth[i] ? 'ok' : 'bad'}">{p.truth[i] ? 'True' : 'Lie'}</div>
@@ -75,7 +73,7 @@
     <li class="stmt said paid">
       <div class="stmt-who">{who.name} <span class="tag paid-tag">Paid tip</span></div>
       <Dialogue person={who} voice="whisper" {friendly} size={48}>
-        <p>{describeClaim(tip.claim, L, p.type)}</p>
+        <p>{session.describe(tip.claim)}</p>
       </Dialogue>
     </li>
   {/each}

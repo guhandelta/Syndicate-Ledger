@@ -6,6 +6,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { generatePuzzle, verifyUnique } from '../src/engine/generator';
+import { generateTimeline, verifyTimeline } from '../src/engine/timeline';
 import { PRESETS, type CaseFile, type PuzzleBook } from '../src/game/caseTypes';
 import { PRESET_RULES } from '../src/game/presets';
 import { caseForRank } from '../src/game/rankStory';
@@ -24,6 +25,27 @@ for (const { lead, preset } of jobs) {
     const rules = PRESET_RULES[preset];
     const liars = lead.liars[preset];
     const speakers = lead.speakers.map((id) => ({ id, lies: liars.filter((l) => l === id).length }));
+    const seed = hash(`${cf.id}:${lead.id}:${preset}`);
+    if (lead.type === 'timeline') {
+      const n = rules.size;
+      const t = generateTimeline({
+        size: n,
+        speakers,
+        liarRange: rules.liarRange,
+        // Junior reads only "at" and "before"; every rank needs at least "before" (no easy path)
+        maxGrade: Math.min(rules.maxGrade, 3),
+        minGrade: n >= 6 ? 3 : 2,
+        maxStatements: n >= 7 ? 13 : n + 4,
+        // the 7-moment Chief timeline starts with one moment pinned, so the statement list stays readable
+        givens: n >= 7 ? 1 : 0,
+        seed,
+      });
+      const tc = verifyTimeline(t);
+      if (!tc.ok) throw new Error(`${lead.id}:${preset} failed: ${tc.reason}`);
+      book[`${lead.id}:${preset}`] = t;
+      console.log(`${lead.id}:${preset.padEnd(9)} ${n} moments  timeline     grade ${t.grade}  statements ${t.statements.length}  lies ${t.truth.filter((x) => !x).length}`);
+      continue;
+    }
     const p = generatePuzzle({
       size: rules.size,
       type: lead.type,
@@ -34,7 +56,7 @@ for (const { lead, preset } of jobs) {
       maxStatements: rules.size === 4 ? 5 : rules.size === 5 ? 7 : rules.size === 6 ? 8 : 9,
       // a 7x7 opener needs a few filled cells to stay at the gentle opening grade
       ledgerGivens: lead.type === 'ledger' && lead.opensAfter.length === 0 && rules.size >= 7 ? 7 : 0,
-      seed: hash(`${cf.id}:${lead.id}:${preset}`),
+      seed,
     });
     const check = verifyUnique(p);
     if (!check.ok) throw new Error(`${lead.id}:${preset} failed: ${check.reason}`);
