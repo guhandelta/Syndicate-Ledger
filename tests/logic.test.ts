@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { PuzzleBook } from '../src/game/caseTypes';
+import type { GridBook } from '../src/game/caseTypes';
 import { gradePuzzle, nextStep } from '../src/engine/logic';
 
-const book: PuzzleBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
+const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 const all = Object.entries(book);
 const empty = (n: number) => Array.from({ length: n }, () => Array(n).fill(0));
 

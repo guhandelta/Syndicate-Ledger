@@ -1,5 +1,6 @@
+import type { TimeClaim } from '../engine/timeline';
 import type { Claim } from '../engine/types';
-import type { CaseFile, Lead, Text } from './caseTypes';
+import type { AnyPuzzle, CaseFile, Lead, Text } from './caseTypes';
 
 export type Tone = 'crime' | 'friendly';
 
@@ -69,3 +70,47 @@ export function describeClaim(c: Claim, L: GridLabels, type: 'ledger' | 'surveil
 }
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+export interface TimelineLabels {
+  /** The moments to put in order. */
+  moments: string[];
+  /** The times they can go at, earliest first. */
+  times: string[];
+  /** "at 9 PM" for a slot (1..N). */
+  at: (slot: number) => string;
+  /** What one step between times is called ("hour"). */
+  step: string;
+}
+
+export function timelineLabels(lead: Lead, size: number, tone: Tone): TimelineLabels {
+  const times = lead.rows.slice(0, size);
+  return {
+    moments: (lead.moments ?? []).slice(0, size).map((m) => t(m, tone)),
+    times,
+    at: (slot) => at(times[slot - 1]),
+    step: lead.step ?? 'hour',
+  };
+}
+
+/** Plain-language wording of a timeline claim. Moments are quoted so any wording reads right. */
+export function describeTimeClaim(c: TimeClaim, L: TimelineLabels): string {
+  const M = (m: number) => `“${L.moments[m]}”`;
+  switch (c.kind) {
+    case 'at':
+      return `${M(c.m)} happened ${L.at(c.slot)}.`;
+    case 'notAt':
+      return `${M(c.m)} did not happen ${L.at(c.slot)}.`;
+    case 'before':
+      return `${M(c.a)} happened before ${M(c.b)}.`;
+    case 'justBefore':
+      return `${M(c.a)} happened right before ${M(c.b)}, with nothing in between.`;
+    case 'apart':
+      return `${M(c.a)} and ${M(c.b)} were ${c.gap === 1 ? `one ${L.step}` : `${c.gap} ${L.step}s`} apart.`;
+  }
+}
+
+/** Wording of a statement from any kind of lead. */
+export function describeStatement(cf: CaseFile, lead: Lead, p: AnyPuzzle, claim: Claim | TimeClaim, tone: Tone): string {
+  if (p.type === 'timeline') return describeTimeClaim(claim as TimeClaim, timelineLabels(lead, p.size, tone));
+  return describeClaim(claim as Claim, gridLabels(cf, lead, p.size, tone), p.type);
+}

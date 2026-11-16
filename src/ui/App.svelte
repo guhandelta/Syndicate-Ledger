@@ -62,8 +62,9 @@
       return;
     }
     if (session.screen !== 'puzzle' || !session.game || !session.leadId) return;
-    const n = session.puzzle.size;
     const k = e.key;
+    if (session.isTimeline) return timelineKey(e);
+    const n = session.puzzle.size;
     if (/^[1-9]$/.test(k) && Number(k) <= n) {
       session.enter(Number(k));
       e.preventDefault();
@@ -78,6 +79,29 @@
       e.preventDefault();
     } else if (MOVES[k]) {
       session.move(...MOVES[k]);
+      e.preventDefault();
+    }
+  }
+
+  /** Timeline keys: a number puts the picked moment at that time, 0 takes it off, arrows pick another moment. */
+  function timelineKey(e: KeyboardEvent) {
+    // the time pickers handle their own keys
+    if ((e.target as HTMLElement | null)?.tagName === 'SELECT') return;
+    const k = e.key;
+    const n = session.anyPuzzle.size;
+    const m = session.pui.moment;
+    if (/^[1-9]$/.test(k) && Number(k) <= n && m !== null) {
+      session.placeMoment(m, Number(k));
+      e.preventDefault();
+    } else if ((k === 'Backspace' || k === 'Delete' || k === '0') && m !== null) {
+      session.placeMoment(m, 0);
+      e.preventDefault();
+    } else if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'z') {
+      if (e.shiftKey) session.redo();
+      else session.undo();
+      e.preventDefault();
+    } else if (k === 'ArrowDown' || k === 'ArrowUp') {
+      session.pui.moment = ((m ?? -1) + (k === 'ArrowDown' ? 1 : n - 1 + (m === null ? 1 : 0))) % n;
       e.preventDefault();
     }
   }

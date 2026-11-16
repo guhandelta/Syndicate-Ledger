@@ -7,10 +7,12 @@
   import NumberPad from './NumberPad.svelte';
   import Statements from './Statements.svelte';
   import StatusBar from './StatusBar.svelte';
+  import Timeline from './Timeline.svelte';
 
   let { session }: { session: Session } = $props();
   const lead = $derived(session.lead);
-  const p = $derived(session.puzzle);
+  const p = $derived(session.anyPuzzle);
+  const kind = $derived(lead.type === 'ledger' ? 'Cash ledger' : lead.type === 'surveillance' ? 'Camera log' : 'Timeline');
   const lp = $derived(session.lp);
   const pui = $derived(session.pui);
   const n = $derived(p.size);
@@ -23,7 +25,7 @@
   <div class="puzzle-head">
     <button class="btn ghost" onclick={session.goBoard}>{session.hub === 'town' ? '← Town' : '← Board'}</button>
     <div>
-      <p class="eyebrow">{lead.id} · {lead.type === 'ledger' ? 'Cash ledger' : 'Camera log'}</p>
+      <p class="eyebrow">{lead.id} · {kind}</p>
       <h1>{session.T(lead.title)}</h1>
     </div>
   </div>
@@ -33,11 +35,16 @@
   {/if}
   <div class="puzzle-layout">
     <div class="left">
-      <Grid {session} />
-      {#if lp.solved}
-        <p class="solved-banner">✓ Solved. {session.T(lead.fact)}</p>
+      {#if p.type === 'timeline'}
+        <Timeline {session} />
+        {#if lp.solved}<p class="solved-banner">✓ Solved. {session.T(lead.fact)}</p>{/if}
       {:else}
-        <NumberPad {session} />
+        <Grid {session} />
+        {#if lp.solved}
+          <p class="solved-banner">✓ Solved. {session.T(lead.fact)}</p>
+        {:else}
+          <NumberPad {session} />
+        {/if}
       {/if}
       {#if pui.hint}
         <div class="hint-box" role="status"><strong>{partner?.name}:</strong> “{pui.hint.text}”</div>
@@ -51,7 +58,7 @@
       {#if pui.message}<div class="msg" role="status">{pui.message}</div>{/if}
       {#if !lp.solved}
         <div class="close-row">
-          {#if rules(session.g).mistakes === 'on-request'}<button class="btn" onclick={() => session.checkGrid()}>Check my grid</button>{/if}
+          {#if rules(session.g).mistakes === 'on-request'}<button class="btn" onclick={() => session.checkGrid()}>Check my {p.type === 'timeline' ? 'timeline' : 'grid'}</button>{/if}
           <button class="btn primary" onclick={() => session.closeLead()}>Close this lead</button>
         </div>
       {/if}

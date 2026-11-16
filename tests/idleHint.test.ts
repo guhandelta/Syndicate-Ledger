@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { CaseFile, PuzzleBook } from '../src/game/caseTypes';
-import { newGame, puzzleOf, solveLead, startLead } from '../src/game/state';
+import type { CaseFile, GridBook } from '../src/game/caseTypes';
+import { newGame, gridOf as puzzleOf, solveLead, startLead } from '../src/game/state';
 import type { Town } from '../src/town/townTypes';
 import { idleHint, type IdleContext } from '../src/ui/idleHint';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: PuzzleBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
+const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 const town: Town = JSON.parse(readFileSync('cases/case-01-harbor-ledger/town.json', 'utf8'));
 
 const ctx = (over: Partial<IdleContext>): IdleContext => ({ game: null, screen: 'title', leadId: null, town, dialog: false, tone: 'crime', ...over });
@@ -110,7 +110,7 @@ describe('idle tips', () => {
   });
 
   it('falls back to the basics when no logical next step exists, and uses the right words for rooms and kids', () => {
-    const broken: PuzzleBook = JSON.parse(JSON.stringify(book));
+    const broken: GridBook = JSON.parse(JSON.stringify(book));
     broken['L1:inspector'].statements = [];
     broken['L1:inspector'].zones = [];
     broken['L1:inspector'].truth = [];

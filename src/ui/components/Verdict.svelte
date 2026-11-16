@@ -2,7 +2,7 @@
   import { PRESET_RULES } from '../../game/presets';
   import { clockOn, puzzleOf, stars, totalHours } from '../../game/state';
   import { caseClosed, partOf, rankAbove } from '../../game/rankStory';
-  import { describeClaim, gridLabels } from '../../game/text';
+  import { describeStatement } from '../../game/text';
   import type { Session } from '../session.svelte';
 
   let { session }: { session: Session } = $props();
@@ -21,7 +21,6 @@
     cf.leads.flatMap((lead) => {
       const p = puzzleOf(g, lead.id);
       const caught = g.s.leads[lead.id].solved;
-      const L = gridLabels(cf, lead, p.size, session.tone);
       return p.statements.flatMap((s, i) => {
         if (p.truth[i]) return [];
         const who = session.person(s.speaker);
@@ -31,7 +30,7 @@
             : who.protects
               ? `${who.name} was covering for ${session.person(who.protects).name}.`
               : '';
-        return [{ key: `${lead.id}-${i}`, caught, who, said: describeClaim(s.claim, L, p.type), motive }];
+        return [{ key: `${lead.id}-${i}`, caught, who, said: describeStatement(cf, lead, p, s.claim, session.tone), motive }];
       });
     }),
   );

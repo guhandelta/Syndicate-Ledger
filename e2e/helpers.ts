@@ -2,11 +2,13 @@ import { expect, type Page } from '@playwright/test';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
-import { PRESETS, type CaseFile, type Preset, type PuzzleBook } from '../src/game/caseTypes';
+import { PRESETS, type CaseFile, type Preset } from '../src/game/caseTypes';
+import type { GeneratedPuzzle } from '../src/engine/types';
 
 const readJson = (file: string) => JSON.parse(readFileSync(path.resolve(file), 'utf8'));
 export const cf = readJson('cases/case-01-harbor-ledger.json') as CaseFile;
-export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as PuzzleBook;
+// Case 1's leads are all grid leads
+export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle>;
 export const GAME_URL = pathToFileURL(path.resolve('dist/syndicate-ledger.html')).href;
 
 export const PRESET_LABEL: Record<Preset, string> = { junior: 'Junior', detective: 'Detective', inspector: 'Inspector', chief: 'Chief' };

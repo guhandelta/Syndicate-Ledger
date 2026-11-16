@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { CaseFile, PuzzleBook } from '../src/game/caseTypes';
+import type { CaseFile, GridBook } from '../src/game/caseTypes';
 import { addFlag, newGame, solveLead } from '../src/game/state';
 import { greetingFor, hearOpinion, heardAbout, meets, opinionsOf } from '../src/game/talk';
 import { deliver, plainLine, wordDelay } from '../src/ui/delivery';
 import { FACE_FALLBACK, portraitOf } from '../src/ui/portraits';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: PuzzleBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
+const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 const person = (id: string) => cf.cast.find((c) => c.id === id)!;
 const game = (character?: string) => newGame(cf, book, 'detective', character);
 

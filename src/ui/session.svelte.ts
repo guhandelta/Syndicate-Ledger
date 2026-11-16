@@ -1,14 +1,16 @@
 import { nextStep } from '../engine/logic';
-import type { Cell } from '../engine/types';
+import { timelineStep, wrongMoment, type TimeClaim } from '../engine/timeline';
+import type { Cell, Claim } from '../engine/types';
 import type { CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
-  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, gridOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  timelineOf,
   submitAccusation,
   type Game, type GameState,
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
-import { gridLabels, t, type Tone } from '../game/text';
+import { describeStatement, gridLabels, t, timelineLabels, type Tone } from '../game/text';
 import type { Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
 import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
@@ -53,12 +55,14 @@ export interface PuzzleUi {
   zoneInfo: { text: string; combos: number[][] } | null;
   pickStatementFor: 'undercover' | null;
   message: string | null;
+  /** Timeline leads: the moment the player picked (for allies that look at one moment). */
+  moment: number | null;
 }
 
 export const SAVE_KEY = 'syndicate-ledger:save:v1';
 
 const freshPui = (): PuzzleUi => ({
-  sel: null, pencil: false, undo: [], redo: [], hint: null, flashWrong: false, zoneInfo: null, pickStatementFor: null, message: null,
+  sel: null, pencil: false, undo: [], redo: [], hint: null, flashWrong: false, zoneInfo: null, pickStatementFor: null, message: null, moment: null,
 });
 
 /** Reads a saved game. v1 saves (version 1) load as they are. */
@@ -328,8 +332,60 @@ export class Session {
 
   // ---------- puzzle ----------
 
-  get puzzle() {
+  /** The open lead's puzzle, whatever kind it is. */
+  get anyPuzzle() {
     return puzzleOf(this.g, this.leadId!);
+  }
+
+  /** The open grid lead's puzzle (the grid screens only open for grid leads). */
+  get puzzle() {
+    return gridOf(this.g, this.leadId!);
+  }
+
+  /** The open timeline lead's puzzle. */
+  get timeline() {
+    return timelineOf(this.g, this.leadId!);
+  }
+
+  get isTimeline() {
+    return this.anyPuzzle.type === 'timeline';
+  }
+
+  get timeLabels() {
+    return timelineLabels(this.lead, this.anyPuzzle.size, this.tone);
+  }
+
+  /** A statement in plain words, for either kind of puzzle. */
+  describe(claim: Claim | TimeClaim): string {
+    return describeStatement(this.cf, this.lead, this.anyPuzzle, claim, this.tone);
+  }
+
+  /** Timeline: is this moment fixed in place (given, shown by an ally, or the lead is solved)? */
+  momentLocked(m: number) {
+    const lp = this.lp;
+    return lp.solved || this.timeline.givens.some((x) => x.m === m) || !!lp.shownMoments?.includes(m);
+  }
+
+  /** Timeline: puts a moment at a time (0 takes it off). A moment already there goes back to the pile. */
+  placeMoment(m: number, slot: number) {
+    if (this.momentLocked(m)) return;
+    const order = this.lp.order!;
+    const other = slot ? order.findIndex((s, k) => k !== m && s === slot) : -1;
+    if (other >= 0 && this.momentLocked(other)) {
+      this.pui.message = `${this.timeLabels.moments[other]} is already fixed at ${this.timeLabels.times[slot - 1]}.`;
+      return;
+    }
+    this.pushUndo();
+    if (other >= 0) order[other] = 0;
+    order[m] = slot;
+    this.pui.moment = m;
+    this.pui.hint = null;
+    this.pui.message = null;
+  }
+
+  pickMoment(m: number) {
+    this.pui.moment = this.pui.moment === m ? null : m;
+    this.pui.message = null;
   }
 
   get lp() {
@@ -363,7 +419,7 @@ export class Session {
 
   private snapshot() {
     const lp = this.lp;
-    return JSON.stringify({ grid: lp.grid, notes: lp.notes });
+    return JSON.stringify({ grid: lp.grid, notes: lp.notes, order: lp.order });
   }
 
   private pushUndo() {
@@ -376,6 +432,7 @@ export class Session {
     const o = JSON.parse(snap);
     this.lp.grid = o.grid;
     this.lp.notes = o.notes;
+    if (o.order) this.lp.order = o.order;
   }
 
   undo() {
@@ -428,13 +485,62 @@ export class Session {
   }
 
   checkGrid() {
-    const wrong = findWrong(this.puzzle, this.lp.grid);
     this.pui.flashWrong = true;
-    this.pui.message = wrong ? 'Wrong numbers are shown in red.' : 'Everything on the grid so far is correct.';
+    if (this.isTimeline) {
+      const bad = wrongMoment(this.timeline, this.lp.order!) >= 0;
+      this.pui.message = bad ? 'Moments at the wrong time are shown in red.' : 'Everything on the timeline so far is correct.';
+    } else {
+      const wrong = findWrong(this.puzzle, this.lp.grid);
+      this.pui.message = wrong ? 'Wrong numbers are shown in red.' : 'Everything on the grid so far is correct.';
+    }
     setTimeout(() => (this.pui.flashWrong = false), 2500);
   }
 
+  /** Allies on a timeline: forensics pins the picked moment, the partner points the way. */
+  private useAllyOnTimeline(ally: CastMember) {
+    const g = this.g;
+    const p = this.timeline;
+    const lp = this.lp;
+    const L = this.timeLabels;
+    const pui = this.pui;
+    if (ally.ability === 'forensics') {
+      const m = pui.moment;
+      if (m === null || this.momentLocked(m)) {
+        pui.message = `Pick a moment first, then call ${ally.name}.`;
+        return;
+      }
+      if (!spendFavors(g, 1)) return;
+      this.pushUndo();
+      const order = lp.order!;
+      const other = order.findIndex((s, k) => k !== m && s === p.solution[m]);
+      if (other >= 0) order[other] = 0;
+      order[m] = p.solution[m];
+      lp.shownMoments!.push(m);
+      g.s.hintsUsed++;
+      pui.message = `${ally.name} confirms: “${L.moments[m]}” was ${L.at(p.solution[m])}.`;
+      return;
+    }
+    // partner
+    if (!spendFavors(g, 1)) return;
+    g.s.hintsUsed++;
+    const wrong = wrongMoment(p, lp.order!);
+    if (wrong >= 0) {
+      pui.moment = wrong;
+      pui.message = `${ally.name}: "Hold on. Look again at “${L.moments[wrong]}”. That time doesn't fit the case."`;
+      return;
+    }
+    const step = timelineStep(p, lp.order!);
+    if (!step) {
+      pui.message = `${ally.name}: "The timeline looks complete. Now check each statement against it."`;
+      return;
+    }
+    pui.moment = step.m;
+    const who = this.person(p.statements[step.statement].speaker);
+    pui.message = `${ally.name}: "Look at “${L.moments[step.m]}”. Think about what ${who.name} said."`;
+  }
+
   useAlly(ally: CastMember) {
+    if (this.isTimeline && ally.ability !== 'undercover') return this.useAllyOnTimeline(ally);
     const g = this.g;
     const p = this.puzzle;
     const lp = this.lp;
@@ -496,7 +602,7 @@ export class Session {
   pickStatement(i: number) {
     if (this.pui.pickStatementFor !== 'undercover') return;
     const g = this.g;
-    const p = this.puzzle;
+    const p = this.anyPuzzle;
     if (!spendFavors(g, 2)) return;
     g.s.hintsUsed++;
     this.pui.pickStatementFor = null;
@@ -521,11 +627,12 @@ export class Session {
     const g = this.g;
     const id = this.leadId!;
     const res = checkLead(g, id);
+    const tl = this.isTimeline;
     const msgs: Record<string, string> = {
-      'grid-incomplete': 'The grid still has empty cells.',
-      'grid-wrong': "Something doesn't add up. At least one number on the grid is wrong.",
+      'grid-incomplete': tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
+      'grid-wrong': tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
       'marks-incomplete': 'Mark every statement as True or Lie before closing the lead.',
-      'marks-wrong': "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
+      'marks-wrong': tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
     };
     if (res === 'marks-wrong' || res === 'marks-incomplete') {
       const kind = res === 'marks-wrong' ? 'wrong-mark' : 'unmarked';

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { CaseFile, PuzzleBook } from '../src/game/caseTypes';
+import type { CaseFile, GridBook } from '../src/game/caseTypes';
 import { PRESETS } from '../src/game/caseTypes';
 import { enumerate } from '../src/engine/solver';
 import { evalClaim } from '../src/engine/claims';
-import { fireEvents, accuse, accuseStatus, submitAccusation, addFlag, checkLead, hoursLeft, newGame, puzzleOf, solveLead, spendHours, startLead, trustOf } from '../src/game/state';
+import { fireEvents, accuse, accuseStatus, submitAccusation, addFlag, checkLead, gridOf as puzzleOf, hoursLeft, newGame, solveLead, spendHours, startLead, trustOf } from '../src/game/state';
 import { verifyUnique } from '../src/engine/generator';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
-const book: PuzzleBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
+const book: GridBook = JSON.parse(readFileSync('cases/case-01-harbor-ledger/puzzles.json', 'utf8'));
 
 function solve(g: ReturnType<typeof newGame>, id: string) {
   const p = puzzleOf(g, id);

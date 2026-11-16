@@ -2,8 +2,9 @@ import { evalClaim } from '../engine/claims';
 import { randomClaim } from '../engine/generator';
 import { enumerate } from '../engine/solver';
 import { makeRng } from '../engine/rng';
+import { fittingOrders, freshTrueTimeClaim, type TimeClaim, type TimelinePuzzle } from '../engine/timeline';
 import type { Claim, GeneratedPuzzle, Grid } from '../engine/types';
-import type { CaseEvent, CaseFile, Ending, Preset, PuzzleBook } from './caseTypes';
+import type { AnyPuzzle, CaseEvent, CaseFile, Ending, Preset, PuzzleBook } from './caseTypes';
 import { PRESET_RULES } from './presets';
 
 export type Mark = 'unknown' | 'true' | 'lie';
@@ -17,10 +18,14 @@ export interface LeadProgress {
   marks: Mark[];
   extraCost: number;
   /** extra statements bought from the informant (always true) */
-  paidTips: { speaker: string; claim: Claim }[];
+  paidTips: { speaker: string; claim: Claim | TimeClaim }[];
   /** speakers removed by an event and not yet recovered */
   missingSpeakers: string[];
   revealed: [number, number][];
+  /** Timeline leads: the time slot (1..N) the player put each moment at, 0 = not placed. Grid leads have none. */
+  order?: number[];
+  /** Timeline leads: moments shown in place by an ally or after a witness left. */
+  shownMoments?: number[];
 }
 
 export interface GameState {
@@ -62,17 +67,14 @@ export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset, characte
   const leads: Record<string, LeadProgress> = {};
   for (const lead of cf.leads) {
     const p = book[`${lead.id}:${preset}`];
-    leads[lead.id] = {
-      started: false,
-      solved: false,
-      grid: p.solution.map((row) => row.map(() => 0)),
-      notes: p.solution.map((row) => row.map(() => 0)),
-      marks: p.statements.map(() => 'unknown'),
-      extraCost: 0,
-      paidTips: [],
-      missingSpeakers: [],
-      revealed: [],
-    };
+    const common = { started: false, solved: false, marks: p.statements.map((): Mark => 'unknown'), extraCost: 0, paidTips: [], missingSpeakers: [], revealed: [] };
+    if (p.type === 'timeline') {
+      const order = p.solution.map(() => 0);
+      for (const gv of p.givens) order[gv.m] = gv.slot;
+      leads[lead.id] = { ...common, grid: [], notes: [], order, shownMoments: [] };
+      continue;
+    }
+    leads[lead.id] = { ...common, grid: p.solution.map((row) => row.map(() => 0)), notes: p.solution.map((row) => row.map(() => 0)) };
     for (const g of p.givens) leads[lead.id].grid[g.cell[0]][g.cell[1]] = g.value;
   }
   return {
@@ -82,7 +84,11 @@ export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset, characte
   };
 }
 
-export const puzzleOf = (g: Game, leadId: string): GeneratedPuzzle => g.book[`${leadId}:${g.s.preset}`];
+export const puzzleOf = (g: Game, leadId: string): AnyPuzzle => g.book[`${leadId}:${g.s.preset}`];
+/** A grid lead's puzzle (ledger or camera log). */
+export const gridOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as GeneratedPuzzle;
+/** A timeline lead's puzzle. */
+export const timelineOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as TimelinePuzzle;
 export const rules = (g: Game) => PRESET_RULES[g.s.preset];
 export const clockOn = (g: Game) => rules(g).clock !== 'off';
 export const totalHours = (g: Game) => g.cf.clock.days * g.cf.clock.hoursPerDay + rules(g).extraHours;
@@ -119,7 +125,7 @@ export function spendHours(g: Game, hours: number): CaseEvent[] {
  * Greedy: each added cell is the one that rules out the most grids that still fit.
  */
 export function gapCells(g: Game, leadId: string): [number, number][] {
-  const p = puzzleOf(g, leadId);
+  const p = gridOf(g, leadId);
   const lp = g.s.leads[leadId];
   const said = p.statements.filter((s) => !lp.missingSpeakers.includes(s.speaker));
   const shown = [...p.givens.map((x) => x.cell), ...lp.revealed];
@@ -151,11 +157,45 @@ export function gapCells(g: Game, leadId: string): [number, number][] {
 /** When a witness leaves, show the cells that keep the lead solvable (no hint is spent). */
 function fillGapLeft(g: Game, leadId: string) {
   const lp = g.s.leads[leadId];
-  const p = puzzleOf(g, leadId);
+  if (puzzleOf(g, leadId).type === 'timeline') {
+    const p = timelineOf(g, leadId);
+    for (const m of gapMoments(g, leadId)) {
+      lp.order![m] = p.solution[m];
+      lp.shownMoments!.push(m);
+    }
+    return;
+  }
+  const p = gridOf(g, leadId);
   for (const [r, c] of gapCells(g, leadId)) {
     lp.grid[r][c] = p.solution[r][c];
     lp.revealed.push([r, c]);
   }
+}
+
+/** Timeline version of gapCells: moments to show in place so the statements left still give one order. */
+export function gapMoments(g: Game, leadId: string): number[] {
+  const p = timelineOf(g, leadId);
+  const lp = g.s.leads[leadId];
+  const said = p.statements.filter((s) => !lp.missingSpeakers.includes(s.speaker)).map((s) => s.claim);
+  const shown = [...p.givens.map((x) => x.m), ...lp.shownMoments!];
+  const pin = (ms: number[]) => ({ ...p, givens: ms.map((m) => ({ m, slot: p.solution[m] })) });
+  let fits = fittingOrders(pin(shown), said);
+  const added: number[] = [];
+  while (fits.length > 1) {
+    let best = -1;
+    let bestLeft = fits.length;
+    for (let m = 0; m < p.size; m++) {
+      if (shown.includes(m) || added.includes(m)) continue;
+      const left = fits.filter((o) => o[m] === p.solution[m]).length;
+      if (left < bestLeft) {
+        bestLeft = left;
+        best = m;
+      }
+    }
+    fits = fits.filter((o) => o[best] === p.solution[best]);
+    added.push(best);
+  }
+  return added;
 }
 
 export function fireEvents(g: Game): CaseEvent[] {
@@ -210,8 +250,13 @@ export type CheckResult = 'solved' | 'grid-wrong' | 'grid-incomplete' | 'marks-w
 export function checkLead(g: Game, leadId: string): CheckResult {
   const p = puzzleOf(g, leadId);
   const lp = g.s.leads[leadId];
-  if (lp.grid.some((row) => row.some((v) => !v))) return 'grid-incomplete';
-  if (lp.grid.some((row, r) => row.some((v, c) => v !== p.solution[r][c]))) return 'grid-wrong';
+  if (p.type === 'timeline') {
+    if (lp.order!.some((v) => !v)) return 'grid-incomplete';
+    if (lp.order!.some((v, m) => v !== p.solution[m])) return 'grid-wrong';
+  } else {
+    if (lp.grid.some((row) => row.some((v) => !v))) return 'grid-incomplete';
+    if (lp.grid.some((row, r) => row.some((v, c) => v !== p.solution[r][c]))) return 'grid-wrong';
+  }
   const visible = p.statements.map((s) => !lp.missingSpeakers.includes(s.speaker));
   if (lp.marks.some((m, i) => visible[i] && m === 'unknown')) return 'marks-incomplete';
   if (lp.marks.some((m, i) => visible[i] && (m === 'lie') !== !p.truth[i])) return 'marks-wrong';
@@ -262,12 +307,23 @@ export function trustOf(g: Game, personId: string): Trust {
 }
 
 /** The informant sells one extra (true) statement for the current puzzle. */
-export function buyTip(g: Game, leadId: string, informant: string): Claim | 'cant' {
-  const p = puzzleOf(g, leadId);
+export function buyTip(g: Game, leadId: string, informant: string): Claim | TimeClaim | 'cant' {
+  const any = puzzleOf(g, leadId);
   const lp = g.s.leads[leadId];
   if (g.s.flags.includes(`${informant}-exposed`)) return 'cant';
   if (g.s.favors < 1 || (clockOn(g) && hoursLeft(g) < 1)) return 'cant';
-  const rng = makeRng(g.s.hoursUsed * 131 + lp.paidTips.length * 977 + p.seed);
+  const rng = makeRng(g.s.hoursUsed * 131 + lp.paidTips.length * 977 + any.seed);
+  if (any.type === 'timeline') {
+    const have = [...any.statements.map((s) => s.claim), ...(lp.paidTips.map((x) => x.claim) as TimeClaim[])];
+    const tc = freshTrueTimeClaim(any, have, rng);
+    /* v8 ignore next -- a 4-moment timeline still has fresh true claims left */
+    if (!tc) return 'cant';
+    g.s.favors -= 1;
+    spendHours(g, 1);
+    lp.paidTips.push({ speaker: informant, claim: tc });
+    return tc;
+  }
+  const p = any;
   const known = new Set(p.statements.map((s) => JSON.stringify(s.claim)));
   // draws a few hundred random claims and keeps the first true one the player doesn't already have
   const draws = Array.from({ length: 500 }, () => randomClaim(p.solution, p.type, rng));
