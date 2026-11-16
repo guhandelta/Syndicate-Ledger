@@ -63,6 +63,7 @@
     }
     if (session.screen !== 'puzzle' || !session.game || !session.leadId) return;
     const k = e.key;
+    if (session.isNetwork) return networkKey(e);
     if (session.isTimeline) return timelineKey(e);
     const n = session.puzzle.size;
     if (/^[1-9]$/.test(k) && Number(k) <= n) {
@@ -79,6 +80,15 @@
       e.preventDefault();
     } else if (MOVES[k]) {
       session.move(...MOVES[k]);
+      e.preventDefault();
+    }
+  }
+
+  /** Network keys: Ctrl+Z undoes a decision. Pairs are decided with the buttons next to them. */
+  function networkKey(e: KeyboardEvent) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      if (e.shiftKey) session.redo();
+      else session.undo();
       e.preventDefault();
     }
   }

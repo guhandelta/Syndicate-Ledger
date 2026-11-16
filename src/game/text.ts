@@ -1,6 +1,7 @@
+import type { NetClaim } from '../engine/network';
 import type { TimeClaim } from '../engine/timeline';
 import type { Claim } from '../engine/types';
-import type { AnyPuzzle, CaseFile, Lead, Text } from './caseTypes';
+import type { AnyClaim, AnyPuzzle, CaseFile, Lead, Text } from './caseTypes';
 
 export type Tone = 'crime' | 'friendly';
 
@@ -109,8 +110,30 @@ export function describeTimeClaim(c: TimeClaim, L: TimelineLabels): string {
   }
 }
 
+/** The people of a network lead, by name. */
+export const networkPeople = (cf: CaseFile, lead: Lead, size: number): string[] =>
+  lead.columns.slice(0, size).map((id) => (cf.cast.find((c) => c.id === id)?.name ?? id).replace(/"/g, ''));
+
+/** Plain-language wording of a network claim. */
+export function describeNetClaim(c: NetClaim, people: string[]): string {
+  const P = (i: number) => people[i];
+  switch (c.kind) {
+    case 'linked':
+      return `${P(c.a)} and ${P(c.b)} were in contact.`;
+    case 'notLinked':
+      return `${P(c.a)} and ${P(c.b)} were never in contact.`;
+    case 'common':
+      return `${P(c.a)} and ${P(c.b)} had someone in common they were both in contact with.`;
+    case 'noCommon':
+      return `${P(c.a)} and ${P(c.b)} had nobody in common they were both in contact with.`;
+    case 'oneOf':
+      return `${P(c.a)} was in contact with exactly one of ${P(c.b)} and ${P(c.c)}, not both and not neither.`;
+  }
+}
+
 /** Wording of a statement from any kind of lead. */
-export function describeStatement(cf: CaseFile, lead: Lead, p: AnyPuzzle, claim: Claim | TimeClaim, tone: Tone): string {
+export function describeStatement(cf: CaseFile, lead: Lead, p: AnyPuzzle, claim: AnyClaim, tone: Tone): string {
   if (p.type === 'timeline') return describeTimeClaim(claim as TimeClaim, timelineLabels(lead, p.size, tone));
+  if (p.type === 'network') return describeNetClaim(claim as NetClaim, networkPeople(cf, lead, p.size));
   return describeClaim(claim as Claim, gridLabels(cf, lead, p.size, tone), p.type);
 }

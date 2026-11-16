@@ -1,16 +1,17 @@
 import { nextStep } from '../engine/logic';
-import { timelineStep, wrongMoment, type TimeClaim } from '../engine/timeline';
-import type { Cell, Claim } from '../engine/types';
-import type { CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
+import { networkStep, pairs, wrongPair } from '../engine/network';
+import { timelineStep, wrongMoment } from '../engine/timeline';
+import type { Cell } from '../engine/types';
+import type { AnyClaim, CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
-  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, gridOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
   timelineOf,
   submitAccusation,
   type Game, type GameState,
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
-import { describeStatement, gridLabels, t, timelineLabels, type Tone } from '../game/text';
+import { describeStatement, gridLabels, networkPeople, t, timelineLabels, type Tone } from '../game/text';
 import type { Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
 import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
@@ -57,12 +58,14 @@ export interface PuzzleUi {
   message: string | null;
   /** Timeline leads: the moment the player picked (for allies that look at one moment). */
   moment: number | null;
+  /** Network leads: the pair of people (index in `pairs`) the player picked, for allies. */
+  pair: number | null;
 }
 
 export const SAVE_KEY = 'syndicate-ledger:save:v1';
 
 const freshPui = (): PuzzleUi => ({
-  sel: null, pencil: false, undo: [], redo: [], hint: null, flashWrong: false, zoneInfo: null, pickStatementFor: null, message: null, moment: null,
+  sel: null, pencil: false, undo: [], redo: [], hint: null, flashWrong: false, zoneInfo: null, pickStatementFor: null, message: null, moment: null, pair: null,
 });
 
 /** Reads a saved game. v1 saves (version 1) load as they are. */
@@ -351,12 +354,46 @@ export class Session {
     return this.anyPuzzle.type === 'timeline';
   }
 
+  /** The open network lead's puzzle. */
+  get network() {
+    return networkOf(this.g, this.leadId!);
+  }
+
+  get isNetwork() {
+    return this.anyPuzzle.type === 'network';
+  }
+
+  /** The people of the open network lead, by name. */
+  get netPeople() {
+    return networkPeople(this.cf, this.lead, this.anyPuzzle.size);
+  }
+
+  /** Network: is this pair's answer fixed (shown by an ally or after a witness left, or the lead is solved)? */
+  pairLocked(k: number) {
+    return this.lp.solved || !!this.lp.shownPairs?.includes(k);
+  }
+
+  /** Network: decides a pair (1 in contact, 2 never in contact). Choosing the same answer again clears it. */
+  setLink(k: number, v: number) {
+    if (this.pairLocked(k)) return;
+    this.pushUndo();
+    this.lp.links![k] = this.lp.links![k] === v ? 0 : v;
+    this.pui.pair = k;
+    this.pui.hint = null;
+    this.pui.message = null;
+  }
+
+  pickPair(k: number) {
+    this.pui.pair = this.pui.pair === k ? null : k;
+    this.pui.message = null;
+  }
+
   get timeLabels() {
     return timelineLabels(this.lead, this.anyPuzzle.size, this.tone);
   }
 
   /** A statement in plain words, for either kind of puzzle. */
-  describe(claim: Claim | TimeClaim): string {
+  describe(claim: AnyClaim): string {
     return describeStatement(this.cf, this.lead, this.anyPuzzle, claim, this.tone);
   }
 
@@ -419,7 +456,7 @@ export class Session {
 
   private snapshot() {
     const lp = this.lp;
-    return JSON.stringify({ grid: lp.grid, notes: lp.notes, order: lp.order });
+    return JSON.stringify({ grid: lp.grid, notes: lp.notes, order: lp.order, links: lp.links });
   }
 
   private pushUndo() {
@@ -433,6 +470,7 @@ export class Session {
     this.lp.grid = o.grid;
     this.lp.notes = o.notes;
     if (o.order) this.lp.order = o.order;
+    if (o.links) this.lp.links = o.links;
   }
 
   undo() {
@@ -486,7 +524,10 @@ export class Session {
 
   checkGrid() {
     this.pui.flashWrong = true;
-    if (this.isTimeline) {
+    if (this.isNetwork) {
+      const bad = wrongPair(this.network, this.lp.links!) !== null;
+      this.pui.message = bad ? 'Pairs decided the wrong way are shown in red.' : 'Everything you have decided so far is correct.';
+    } else if (this.isTimeline) {
       const bad = wrongMoment(this.timeline, this.lp.order!) >= 0;
       this.pui.message = bad ? 'Moments at the wrong time are shown in red.' : 'Everything on the timeline so far is correct.';
     } else {
@@ -494,6 +535,50 @@ export class Session {
       this.pui.message = wrong ? 'Wrong numbers are shown in red.' : 'Everything on the grid so far is correct.';
     }
     setTimeout(() => (this.pui.flashWrong = false), 2500);
+  }
+
+  /** Allies on a network: forensics settles the picked pair, the partner points the way. */
+  private useAllyOnNetwork(ally: CastMember) {
+    const g = this.g;
+    const p = this.network;
+    const lp = this.lp;
+    const names = this.netPeople;
+    const ps = pairs(p.size);
+    const pui = this.pui;
+    const both = (k: number) => `${names[ps[k][0]]} and ${names[ps[k][1]]}`;
+    if (ally.ability === 'forensics') {
+      const k = pui.pair;
+      if (k === null || this.pairLocked(k)) {
+        pui.message = `Pick a pair of people first, then call ${ally.name}.`;
+        return;
+      }
+      if (!spendFavors(g, 1)) return;
+      this.pushUndo();
+      lp.links![k] = p.links[k] ? 1 : 2;
+      lp.shownPairs!.push(k);
+      g.s.hintsUsed++;
+      pui.message = `${ally.name} confirms: ${both(k)} were ${p.links[k] ? '' : 'never '}in contact.`;
+      return;
+    }
+    // partner
+    if (!spendFavors(g, 1)) return;
+    g.s.hintsUsed++;
+    const wrong = wrongPair(p, lp.links!);
+    if (wrong) {
+      const k = ps.findIndex(([a, b]) => a === wrong[0] && b === wrong[1]);
+      pui.pair = k;
+      pui.message = `${ally.name}: "Hold on. Look again at ${both(k)}. That doesn't fit the case."`;
+      return;
+    }
+    const step = networkStep(p, lp.links!);
+    if (!step) {
+      pui.message = `${ally.name}: "Every pair is decided. Now check each statement against what you have."`;
+      return;
+    }
+    const k = ps.findIndex(([a, b]) => a === step.pair[0] && b === step.pair[1]);
+    pui.pair = k;
+    const said = step.statement >= 0 ? ` Think about what ${this.person(p.statements[step.statement].speaker).name} said.` : '';
+    pui.message = `${ally.name}: "Look at ${both(k)}.${said}"`;
   }
 
   /** Allies on a timeline: forensics pins the picked moment, the partner points the way. */
@@ -540,6 +625,7 @@ export class Session {
   }
 
   useAlly(ally: CastMember) {
+    if (this.isNetwork && ally.ability !== 'undercover') return this.useAllyOnNetwork(ally);
     if (this.isTimeline && ally.ability !== 'undercover') return this.useAllyOnTimeline(ally);
     const g = this.g;
     const p = this.puzzle;
@@ -628,11 +714,12 @@ export class Session {
     const id = this.leadId!;
     const res = checkLead(g, id);
     const tl = this.isTimeline;
+    const nw = this.isNetwork;
     const msgs: Record<string, string> = {
-      'grid-incomplete': tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
-      'grid-wrong': tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
+      'grid-incomplete': nw ? 'Some pairs are still undecided. Mark each pair as in contact or never in contact.' : tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
+      'grid-wrong': nw ? "Something doesn't add up. At least one pair is decided the wrong way." : tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
       'marks-incomplete': 'Mark every statement as True or Lie before closing the lead.',
-      'marks-wrong': tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
+      'marks-wrong': nw ? "The network is right, but your read on the witnesses isn't. Check each statement against it." : tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
     };
     if (res === 'marks-wrong' || res === 'marks-incomplete') {
       const kind = res === 'marks-wrong' ? 'wrong-mark' : 'unmarked';

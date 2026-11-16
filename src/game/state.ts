@@ -2,9 +2,10 @@ import { evalClaim } from '../engine/claims';
 import { randomClaim } from '../engine/generator';
 import { enumerate } from '../engine/solver';
 import { makeRng } from '../engine/rng';
+import { fittingNetworks, freshTrueNetClaim, type NetClaim, type NetworkPuzzle } from '../engine/network';
 import { fittingOrders, freshTrueTimeClaim, type TimeClaim, type TimelinePuzzle } from '../engine/timeline';
 import type { Claim, GeneratedPuzzle, Grid } from '../engine/types';
-import type { AnyPuzzle, CaseEvent, CaseFile, Ending, Preset, PuzzleBook } from './caseTypes';
+import type { AnyClaim, AnyPuzzle, CaseEvent, CaseFile, Ending, Preset, PuzzleBook } from './caseTypes';
 import { PRESET_RULES } from './presets';
 
 export type Mark = 'unknown' | 'true' | 'lie';
@@ -18,7 +19,7 @@ export interface LeadProgress {
   marks: Mark[];
   extraCost: number;
   /** extra statements bought from the informant (always true) */
-  paidTips: { speaker: string; claim: Claim | TimeClaim }[];
+  paidTips: { speaker: string; claim: AnyClaim }[];
   /** speakers removed by an event and not yet recovered */
   missingSpeakers: string[];
   revealed: [number, number][];
@@ -26,6 +27,10 @@ export interface LeadProgress {
   order?: number[];
   /** Timeline leads: moments shown in place by an ally or after a witness left. */
   shownMoments?: number[];
+  /** Network leads: what the player decided about each pair of people (in `pairs` order): 0 undecided, 1 in contact, 2 never in contact. */
+  links?: number[];
+  /** Network leads: pairs shown as decided by an ally or after a witness left. */
+  shownPairs?: number[];
 }
 
 export interface GameState {
@@ -74,6 +79,10 @@ export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset, characte
       leads[lead.id] = { ...common, grid: [], notes: [], order, shownMoments: [] };
       continue;
     }
+    if (p.type === 'network') {
+      leads[lead.id] = { ...common, grid: [], notes: [], links: p.links.map(() => 0), shownPairs: [] };
+      continue;
+    }
     leads[lead.id] = { ...common, grid: p.solution.map((row) => row.map(() => 0)), notes: p.solution.map((row) => row.map(() => 0)) };
     for (const g of p.givens) leads[lead.id].grid[g.cell[0]][g.cell[1]] = g.value;
   }
@@ -89,6 +98,8 @@ export const puzzleOf = (g: Game, leadId: string): AnyPuzzle => g.book[`${leadId
 export const gridOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as GeneratedPuzzle;
 /** A timeline lead's puzzle. */
 export const timelineOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as TimelinePuzzle;
+/** A network lead's puzzle. */
+export const networkOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as NetworkPuzzle;
 export const rules = (g: Game) => PRESET_RULES[g.s.preset];
 export const clockOn = (g: Game) => rules(g).clock !== 'off';
 export const totalHours = (g: Game) => g.cf.clock.days * g.cf.clock.hoursPerDay + rules(g).extraHours;
@@ -165,11 +176,44 @@ function fillGapLeft(g: Game, leadId: string) {
     }
     return;
   }
+  if (puzzleOf(g, leadId).type === 'network') {
+    const p = networkOf(g, leadId);
+    for (const k of gapPairs(g, leadId)) {
+      lp.links![k] = 2 - p.links[k]; // 1 in contact, 2 never in contact
+      lp.shownPairs!.push(k);
+    }
+    return;
+  }
   const p = gridOf(g, leadId);
   for (const [r, c] of gapCells(g, leadId)) {
     lp.grid[r][c] = p.solution[r][c];
     lp.revealed.push([r, c]);
   }
+}
+
+/** Network version of gapCells: pairs to show as decided so the statements left still give one network. */
+export function gapPairs(g: Game, leadId: string): number[] {
+  const p = networkOf(g, leadId);
+  const lp = g.s.leads[leadId];
+  const said = p.statements.filter((s) => !lp.missingSpeakers.includes(s.speaker)).map((s) => s.claim);
+  const shown = lp.shownPairs!;
+  let fits = fittingNetworks(p, said).filter((l) => shown.every((k) => l[k] === p.links[k]));
+  const added: number[] = [];
+  while (fits.length > 1) {
+    let best = -1;
+    let bestLeft = fits.length;
+    for (let k = 0; k < p.links.length; k++) {
+      if (shown.includes(k) || added.includes(k)) continue;
+      const left = fits.filter((l) => l[k] === p.links[k]).length;
+      if (left < bestLeft) {
+        bestLeft = left;
+        best = k;
+      }
+    }
+    fits = fits.filter((l) => l[best] === p.links[best]);
+    added.push(best);
+  }
+  return added;
 }
 
 /** Timeline version of gapCells: moments to show in place so the statements left still give one order. */
@@ -253,6 +297,9 @@ export function checkLead(g: Game, leadId: string): CheckResult {
   if (p.type === 'timeline') {
     if (lp.order!.some((v) => !v)) return 'grid-incomplete';
     if (lp.order!.some((v, m) => v !== p.solution[m])) return 'grid-wrong';
+  } else if (p.type === 'network') {
+    if (lp.links!.some((v) => !v)) return 'grid-incomplete';
+    if (lp.links!.some((v, k) => (v === 1) !== (p.links[k] === 1))) return 'grid-wrong';
   } else {
     if (lp.grid.some((row) => row.some((v) => !v))) return 'grid-incomplete';
     if (lp.grid.some((row, r) => row.some((v, c) => v !== p.solution[r][c]))) return 'grid-wrong';
@@ -307,7 +354,7 @@ export function trustOf(g: Game, personId: string): Trust {
 }
 
 /** The informant sells one extra (true) statement for the current puzzle. */
-export function buyTip(g: Game, leadId: string, informant: string): Claim | TimeClaim | 'cant' {
+export function buyTip(g: Game, leadId: string, informant: string): AnyClaim | 'cant' {
   const any = puzzleOf(g, leadId);
   const lp = g.s.leads[leadId];
   if (g.s.flags.includes(`${informant}-exposed`)) return 'cant';
@@ -322,6 +369,16 @@ export function buyTip(g: Game, leadId: string, informant: string): Claim | Time
     spendHours(g, 1);
     lp.paidTips.push({ speaker: informant, claim: tc });
     return tc;
+  }
+  if (any.type === 'network') {
+    const have = [...any.statements.map((s) => s.claim), ...(lp.paidTips.map((x) => x.claim) as NetClaim[])];
+    const nc = freshTrueNetClaim(any, have, rng);
+    /* v8 ignore next -- a 4-person network still has fresh true claims left */
+    if (!nc) return 'cant';
+    g.s.favors -= 1;
+    spendHours(g, 1);
+    lp.paidTips.push({ speaker: informant, claim: nc });
+    return nc;
   }
   const p = any;
   const known = new Set(p.statements.map((s) => JSON.stringify(s.claim)));

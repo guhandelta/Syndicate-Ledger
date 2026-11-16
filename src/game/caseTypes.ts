@@ -1,9 +1,14 @@
-import type { TimelinePuzzle } from '../engine/timeline';
+import type { NetClaim, NetworkPuzzle } from '../engine/network';
+import type { TimeClaim, TimelinePuzzle } from '../engine/timeline';
+import type { Claim } from '../engine/types';
 import type { GeneratedPuzzle, GridType } from '../engine/types';
 
-/** The kinds of puzzle a lead can hold: the two number grids, or a timeline of moments to put in order. */
-export type LeadType = GridType | 'timeline';
-export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline'];
+/** The kinds of puzzle a lead can hold: the two number grids, a timeline of moments to put in order, or a network of who was in contact with whom. */
+export type LeadType = GridType | 'timeline' | 'network';
+export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline', 'network'];
+
+/** What a witness can say, in any kind of lead. */
+export type AnyClaim = Claim | TimeClaim | NetClaim;
 
 export type Preset = 'junior' | 'detective' | 'inspector' | 'chief';
 export const PRESETS: Preset[] = ['junior', 'detective', 'inspector', 'chief'];
@@ -101,6 +106,8 @@ export interface Lead {
    * `rows` are the times they can go at, and `columns` is empty.
    */
   moments?: Text[];
+  /** Timeline leads: the moments are stops on a floorplan, and the night is a walk along its corridors. */
+  map?: boolean;
   /** Timeline leads: what one step between times is called in "two hours apart". Default "hour". */
   step?: string;
   speakers: string[];
@@ -249,7 +256,7 @@ export type StoryField = (typeof STORY_FIELDS)[number];
 export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>;
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
-export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle;
+export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle;
 export type PuzzleBook = Record<string, AnyPuzzle>;
 /** A book of grid puzzles only (Case 1 today). */
 export type GridBook = Record<string, GeneratedPuzzle>;

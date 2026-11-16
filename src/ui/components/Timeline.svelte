@@ -34,6 +34,14 @@
     {/each}
   </ol>
 
+  {#if p.edges}
+    <h2 class="moments-h" id="corridors-h">Corridors</h2>
+    <p class="corridors-note">The night was one walk. At each time they were in one place, and they could only go between places joined by a corridor.</p>
+    <ul class="corridors" aria-labelledby="corridors-h">
+      {#each p.edges as [a, b]}<li>{L.moments[a]} <span aria-label="joined to">↔</span> {L.moments[b]}</li>{/each}
+    </ul>
+  {/if}
+
   <h2 class="moments-h" id="moments-h">What happened</h2>
   <ul class="moments" aria-labelledby="moments-h">
     {#each L.moments as moment, m}

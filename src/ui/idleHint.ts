@@ -1,7 +1,8 @@
 import { nextStep } from '../engine/logic';
 import type { Lead } from '../game/caseTypes';
+import { wrongPair } from '../engine/network';
 import { wrongMoment } from '../engine/timeline';
-import { checkLead, clockOn, gridOf, hoursLeft, leadCost, leadOpen, puzzleOf, timelineOf, type Game } from '../game/state';
+import { checkLead, clockOn, gridOf, hoursLeft, leadCost, leadOpen, networkOf, puzzleOf, timelineOf, type Game } from '../game/state';
 import { at as when, gridLabels, t, type Tone } from '../game/text';
 import type { Town } from '../town/townTypes';
 import { findWrong } from './puzzleHelpers';
@@ -100,6 +101,14 @@ function whatToDo(ctx: IdleContext): Omit<IdleHint, 'can'> {
     const where = `Working ${leadName(lead)}`;
     if (lp.solved) return { where, todo: 'This lead is solved. Go back to pick the next one.' };
     const state = checkLead(g, lead.id);
+    if (puzzleOf(g, lead.id).type === 'network' && (state === 'grid-incomplete' || state === 'grid-wrong')) {
+      if (wrongPair(networkOf(g, lead.id), lp.links!))
+        return { where, todo: 'One of your pairs is decided the wrong way. Test each against what the witnesses say, or call your partner for a pointer.' };
+      return { where, todo: 'Decide every pair as in contact or never in contact. Use the contact counts: when a person has all their contacts found, they are never in contact with anyone else.' };
+    }
+    if (state === 'marks-incomplete' && puzzleOf(g, lead.id).type === 'network') {
+      return { where, todo: 'Your network is complete. Now test each statement against it and mark it True or Lie.' };
+    }
     if (puzzleOf(g, lead.id).type === 'timeline' && (state === 'grid-incomplete' || state === 'grid-wrong')) {
       if (wrongMoment(timelineOf(g, lead.id), lp.order!) >= 0)
         return { where, todo: 'One of your moments is at the wrong time. Test each one against what the witnesses say, or call your partner for a pointer.' };
