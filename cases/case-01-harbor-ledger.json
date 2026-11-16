@@ -28,7 +28,8 @@
               "vex"
             ]
           }
-        }
+        },
+        {"text": {"crime": "Heard about Tip. I just carry packages. Still.", "friendly": "Heard about Tip. I just carry packages. Still."}, "voice": "nervous", "face": "nervous", "tell": {"crime": "his smile comes a moment late", "friendly": "his smile comes a moment late"}, "when": {"rank": ["detective"]}}
       ],
       "opinions": [
         {
@@ -68,6 +69,9 @@
     { "id": "kane", "name": "Kane Hollis", "role": "suspect", "reliability": "honest", "color": "#4d7c0f",
       "blurb": { "crime": "Dock foreman. Looks guilty, keeps to himself.", "friendly": "Dock boss. Grumpy, but fair." },
       "greeting": { "voice": "shout", "text": { "crime": "Get off my dock unless you've got a warrant!", "friendly": "Hey! This is my dock! Watch your step!" } },
+      "greetings": [
+        {"text": {"crime": "You got further than the last lot. Don't make me regret saying it.", "friendly": "You got further than the last lot. Don't make me regret saying it."}, "voice": "shout", "face": "neutral", "tell": {"crime": "gives you a short nod", "friendly": "gives you a short nod"}, "when": {"rank": ["detective"]}}
+      ],
       "opinions": [
         {
           "about": "vex",
@@ -102,6 +106,9 @@
     { "id": "rosa", "name": "Rosa Diaz", "role": "witness", "reliability": "mistaken", "voice": "nervous", "color": "#be185d",
       "blurb": { "crime": "Runs the fish market. Busy, sharp, sometimes rushed.", "friendly": "Runs the fish market. Always in a hurry." },
       "greeting": { "voice": "nervous", "text": { "crime": "Detective? Make it quick, the morning catch won't sell itself.", "friendly": "Oh! Hi! Sorry, I'm super busy today!" } },
+      "greetings": [
+        {"text": {"crime": "I counted wrong once. I'll count right for you now.", "friendly": "I counted wrong once. I'll count right for you now."}, "voice": "nervous", "face": "nervous", "tell": {"crime": "wrings the cloth in her hands", "friendly": "wrings the cloth in her hands"}, "when": {"rank": ["detective"]}}
+      ],
       "opinions": [
         {
           "about": "kane",
@@ -188,7 +195,8 @@
               "tip-trap"
             ]
           }
-        }
+        },
+        {"text": {"crime": "Back again? No kid games this time. Ask what you like. I answer to whoever pays.", "friendly": "Back again? No kid games this time. Ask what you like. I answer to whoever pays."}, "voice": "calm", "face": "smug", "tell": {"crime": "grins like he knows what you will ask", "friendly": "grins like he knows what you will ask"}, "when": {"rank": ["detective"]}}
       ],
       "opinions": [
         {
@@ -710,6 +718,59 @@
           "friendly": "The coins did not get lost. Someone everyone likes hid them, and the people who looked sneaky were just scared."
         }
       },
+      "handover": {
+        "scene": [
+          {
+            "text": {
+              "crime": "The lock clicks. The chest is full, and Tip does not run.",
+              "friendly": "The lock clicks. The chest is full of festival coins, and Tip does not run."
+            }
+          },
+          {
+            "who": "tip",
+            "text": {
+              "crime": "You counted right. Nobody ever counts.",
+              "friendly": "You counted right. Nobody ever counts."
+            },
+            "face": "smug",
+            "voice": "calm"
+          },
+          {
+            "who": "rosa",
+            "text": {
+              "crime": "Tip? You carried my fish crates all week!",
+              "friendly": "Tip? You carried my fish crates all week!"
+            },
+            "face": "nervous",
+            "voice": "nervous"
+          },
+          {
+            "who": "tip",
+            "text": {
+              "crime": "Don't look at me. Look at the lock. Look at the *plate*.",
+              "friendly": "Don't look at me. Look at the lock. Look at the *plate*."
+            },
+            "face": "smug",
+            "voice": "whisper"
+          },
+          {
+            "text": {
+              "crime": "A brass plate on the lock is stamped CS-9. You slip it into your notebook.",
+              "friendly": "A brass plate on the lock says CS-9. You tuck it into your notebook."
+            }
+          }
+        ],
+        "carried": {
+          "title": {
+            "crime": "The stamped plate",
+            "friendly": "The stamped plate"
+          },
+          "fact": {
+            "crime": "The chest's lock plate is stamped CS-9, the door of a safe at Crane Shipping. It points at Crane's own safe, not at who opened it.",
+            "friendly": "The chest's lock plate says CS-9. It came from a safe at Crane Shipping."
+          }
+        }
+      },
       "setup": {
         "crime": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty. Everybody says it was a sneaky stranger. Tip, the harbor helper, is eager to help you look.",
         "friendly": "Port Calder is ready for the Gold Coin Festival, but the prize chest is empty! Tip, the helpful harbor kid, is happy to help you look."
@@ -1067,7 +1128,47 @@
         "title": "The cash trail",
         "question": "Who did it?",
         "reveal": "Tip was playing both sides, and the fish market books lead to Crane's own private ledger. Crane robbed his own safe."
-      }
+      },
+      "opening": [
+        {
+          "text": {
+            "crime": "Rain on the glass. Sgt. Dex Okafor slides a file across the desk.",
+            "friendly": "Rain on the glass. Sgt. Dex Okafor slides a file across the desk."
+          }
+        },
+        {
+          "who": "dex",
+          "text": {
+            "crime": "You caught the face, kid. Now the file wants to know who it worked for.",
+            "friendly": "You caught the face, kid. Now the file wants to know who it worked for."
+          },
+          "voice": "calm"
+        },
+        {
+          "who": "dex",
+          "text": {
+            "crime": "That brass plate you brought in? CS-9 is a safe door at Crane Shipping. The same safe Silas Crane says was robbed of ninety thousand.",
+            "friendly": "That brass plate you brought in? CS-9 is a safe door at Crane Shipping. The same safe Silas Crane says was robbed of ninety thousand."
+          },
+          "voice": "calm"
+        },
+        {
+          "who": "dex",
+          "text": {
+            "crime": "Either a thief carried it six streets to a festival chest, or somebody wants us to think so.",
+            "friendly": "Either a thief carried it six streets to a festival chest, or somebody wants us to think so."
+          },
+          "voice": "whisper"
+        },
+        {
+          "who": "dex",
+          "text": {
+            "crime": "I've put the plate on your board as solved. The rest is yours. Who did it?",
+            "friendly": "I've put the plate on your board as solved. The rest is yours. Who did it?"
+          },
+          "voice": "calm"
+        }
+      ]
     },
     "inspector": {
       "part": {

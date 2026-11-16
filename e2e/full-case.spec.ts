@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { PRESETS } from '../src/game/caseTypes';
 import { t } from '../src/game/text';
 import { PRESET_RULES } from '../src/game/presets';
-import { caseFor, cf, clearDialogs, solveLead, startCase } from './helpers';
+import { GAME_URL, caseFor, cf, clearDialogs, solveLead, startCase, unlockUpTo } from './helpers';
 
 // Rule book section 8: the full bust is reachable on the default clock without informants, at every preset.
 for (const preset of PRESETS) {
@@ -28,8 +28,22 @@ for (const preset of PRESETS) {
     expect(Object.keys(progress.parts)).toEqual(PRESETS.slice(0, PRESETS.indexOf(preset) + 1));
     expect(progress.parts[preset].ending).toBe('full-bust');
     await expect(page.getByRole('heading', { name: /^Part uncovered:/ })).toBeVisible();
+    // Junior's ending hands over to Detective with a scene after the part is uncovered
+    if (preset === 'junior') await expect(page.getByLabel('After the case')).toContainText('CS-9');
+    else await expect(page.getByLabel('After the case')).toHaveCount(0);
   });
 }
+
+test('Detective opens with the police desk scene, the carried plate and changed greetings', async ({ page }) => {
+  await page.goto(GAME_URL);
+  await unlockUpTo(page, 'detective');
+  await page.getByRole('radio', { name: /Detective/ }).click();
+  await page.getByRole('button', { name: 'Open the case' }).click();
+  await expect(page.getByLabel('The briefing')).toContainText('Who did it?');
+  await page.getByRole('button', { name: 'Go to the evidence board' }).click();
+  await expect(page.locator('.facts .carried')).toContainText('The stamped plate');
+  await expect(page.locator('.facts .carried')).toContainText('From the Junior case');
+});
 
 test('a right name with weak proof is refused and costs a try', async ({ page }) => {
   await startCase(page, 'inspector');

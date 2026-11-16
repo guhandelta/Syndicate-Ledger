@@ -17,6 +17,23 @@ function solved(g: ReturnType<typeof game>, id: string) {
   g.s.leads[id].solved = true;
 }
 
+describe('rank conditions and the changed greetings', () => {
+  it('a rank condition holds only at those ranks', () => {
+    const g = game();
+    expect(meets(g, { rank: ['detective', 'chief'] })).toBe(true);
+    expect(meets(g, { rank: ['junior'] })).toBe(false);
+  });
+
+  it('Tip, Vex, Rosa and Kane greet differently once the Junior part is behind the player', () => {
+    for (const id of ['tip', 'vex', 'rosa', 'kane']) {
+      const detective = greetingFor(game(), person(id))!;
+      const junior = greetingFor(newGame(cf, book, 'junior'), person(id))!;
+      expect(detective.when?.rank).toEqual(['detective']);
+      expect(junior.when?.rank).toBeUndefined();
+    }
+  });
+});
+
 describe('conditions on lines', () => {
   it('no condition always holds, and every listed part must hold', () => {
     const g = game();
@@ -68,7 +85,7 @@ describe('conditions on lines', () => {
 
 describe('greetings and opinions', () => {
   it('a greeting that holds wins over the usual one', () => {
-    const g = game();
+    const g = newGame(cf, book, 'inspector');
     const tip = person('tip');
     expect(greetingFor(g, tip)).toBe(tip.greeting);
     addFlag(g, 'tip-trap');

@@ -412,3 +412,6 @@ kbd {
 .code-slot.wrong, .code-slot.dup { border-color: var(--bad, #e0645c); }
 .code-pick { background: none; border: 0; color: var(--muted); font: inherit; text-align: left; cursor: pointer; padding: 0; }
 .code-digit { font-size: 1.4em; font-weight: 700; }
+
+.scene { margin: 18px 0; display: grid; gap: 10px; }
+.scene .narration { font-style: italic; color: var(--muted); margin: 4px 0; }

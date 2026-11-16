@@ -51,6 +51,8 @@ export interface Condition {
   caught?: string[];
   /** Who the player is playing as. */
   character?: string[];
+  /** Only at these ranks. Ranks open in order, so at a higher rank the parts below are already uncovered. */
+  rank?: Preset[];
 }
 
 /** Something a person says out loud, and how they say it (default "speech"). */
@@ -64,6 +66,21 @@ export interface Line {
   tell?: Text;
   /** Said only when this holds. */
   when?: Condition;
+}
+
+/** One line of a scene: a person's line, or narration when nobody speaks. */
+export interface SceneLine extends Line {
+  /** Cast id of the speaker; left out for narration. */
+  who?: string;
+}
+
+/**
+ * How one rank's story hands over to the next: a short scene shown after the part is uncovered, and one
+ * object that travels on to the next rank's board.
+ */
+export interface Handover {
+  scene: SceneLine[];
+  carried?: { title: Text; fact: Text };
 }
 
 /** What one person says about another. Opinions can be biased or wrong. */
@@ -256,7 +273,12 @@ export const STORY_FIELDS = ['title', 'setup', 'leads', 'events', 'offers', 'end
 export type StoryField = (typeof STORY_FIELDS)[number];
 
 /** One rank's story: its part of the crime, plus any story fields it replaces. */
-export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>;
+export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>> & {
+  /** Shown after this rank's part is uncovered. */
+  handover?: Handover;
+  /** Shown on this rank's briefing page, before the board. */
+  opening?: SceneLine[];
+};
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
 export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle;

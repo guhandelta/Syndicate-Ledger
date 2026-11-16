@@ -104,5 +104,12 @@ export function caseBoard(cf: CaseFile, p: CaseProgress): BoardRow[] {
   });
 }
 
+/** What the rank below hands over to this one: the object it carried and where it came from. */
+export function carriedInto(cf: CaseFile, preset: Preset) {
+  const from = PRESETS[PRESETS.indexOf(preset) - 1];
+  const carried = from ? cf.rankStories?.[from]?.handover?.carried : undefined;
+  return carried ? { ...carried, from } : undefined;
+}
+
 /** The rank a solved part opens, if there is one above it. */
 export const rankAbove = (preset: Preset): Preset | undefined => PRESETS[PRESETS.indexOf(preset) + 1];

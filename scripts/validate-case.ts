@@ -168,6 +168,16 @@ if (cf.rankStories) {
     if (!part) fail(`rankStories: ${preset} has no part of the case`);
     else if (!part.title || !part.question || !part.reveal) fail(`rankStories: ${preset} part needs a title, question and reveal`);
   }
+  // scenes: every speaker is in the cast, and the voices and faces are ones the game can draw
+  for (const preset of PRESETS) {
+    const story = cf.rankStories[preset];
+    for (const [what, lines] of [['handover', story?.handover?.scene], ['opening', story?.opening]] as const)
+      for (const [i, l] of (lines ?? []).entries()) {
+        if (l.who && !castIds.has(l.who)) fail(`rankStories: ${preset} ${what} line ${i + 1} is by unknown person ${l.who}`);
+        if (badVoice(l.voice)) fail(`rankStories: ${preset} ${what} line ${i + 1} has unknown voice "${l.voice}"`);
+        if (l.face && !FACES.includes(l.face)) fail(`rankStories: ${preset} ${what} line ${i + 1} has unknown face "${l.face}"`);
+      }
+  }
   if (!cf.closing) fail('rankStories: case has no "closing" text for when every part is uncovered');
 }
 

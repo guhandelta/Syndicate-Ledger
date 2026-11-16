@@ -4,6 +4,7 @@
   import { caseClosed, partOf, rankAbove } from '../../game/rankStory';
   import { describeStatement } from '../../game/text';
   import type { Session } from '../session.svelte';
+  import Scene from './Scene.svelte';
 
   let { session }: { session: Session } = $props();
   const g = $derived(session.g);
@@ -14,6 +15,8 @@
   /** A full bust uncovers this rank's part of the case and opens the next rank. */
   const part = $derived(g.s.endingId === cf.endings[0].id ? partOf(session.base, g.s.preset) : undefined);
   const next = $derived(rankAbove(g.s.preset));
+  /** The handover scene plays after the part is uncovered, so it only follows a full bust. */
+  const handover = $derived(part ? session.base.rankStories?.[g.s.preset]?.handover : undefined);
   const closed = $derived(caseClosed(session.base, session.progress));
 
   /** Every lie in the case, caught or missed, with who the liar was protecting (rule book section 6). */
@@ -58,6 +61,7 @@
         <p>The {PRESET_RULES[next].label} rank is now open. {session.T(partOf(session.base, next)!.question)}</p>
       {/if}
     </section>
+    {#if handover}<Scene {session} lines={handover.scene} label="After the case" />{/if}
   {/if}
   <h2>Every lie in this case</h2>
   <ul class="lie-list">

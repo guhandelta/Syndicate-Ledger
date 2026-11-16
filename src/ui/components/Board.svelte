@@ -2,6 +2,8 @@
   import type { Lead } from '../../game/caseTypes';
   import { clockOn, leadCost, leadOpen, puzzleOf, refusing, rules, trustOf } from '../../game/state';
   import type { Session } from '../session.svelte';
+  import { PRESET_RULES } from '../../game/presets';
+  import { carriedInto } from '../../game/rankStory';
   import CastCard from './CastCard.svelte';
   import StatusBar from './StatusBar.svelte';
 
@@ -20,6 +22,8 @@
         (!e.unlessSolved || !g.s.leads[e.unlessSolved].solved || e.effect.type === 'removeSpeaker'),
     ),
   );
+
+  const carried = $derived(carriedInto(session.base, g.s.preset));
 
   const STATE_LABEL = { solved: '✓ Solved', locked: 'Locked', started: 'In progress', open: 'Open' };
 
@@ -66,8 +70,9 @@
   <div class="board-cols">
     <section aria-labelledby="notes-h">
       <h2 id="notes-h">Case notes</h2>
-      {#if facts.length}
+      {#if facts.length || carried}
         <ul class="facts">
+          {#if carried}<li class="carried"><strong>{session.T(carried.title)}:</strong> {session.T(carried.fact)} <span class="tag">From the {PRESET_RULES[carried.from].label} case</span></li>{/if}
           {#each facts as l (l.id)}<li><strong>{session.T(l.title)}:</strong> {session.T(l.fact)}</li>{/each}
         </ul>
       {:else}
