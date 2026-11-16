@@ -165,6 +165,18 @@ export interface CaseFile {
   rankStories?: Partial<Record<Preset, RankStory>>;
   /** Shown once every rank's part of the case is uncovered. */
   closing?: { title: Text; text: Text };
+  /** Who the player can be. The first ready one is picked by default. */
+  characters?: PlayableCharacter[];
+}
+
+/** Someone the player can play as. Each brings their own view of every rank story (plan: Playable Characters). */
+export interface PlayableCharacter {
+  /** "detective", or the id of a cast member. */
+  id: string;
+  name: string;
+  blurb: Text;
+  /** False until their own story is written: shown, but can't be picked yet. */
+  ready: boolean;
 }
 
 /** The piece of the main crime one rank story uncovers. The case closes when every rank's part is uncovered. */

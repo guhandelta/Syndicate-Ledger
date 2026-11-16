@@ -45,6 +45,8 @@ export interface GameState {
   shotsSeen?: string[];
   /** Missed-clue nudges already shown. */
   cluesShown?: string[];
+  /** Who the player is playing as (a PlayableCharacter id). Older saves have none: the detective. */
+  character?: string;
 }
 
 export interface Game {
@@ -53,7 +55,7 @@ export interface Game {
   s: GameState;
 }
 
-export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset): Game {
+export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset, character?: string): Game {
   const rules = PRESET_RULES[preset];
   const leads: Record<string, LeadProgress> = {};
   for (const lead of cf.leads) {
@@ -74,7 +76,7 @@ export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset): Game {
   return {
     cf,
     book,
-    s: { version: 1, caseId: cf.id, preset, hoursUsed: 0, favors: rules.startFavors, flags: [], firedEvents: [], offersSeen: [], leads, log: [], hintsUsed: 0 },
+    s: { version: 1, caseId: cf.id, preset, hoursUsed: 0, favors: rules.startFavors, flags: [], firedEvents: [], offersSeen: [], leads, log: [], hintsUsed: 0, ...(character ? { character } : {}) },
   };
 }
 

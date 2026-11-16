@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { newGame } from '../src/game/state';
-import { book, cf, clearDialogs, GAME_URL, solveLead, startCase } from './helpers';
+import { book, cf, clearDialogs, GAME_URL, solveLead, startCase, unlockUpTo } from './helpers';
 
 // @axe-core/playwright is typed against its own copy of Playwright
 type AxePage = ConstructorParameters<typeof AxeBuilder>[0]['page'];
@@ -170,7 +170,27 @@ test('a returning player sees a welcome-back page, and can still start a new cas
   await expect(page.getByText('1 of 4 leads solved')).toBeVisible();
   await expect(page.getByRole('radio')).toHaveCount(0);
   await page.getByRole('button', { name: 'Start a new case' }).click();
-  await expect(page.getByRole('radio')).toHaveCount(4);
+  await expect(page.getByRole('radiogroup', { name: 'Difficulty' }).getByRole('radio')).toHaveCount(4);
   await page.getByRole('button', { name: 'Back to my case' }).click();
   await expect(page.getByRole('button', { name: 'Continue case (Inspector)' })).toBeVisible();
+});
+
+test('ranks open in order: Junior first, the rest locked until the part below is uncovered', async ({ page }) => {
+  await page.goto(GAME_URL);
+  const ranks = page.getByRole('radiogroup', { name: 'Difficulty' });
+  await expect(ranks.getByRole('radio', { name: /Junior/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('heading', { name: 'The case so far: 0 of 4 parts uncovered' })).toBeVisible();
+  await ranks.getByRole('radio', { name: /Detective/ }).click();
+  await expect(page.getByText('Detective opens once you solve the Junior part of the case.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open the case' })).toBeDisabled();
+  // the detective is picked, the allies are shown but not ready yet
+  const who = page.getByRole('radiogroup', { name: 'Character' });
+  await expect(who.getByRole('radio', { name: /The detective/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(who.getByRole('radio', { name: /Officer Cole/ })).toBeDisabled();
+  await expectAccessible(page);
+
+  await unlockUpTo(page, 'detective');
+  await expect(page.getByRole('heading', { name: 'The case so far: 1 of 4 parts uncovered' })).toBeVisible();
+  await expect(ranks.getByRole('radio', { name: /Detective/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('button', { name: 'Open the case' })).toBeEnabled();
 });

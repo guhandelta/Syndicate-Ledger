@@ -449,5 +449,40 @@
       "crime": "Every part of the case is uncovered. Crane robbed his own safe, washed the money through the fish market, bought an alibi and paid people inside to keep it all quiet. Port Calder's harbor is clean again.",
       "friendly": "You found every part of the mystery! The festival coins are back, the sneaky gang is caught and Port Calder can have its party."
     }
-  }
+  },
+  "characters": [
+    {
+      "id": "detective",
+      "name": "The detective",
+      "blurb": {
+        "crime": "Newly promoted, new to Port Calder, and nobody owes you a thing yet.",
+        "friendly": "A brand-new detective, ready to find the festival coins."
+      },
+      "ready": true
+    },
+    {
+      "id": "cole",
+      "name": "Officer Cole",
+      "blurb": "Undercover inside the harbor crews. One slip and his cover is gone.",
+      "ready": false
+    },
+    {
+      "id": "mara",
+      "name": "Mara Quill",
+      "blurb": "The accountant who can read a cash book like a diary.",
+      "ready": false
+    },
+    {
+      "id": "dex",
+      "name": "Sgt. Dex Okafor",
+      "blurb": "An old hand who knows every face on the docks, and owes some of them.",
+      "ready": false
+    },
+    {
+      "id": "lin",
+      "name": "Dr. Lin Abara",
+      "blurb": "Forensics. Her timestamps don't lie, even when people do.",
+      "ready": false
+    }
+  ]
 }

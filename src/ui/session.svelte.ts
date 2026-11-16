@@ -7,7 +7,7 @@ import {
   submitAccusation,
   type Game, type GameState,
 } from '../game/state';
-import { caseForRank, parseProgress, progressKey, recordPart, type CaseProgress } from '../game/rankStory';
+import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
 import { gridLabels, t, type Tone } from '../game/text';
 import type { Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
@@ -101,7 +101,9 @@ export class Session {
   leadId = $state<string | null>(null);
   modals = $state<Modal[]>([]);
   pui = $state<PuzzleUi>(freshPui());
-  titlePreset = $state<Preset>('inspector');
+  titlePreset = $state<Preset>('junior');
+  /** Who the player will play as in a new case. */
+  titleCharacter = $state('detective');
   /** Where closing a lead or backing out returns to. */
   hub = $state<Hub>('board');
   /** Who the player is about to accuse, and the proven facts they have picked to back it. */
@@ -122,9 +124,13 @@ export class Session {
     this.book = book;
     this.town = town;
     this.s = loadSave(cf);
-    if (this.s) this.titlePreset = this.s.preset;
     this.progress = loadProgress(cf);
+    this.titlePreset = this.s ? this.s.preset : nextRank(cf, this.progress);
+    this.titleCharacter = this.s?.character ?? cf.characters?.find((c) => c.ready)?.id ?? 'detective';
   }
+
+  /** Ranks open in order: is this one open yet? */
+  unlocked = (preset: Preset) => rankUnlocked(this.base, this.progress, preset);
 
   /** The case as the current rank plays it: the running game's rank, or the one picked on the title screen. */
   get cf(): CaseFile {
@@ -294,7 +300,8 @@ export class Session {
   // ---------- title and board ----------
 
   newCase() {
-    this.s = newGame(this.cf, this.book, this.titlePreset).s;
+    if (!this.unlocked(this.titlePreset)) return;
+    this.s = newGame(this.cf, this.book, this.titlePreset, this.titleCharacter).s;
     this.townPose = null;
     this.hub = 'board';
     this.show('intro');
@@ -599,7 +606,7 @@ export class Session {
     this.modals = [];
     if (res.kind === 'accepted') {
       // only the full bust uncovers this rank's part of the case
-      if (g.s.endingId === g.cf.endings[0].id) this.savePart(g.s.preset, g.s.endingId);
+      if (g.s.endingId === g.cf.endings[0].id) this.savePart(g.s.preset, g.s.endingId, g.s.character);
       return this.show('verdict');
     }
     if (res.kind === 'blocked') return;
@@ -623,8 +630,9 @@ export class Session {
   }
 
   /** Records this rank's part of the case as uncovered. */
-  savePart(preset: Preset, ending: string) {
-    this.progress = recordPart(this.base, this.progress, preset, ending);
+  savePart(preset: Preset, ending: string, character?: string) {
+    this.progress = recordPart(this.base, this.progress, preset, ending, character);
+    this.titlePreset = nextRank(this.base, this.progress);
     try {
       localStorage.setItem(progressKey(this.base.id), JSON.stringify($state.snapshot(this.progress)));
     } catch {

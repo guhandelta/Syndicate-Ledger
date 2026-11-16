@@ -142,6 +142,14 @@ if (cf.rankStories) {
   if (!cf.closing) fail('rankStories: case has no "closing" text for when every part is uncovered');
 }
 
+// who the player can be: the detective or an ally, each once, and at least one ready to play
+const playable = cf.characters ?? [];
+if (playable.length && !playable.some((c) => c.ready)) fail('characters: none is ready to play');
+for (const [i, c] of playable.entries()) {
+  if (playable.findIndex((x) => x.id === c.id) !== i) fail(`characters: ${c.id} is listed twice`);
+  if (c.id !== 'detective' && cf.cast.find((x) => x.id === c.id)?.role !== 'ally') fail(`characters: ${c.id} is not the detective or an ally`);
+}
+
 // A case may have a walkable town. If it does, the town must match the case.
 const townPath = join(dirname(file), cf.id, 'town.json');
 let hasTown = false;

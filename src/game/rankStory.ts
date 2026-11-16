@@ -25,7 +25,7 @@ export const partOf = (cf: CaseFile, preset: Preset): CasePart | undefined => cf
 /** Which rank stories of a case have been solved, kept across games. Losing one rank never wipes the others. */
 export interface CaseProgress {
   caseId: string;
-  parts: Partial<Record<Preset, { ending: string; at: string }>>;
+  parts: Partial<Record<Preset, { ending: string; at: string; character?: string }>>;
 }
 
 export const progressKey = (caseId: string) => `syndicate-ledger:case:${caseId}`;
@@ -43,9 +43,16 @@ export function parseProgress(cf: CaseFile, raw: string | null): CaseProgress {
 }
 
 /** Records that a rank's story was won. Only ranks with a part count. */
-export function recordPart(cf: CaseFile, p: CaseProgress, preset: Preset, ending: string, at = new Date().toISOString()): CaseProgress {
+export function recordPart(
+  cf: CaseFile,
+  p: CaseProgress,
+  preset: Preset,
+  ending: string,
+  character?: string,
+  at = new Date().toISOString(),
+): CaseProgress {
   if (!partOf(cf, preset)) return p;
-  return { ...p, parts: { ...p.parts, [preset]: { ending, at } } };
+  return { ...p, parts: { ...p.parts, [preset]: { ending, at, ...(character ? { character } : {}) } } };
 }
 
 /** The ranks whose part is uncovered, in rank order. */
@@ -59,3 +66,20 @@ export const caseClosed = (cf: CaseFile, p: CaseProgress): boolean => {
   const total = partsTotal(cf);
   return total.length > 0 && partsUncovered(cf, p).length === total.length;
 };
+
+/**
+ * Ranks are played in order (decided 2026-11-16): Junior is always open, and each rank opens once the
+ * rank below it is uncovered. A case without parts keeps every rank open.
+ */
+export function rankUnlocked(cf: CaseFile, p: CaseProgress, preset: Preset): boolean {
+  if (!partsTotal(cf).length) return true;
+  const i = PRESETS.indexOf(preset);
+  return i === 0 || !!p.parts[PRESETS[i - 1]];
+}
+
+/** The rank to play next: the lowest open rank whose part is still hidden, or the top rank once all are found. */
+export const nextRank = (cf: CaseFile, p: CaseProgress): Preset =>
+  PRESETS.find((r) => rankUnlocked(cf, p, r) && !p.parts[r]) ?? PRESETS[PRESETS.length - 1];
+
+/** The rank a solved part opens, if there is one above it. */
+export const rankAbove = (preset: Preset): Preset | undefined => PRESETS[PRESETS.indexOf(preset) + 1];
