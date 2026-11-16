@@ -51,7 +51,8 @@
       </div>
       {#if !pickOpen}<p class="lede locked-note">{PRESET_RULES[session.titlePreset].label} opens once you solve the {below(session.titlePreset)} part of the case.</p>{/if}
       {#if characters.length}
-        <h2 class="small-h">Choose who you are</h2>
+        <h2 class="small-h">Who do you play?</h2>
+        <p class="lede">It is the same case, seen through different eyes. For now you play the detective; the others are coming soon.</p>
         <div class="preset-grid" role="radiogroup" aria-label="Character">
           {#each characters as c}
             <button
