@@ -11,7 +11,7 @@ import { verifyNetwork } from '../src/engine/network';
 import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { CIPHER_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
-import { caseForRank, partOf } from '../src/game/rankStory';
+import { carriedEvidence, caseForRank, partOf } from '../src/game/rankStory';
 import { t } from '../src/game/text';
 import { validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
@@ -82,6 +82,12 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
     if (!personIds.has(who)) fail(`proof: ${who} is not a person`);
     if (!pr.needs.length) fail(`proof: ${who} needs no evidence`);
     for (const id of pr.needs) {
+      if (id.startsWith('carried:')) {
+        const c = presets.map((p) => carriedEvidence(cf, p));
+        if (c.some((x) => x?.id !== id)) fail(`proof: ${who} needs ${id}, but the rank below does not hand over an object that points at someone`);
+        else if (c.some((x) => !x!.pointsTo!.includes(who))) fail(`proof: ${id} does not point to ${who}`);
+        continue;
+      }
       const l = cf.leads.find((x) => x.id === id);
       if (!l) fail(`proof: ${who} needs unknown lead ${id}`);
       else if (!l.pointsTo?.includes(who)) fail(`proof: lead ${id} does not point to ${who}`);

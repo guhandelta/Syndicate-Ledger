@@ -790,7 +790,8 @@
           "open": {
             "crime": "Who gave Tip his orders, and why would Crane's own safe be involved?",
             "friendly": "Who told Tip what to do, and why is Mr. Crane's safe part of this?"
-          }
+          },
+          "pointsTo": ["crane"]
         }
       },
       "opening": [
@@ -1189,6 +1190,11 @@
         "title": "The cash trail",
         "question": "Who did it?",
         "reveal": "Tip was playing both sides, and the fish market books lead to Crane's own private ledger. Crane robbed his own safe."
+      },
+      "proof": {
+        "crane": { "needs": ["L3", "L4", "carried:junior"] },
+        "vex": { "needs": ["L2"] },
+        "tip": { "needs": ["L3"] }
       },
       "handover": {
         "scene": [

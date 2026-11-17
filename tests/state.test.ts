@@ -6,6 +6,7 @@ import {
   fireEvents, gapCells, hoursLeft, leadCost, leadOpen, newGame, proofHolds, gridOf as puzzleOf, recoverSpeaker, refusing, rules, solveLead, spendFavors,
   spendHours, stars, startLead, submitAccusation, timeUp, totalHours, triesLeft, trustOf,
 } from '../src/game/state';
+import { caseForRank } from '../src/game/rankStory';
 import { book } from './caseBook';
 
 const cf0: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
@@ -260,6 +261,18 @@ describe('accusations', () => {
     expect(proofHolds(g, 'crane', ['L3', 'L4'])).toBe(true);
     g.s.leads.L3.solved = false;
     expect(proofHolds(g, 'crane', ['L3', 'L4'])).toBe(false);
+  });
+
+  it('lets the object handed over from the rank below stand as proof, only for who it points at', () => {
+    const g = fresh('detective', caseForRank(cf0, 'detective'));
+    for (const id of ['L1', 'L2', 'L3', 'L4']) solve(g, id);
+    // the plate is part of what convicts Crane here, so the two leads alone are not enough
+    expect(proofHolds(g, 'crane', ['L3', 'L4'])).toBe(false);
+    expect(proofHolds(g, 'crane', ['L3', 'L4', 'carried:junior'])).toBe(true);
+    // it does not point at Vex, and a rank that is handed no such object has nothing to lean on
+    expect(proofHolds(g, 'vex', ['L2', 'carried:junior'])).toBe(false);
+    expect(proofHolds(g, 'crane', ['L3', 'L4', 'carried:detective'])).toBe(false);
+    expect(proofHolds(fresh('junior'), 'crane', ['L3', 'L4', 'carried:junior'])).toBe(false);
   });
 
   it('lists the proven facts', () => {

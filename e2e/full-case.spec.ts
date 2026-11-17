@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { PRESETS } from '../src/game/caseTypes';
+import { carriedEvidence } from '../src/game/rankStory';
 import { t } from '../src/game/text';
 import { PRESET_RULES } from '../src/game/presets';
 import { GAME_URL, caseFor, cf, clearDialogs, solveLead, startCase, unlockUpTo } from './helpers';
@@ -18,7 +19,11 @@ for (const preset of PRESETS) {
     }
     await page.getByRole('button', { name: 'Make an accusation' }).click();
     await page.getByRole('button', { name: new RegExp(cf.cast.find((c) => c.id === boss)!.name) }).click();
-    for (const id of story.proof![boss].needs) await page.getByLabel(t(story.leads.find((l) => l.id === id)!.title, PRESET_RULES[preset].tone)).check();
+    for (const id of story.proof![boss].needs) {
+      // an object handed over from the rank below is evidence too
+      const title = id.startsWith('carried:') ? carriedEvidence(cf, preset)!.title : story.leads.find((l) => l.id === id)!.title;
+      await page.getByLabel(t(title, PRESET_RULES[preset].tone)).check();
+    }
     await page.getByRole('button', { name: 'Make the accusation' }).click();
     const fullBust = story.endings.find((e) => e.id === 'full-bust')!;
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(t(fullBust.title, PRESET_RULES[preset].tone));

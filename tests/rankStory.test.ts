@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type GridBook } from '../src/game/caseTypes';
-import { caseBoard, carriedInto, caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
+import { caseBoard, carriedEvidence, carriedInto, caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
 import { t } from '../src/game/text';
 import { newGame } from '../src/game/state';
 import { book } from './caseBook';
@@ -14,8 +14,21 @@ describe('rank stories', () => {
     expect(cf.closing).toBeTruthy();
   });
 
+  it('only an object that says who it points at can be leaned on as evidence', () => {
+    expect(carriedEvidence(cf, 'junior')).toBeUndefined();
+    expect(carriedEvidence(cf, 'detective')).toMatchObject({ id: 'carried:junior', pointsTo: ['crane'] });
+    // the gate book page is a lead to follow, not proof of anything yet
+    expect(carriedEvidence(cf, 'inspector')).toBeUndefined();
+  });
+
+  it("Detective's story only replaces who can be convicted and by what, to lean on the plate", () => {
+    const d = caseForRank(cf, 'detective');
+    expect(d.proof!.crane.needs).toContain('carried:junior');
+    expect(d.leads).toBe(cf.leads);
+  });
+
   it('a rank story that replaces nothing plays the case file as it is', () => {
-    for (const preset of PRESETS.filter((r) => r !== 'junior')) expect(caseForRank(cf, preset)).toBe(cf);
+    for (const preset of PRESETS.filter((r) => r === 'inspector' || r === 'chief')) expect(caseForRank(cf, preset)).toBe(cf);
   });
 
   it("Junior's own story has its own leads, ending and finale link, and keeps the case file's cast", () => {
@@ -35,7 +48,7 @@ describe('rank stories', () => {
     expect(junior.cast).toBe(cf.cast);
     expect(junior.events).toBe(cf.events);
     expect(caseForRank(test, 'junior')).toBe(junior);
-    expect(caseForRank(test, 'detective')).toBe(test);
+    expect(caseForRank(test, 'inspector')).toBe(test);
     // the game is built from the rank's own leads
     const g = newGame(junior, { ...book, 'J1:junior': book['L1:junior'] }, 'junior');
     expect(Object.keys(g.s.leads)).toEqual(['J1']);

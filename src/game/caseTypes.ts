@@ -81,7 +81,7 @@ export interface SceneLine extends Line {
 export interface Handover {
   scene: SceneLine[];
   /** `changed` complicates what the rank just solved; `open` is the new question the next rank starts with. */
-  carried?: { title: Text; fact: Text; changed?: Text; open?: Text };
+  carried?: { title: Text; fact: Text; changed?: Text; open?: Text; /** People this object points at; with it, the player can lean on it in an accusation. */ pointsTo?: string[] };
 }
 
 /** What one person says about another. Opinions can be biased or wrong. */
@@ -218,7 +218,7 @@ export interface MissedClue {
   message: Text;
 }
 
-/** What it takes to convict someone: facts from these solved leads, and no fact that points elsewhere. */
+/** What it takes to convict someone: facts from these solved leads (or the object handed over from the rank below, as `carried:<rank>`), and no fact that points elsewhere. */
 export interface Proof {
   needs: string[];
 }
