@@ -51,6 +51,19 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
 
   for (const lead of cf.leads) {
     for (const id of [...lead.columns, ...lead.speakers]) if (!castIds.has(id)) fail(`${lead.id}: unknown person ${id}`);
+    // an anchor is a fact the answer must have: it must be on a grid, inside every rank's grid, and the fact text must name it
+    for (const a of lead.anchors ?? []) {
+      const r = lead.rows.indexOf(a.time);
+      const c = lead.columns.indexOf(a.person);
+      const smallest = Math.min(...presets.map((x) => PRESET_RULES[x].size));
+      if (lead.type !== 'ledger' && lead.type !== 'surveillance') fail(`${lead.id}: anchors only work on grid leads`);
+      else if (r < 0 || c < 0 || r >= smallest || c >= smallest) fail(`${lead.id}: anchor ${a.time} ${a.person} is not inside every rank's grid`);
+      else {
+        const said = lead.rooms ? lead.rooms[a.value - 1] : String(a.value);
+        if (!said) fail(`${lead.id}: anchor value ${a.value} names no room`);
+        else for (const tone of ['crime', 'friendly'] as const) if (!t(lead.fact, tone).includes(said)) fail(`${lead.id}: the ${tone} fact must say ${said}`);
+      }
+    }
     for (const id of lead.opensAfter) if (!leadIds.has(id)) fail(`${lead.id}: opensAfter unknown lead ${id}`);
     if (!LEAD_TYPES.includes(lead.type)) fail(`${lead.id}: unknown type "${lead.type}"`);
     for (const [k, c] of (lead.clippings ?? []).entries()) {
@@ -156,6 +169,11 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
           const grade = gradePuzzle(p, p.truth);
           if (grade === 0 || grade > rules.maxGrade) fail(`${key}: needs technique ${grade || 'guessing'}, preset allows ${rules.maxGrade}`);
         }
+        if (p.type === 'ledger' || p.type === 'surveillance')
+          for (const a of lead.anchors ?? []) {
+            const got = p.solution[lead.rows.indexOf(a.time)]?.[lead.columns.indexOf(a.person)];
+            if (got !== a.value) fail(`${key}: the answer has ${a.person} at ${a.time} as ${got}, the anchor says ${a.value}`);
+          }
         const lies = p.statements.filter((s, i) => !p.truth[i]).map((s) => s.speaker).sort();
         const expected = [...(lead.liars[preset] ?? [])].sort();
         if (lies.join() !== expected.join()) fail(`${key}: liars are [${lies}] but the case says [${expected}]`);

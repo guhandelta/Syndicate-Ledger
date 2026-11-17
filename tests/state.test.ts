@@ -102,9 +102,10 @@ describe('events', () => {
     const g = fresh('junior');
     g.s.leads.L2.missingSpeakers = ['juno'];
     expect(gapCells(g, 'L2').length).toBeGreaterThan(0);
-    const d = fresh('detective');
-    d.s.leads.L2.missingSpeakers = ['juno'];
-    expect(gapCells(d, 'L2')).toEqual([]);
+    // at Chief the statements alone still settle the grid without Juno
+    const c = fresh('chief');
+    c.s.leads.L2.missingSpeakers = ['juno'];
+    expect(gapCells(c, 'L2')).toEqual([]);
   });
 
   it('accounts for cells already shown when finding the gap', () => {

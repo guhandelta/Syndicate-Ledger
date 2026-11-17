@@ -76,9 +76,10 @@ for (const { lead, preset } of jobs) {
       minGrade: lead.hard && rules.size >= 6 ? 3 : 1,
       maxStatements: rules.size === 4 ? 5 : rules.size === 5 ? 7 : rules.size === 6 ? 8 : 9,
       // a 7x7 opener needs a few filled cells to stay at the gentle opening grade
+      anchors: (lead.anchors ?? []).map((a) => ({ cell: [lead.rows.indexOf(a.time), lead.columns.indexOf(a.person)] as [number, number], value: a.value })),
       ledgerGivens: lead.type === 'ledger' && lead.opensAfter.length === 0 && rules.size >= 7 ? 7 : 0,
       seed,
-    });
+    }, lead.anchors?.length ? 4000 : 300); // an anchor is one more condition, so it needs more tries
     const check = verifyUnique(p);
     if (!check.ok) throw new Error(`${lead.id}:${preset} failed: ${check.reason}`);
     book[`${lead.id}:${preset}`] = p;

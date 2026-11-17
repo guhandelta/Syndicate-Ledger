@@ -26,6 +26,8 @@ export interface GenerateOptions {
   maxStatements?: number;
   /** Ledger grids only: cells shown filled in at the start, next to the zone sums (eases big grids). Default 0. */
   ledgerGivens?: number;
+  /** Cells the answer must have. Planted before any clue is built; not shown to the player. */
+  anchors?: { cell: Cell; value: number }[];
   seed: number;
 }
 
@@ -145,6 +147,7 @@ function tryGenerate(opts: GenerateOptions, rng: Rng): GeneratedPuzzle | null {
   const maxBase = opts.maxBase ?? 40;
   const maxStatements = opts.maxStatements ?? 8;
   const sol = randomLatin(n, rng);
+  if (opts.anchors && !opts.anchors.every((a) => sol[a.cell[0]][a.cell[1]] === a.value)) return null;
   const base = baseClues(sol, opts.type, rng, maxBase, opts.ledgerGivens);
   if (!base) return null;
   const others = base.all.filter((g) => g.some((row, r) => row.some((v, c) => v !== sol[r][c])));

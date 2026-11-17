@@ -141,6 +141,8 @@ export interface Lead {
   fact: Text;
   /** Who this lead's fact points at. An accusation may only lean on facts that point at the accused. */
   pointsTo?: string[];
+  /** Facts the answer must have, planted first: a time and a person in the grid, and the number the fact names. */
+  anchors?: { time: string; person: string; value: number }[];
   /** Torn newspaper scraps shown above the puzzle. Words torn away are runs of ▒. Keep what they say true to the answer. */
   clippings?: Clipping[];
   /** The lead that follows this one at once: closing this lead offers to go straight on to it (a two-step finale). */
