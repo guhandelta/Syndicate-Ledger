@@ -144,6 +144,13 @@ describe('idle tips', () => {
     expect(idleHint(ctx({ game: g, screen: 'town', town: { ...town, doors: [] } })).todo).toMatch(/Walk to the glowing door/);
   });
 
+  it('lists the other leads that are open too', () => {
+    const c: CaseFile = JSON.parse(JSON.stringify(cf));
+    for (const l of c.leads) l.opensAfter = [];
+    const g = newGame(c, book, 'inspector');
+    expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/Open Fish market cash book.*You could also open Dock camera log or Tip's payment records or/);
+  });
+
   it('says so when nothing can be opened', () => {
     const c: CaseFile = JSON.parse(JSON.stringify(cf));
     for (const l of c.leads) l.opensAfter = ['L4'];
