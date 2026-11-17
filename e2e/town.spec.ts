@@ -60,12 +60,14 @@ test('walk to the fish market, talk to a witness and open the first lead from it
 test('story shots play once when new leads open, and can be skipped', async ({ page }) => {
   test.slow();
   await startCase(page, 'inspector');
-  // close the first lead in the save, then come back straight into the town
+  // close the first two leads in the save, then come back straight into the town
   await page.evaluate(() => {
     const key = 'syndicate-ledger:save:v1';
     const save = JSON.parse(localStorage.getItem(key)!);
     save.leads.L1.started = true;
     save.leads.L1.solved = true;
+    save.leads.L2.started = true;
+    save.leads.L2.solved = true;
     localStorage.setItem(key, JSON.stringify(save));
   });
   await page.goto(GAME_URL + '#/town');

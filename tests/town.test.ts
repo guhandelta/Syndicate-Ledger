@@ -100,10 +100,10 @@ describe('story shots', () => {
     expect(ids([])).toEqual([]);
   });
 
-  it('shows the leads that open once the first one is solved, and each only once', () => {
-    expect(ids(['L1'])).toEqual(['cameras-open', 'lockup-open']);
-    expect(ids(['L1'], [], ['cameras-open'])).toEqual(['lockup-open']);
-    expect(ids(['L1'], [], ['cameras-open', 'lockup-open'])).toEqual([]);
+  it('shows each lead as it opens, once the one before it is solved, and each only once', () => {
+    expect(ids(['L1'])).toEqual(['cameras-open']);
+    expect(ids(['L1', 'L2'], [], ['cameras-open'])).toEqual(['lockup-open']);
+    expect(ids(['L1', 'L2'], [], ['cameras-open', 'lockup-open'])).toEqual([]);
   });
 
   it('follows timed events and the end of the trail', () => {

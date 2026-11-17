@@ -368,7 +368,7 @@
       "pointsTo": ["vex"]
     },
     {
-      "id": "L3", "type": "ledger", "cost": 2, "opensAfter": ["L1"],
+      "id": "L3", "type": "ledger", "cost": 2, "opensAfter": ["L2"],
       "title": { "crime": "Tip's payment records", "friendly": "Tip's secret notes" },
       "intro": { "crime": "Tip hands over his payment records, a little too eagerly. Work out the payments and check what Tip says about them.", "friendly": "Tip gives you his notes. He seems very keen to help. Check if what he says matches the numbers." },
       "columns": ["tip", "vex", "rosa", "kane", "crane", "juno", "karunakaran"],
@@ -379,7 +379,7 @@
       "pointsTo": ["tip", "crane"]
     },
     {
-      "id": "L4", "type": "ledger", "cost": 2, "opensAfter": ["L2", "L3"], "hard": true,
+      "id": "L4", "type": "ledger", "cost": 2, "opensAfter": ["L3"], "hard": true,
       "title": { "crime": "The harbormaster's private ledger", "friendly": "The secret ledger" },
       "intro": { "crime": "Hidden in Warehouse 9: a private ledger in Crane's handwriting. Crack it and the whole trail is exposed.", "friendly": "Hidden in Warehouse 9: a secret book in Mr. Crane's handwriting! Crack it to solve the case." },
       "columns": ["crane", "vex", "rosa", "kane", "tip", "juno", "karunakaran"],
@@ -954,9 +954,7 @@
           "id": "J3",
           "type": "network",
           "cost": 2,
-          "opensAfter": [
-            "J1"
-          ],
+          "opensAfter": ["J2"],
           "title": {
             "crime": "Who whispered to whom",
             "friendly": "Who was whispering?"
@@ -1006,10 +1004,7 @@
           "type": "timeline",
           "map": true,
           "cost": 2,
-          "opensAfter": [
-            "J2",
-            "J3"
-          ],
+          "opensAfter": ["J3"],
           "then": "J5",
           "title": {
             "crime": "Where the chest went",
