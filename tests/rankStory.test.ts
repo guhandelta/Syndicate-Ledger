@@ -49,8 +49,7 @@ describe('rank stories', () => {
     expect(JSON.stringify(carried.title)).toContain('stamped plate');
     expect(JSON.stringify(carriedInto(cf, 'inspector')!.title)).toContain('gate book');
     expect(JSON.stringify(carriedInto(cf, 'inspector')!.open)).toContain('paid for the alibi');
-    // a rank whose rank below hands nothing over gets nothing
-    expect(carriedInto(cf, 'chief')).toBeUndefined();
+    expect(JSON.stringify(carriedInto(cf, 'chief')!.title)).toContain('police roster');
   });
 
   it("Junior's handover scene and Detective's opening only name people in the cast", () => {

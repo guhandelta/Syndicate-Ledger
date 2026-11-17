@@ -1257,6 +1257,33 @@
         "question": "How did they hide it?",
         "reveal": "Crane's alibi for the night of the safe was bought. The gate book was written to order."
       },
+      "handover": {
+        "scene": [
+          {
+            "text": { "crime": "Dr. Lin Abara tilts page forty under the lamp. The ink is steady, the pen never lifted. One hand, one sitting, paid by the hour.", "friendly": "Dr. Lin Abara tilts page forty under the lamp. The ink is steady, the pen never lifted. One hand, one sitting, paid by the hour." }
+          },
+          {
+            "who": "lin",
+            "text": { "crime": "This was not written on the dock. It was copied in an office, from a police duty roster. That is how it knew exactly when the patrols passed.", "friendly": "This was not written on the dock. It was copied in an office, from a police duty roster. That is how it knew exactly when the patrols passed." },
+            "voice": "calm"
+          },
+          {
+            "text": { "crime": "A duty roster never leaves the police house.", "friendly": "A duty roster never leaves the police house." }
+          },
+          {
+            "text": { "crime": "Your phone buzzes on the desk. Sgt. Dex Okafor. You let it ring, and when you call back the line is dead.", "friendly": "Your phone buzzes on the desk. Sgt. Dex Okafor. You let it ring, and when you call back the line is dead." }
+          },
+          {
+            "text": { "crime": "Next, you will see the case through the eyes of Mara Quill.", "friendly": "Next, you will see the case through the eyes of Mara Quill." }
+          }
+        ],
+        "carried": {
+          "title": { "crime": "Page forty came from a police roster", "friendly": "Page forty came from a police roster" },
+          "fact": { "crime": "Page forty was copied in an office from a police duty roster. Only someone close to the police could have handed it over.", "friendly": "Page forty was copied from a police duty roster. Only someone close to the police could have shared it." },
+          "changed": { "crime": "Crane's alibi was bought, and the buyer used a roster that never leaves the police house. The leak is on your own side. Dex called you once about it, then the line went dead.", "friendly": "Mr. Crane's alibi was bought, using a police roster. Someone on your own side shared it. Dex called you once, then the line went quiet." },
+          "open": { "crime": "Who inside the police passed the roster, and who is the buyer above Crane?", "friendly": "Who in the police shared the roster, and who is the boss above Mr. Crane?" }
+        }
+      },
       "opening": [
           {
             "text": { "crime": "Gray morning at the harbor office. A young woman in a lab coat waits with the gate book open.", "friendly": "Gray morning at the harbor office. A young woman in a lab coat waits with the gate book open." }
