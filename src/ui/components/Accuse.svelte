@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { carriedEvidence } from '../../game/rankStory';
+  import { PRESET_RULES } from '../../game/presets';
   import { accuseStatus, accusedPeople, clockOn, evidenceLeads, hoursLeft, rules, triesLeft, trustOf } from '../../game/state';
   import type { Session } from '../session.svelte';
   import { expressionFor } from '../voices';
@@ -13,6 +15,7 @@
   const limits = $derived(rules(g).accuse);
   const target = $derived(session.accuseTarget);
   const facts = $derived(evidenceLeads(g));
+  const carried = $derived(carriedEvidence(session.base, g.s.preset));
 </script>
 
 <StatusBar {session} />
@@ -25,7 +28,7 @@
       must point at them, and the proof must be complete. If it doesn't hold, you lose a try.
     </p>
     {#each session.accuseNudges(target) as nudge}<p class="hint-box" role="status">{nudge}</p>{/each}
-    {#if facts.length}
+    {#if facts.length || carried}
       <fieldset class="evidence">
         <legend>Facts you have proven</legend>
         {#each facts as lead (lead.id)}
@@ -34,6 +37,12 @@
             <span><strong>{session.T(lead.title)}</strong><br />{session.T(lead.fact)}</span>
           </label>
         {/each}
+        {#if carried}
+          <label class="evidence-item">
+            <input type="checkbox" checked={session.evidence.includes(carried.id)} onchange={() => session.toggleEvidence(carried.id)} />
+            <span><strong>{session.T(carried.title)}</strong> <span class="tag">From the {PRESET_RULES[carried.from].label} case</span><br />{session.T(carried.fact)}</span>
+          </label>
+        {/if}
       </fieldset>
     {:else}
       <p class="muted">You haven't proven anything yet. Solve a lead first, then come back with what it shows.</p>
