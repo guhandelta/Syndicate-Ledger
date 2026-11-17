@@ -9,6 +9,7 @@ import {
   accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, leadOpen, cipherOf, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
   timelineOf,
   submitAccusation,
+  proofProblems,
   type Game, type GameState,
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
@@ -897,7 +898,7 @@ export class Session {
     if (res.lost) return this.loseCase();
     const clocked = rules(g).clock !== 'off';
     const paragraphs = [
-      `That doesn't hold up. Either a fact you chose doesn't point at ${who.name}, or the proof has gaps. Look at what your case notes really prove.`,
+      ...this.proofFeedback(who),
       res.locked
         ? `You can't accuse ${who.name} again.`
         : `You have ${res.triesLeft} ${res.triesLeft === 1 ? 'try' : 'tries'} left on ${who.name}.`,
@@ -911,6 +912,18 @@ export class Session {
       );
     this.show('accuse');
     this.modals.push({ title: 'Not proven', paragraphs, dismissible: true, actions: [{ label: 'Got it', primary: true, run: this.closeModal }] });
+  }
+
+  /** Says what is wrong with a rejected proof, without revealing who a fact points at. */
+  proofFeedback(who: CastMember): string[] {
+    const { wrong, incomplete } = proofProblems(this.g, who.id, this.evidence);
+    const title = (id: string) => this.g.cf.leads.find((l) => l.id === id)?.title ?? id;
+    const out = ["That doesn't hold up."];
+    if (wrong.length)
+      out.push(`Not every fact you chose counts against ${who.name}: ${wrong.map(title).join(', ')}. Some facts are red herrings, or point at someone else.`);
+    if (incomplete) out.push(`The proof also has gaps: something that ties ${who.name} to the crime is still missing.`);
+    if (!wrong.length && !incomplete) out.push('Look at what your case notes really prove.');
+    return out;
   }
 
   /** Records this rank's part of the case as uncovered. */

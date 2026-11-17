@@ -488,6 +488,17 @@ export function proofHolds(g: Game, personId: string, evidence: string[]): boole
   });
 }
 
+/** Why a proof fails: facts that don't count against this person, and whether something they need is missing. */
+export function proofProblems(g: Game, personId: string, evidence: string[]): { wrong: string[]; incomplete: boolean } {
+  const needs = g.cf.proof?.[personId]?.needs ?? [];
+  const chosen = new Set(evidence);
+  const wrong = evidence.filter((id) => {
+    const lead = g.cf.leads.find((l) => l.id === id);
+    return !(lead && g.s.leads[id].solved && lead.pointsTo?.includes(personId));
+  });
+  return { wrong, incomplete: !needs.length || !needs.every((id) => chosen.has(id)) };
+}
+
 export type AccuseResult =
   | { kind: 'blocked'; why: 'locked' | 'no-room' }
   | { kind: 'accepted'; ending: Ending }
