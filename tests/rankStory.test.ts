@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type GridBook } from '../src/game/caseTypes';
 import { caseBoard, carriedInto, caseClosed, caseForRank, emptyProgress, nextRank, parseProgress, partOf, partsTotal, partsUncovered, progressKey, rankAbove, rankUnlocked, recordPart } from '../src/game/rankStory';
+import { t } from '../src/game/text';
 import { newGame } from '../src/game/state';
 import { book } from './caseBook';
 
@@ -140,3 +141,21 @@ describe('the case board', () => {
     expect(caseBoard({ ...cf, rankStories: undefined }, emptyProgress(cf))).toEqual([]);
   });
 });
+
+describe('newspaper clues in the Junior story', () => {
+  const junior = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8')) as CaseFile;
+  const story = junior.rankStories!.junior!;
+  it('opens with the front page and puts clippings on the timeline and whispering leads', () => {
+    expect(t(story.incident!.headline, 'friendly')).toMatch(/chest/i);
+    const byId = Object.fromEntries(story.leads!.map((l) => [l.id, l]));
+    expect(byId.J2.clippings!.length).toBe(3);
+    expect(byId.J3.clippings!.length).toBe(1);
+  });
+  it('has one lie and one honest mix-up among the timeline witnesses', () => {
+    const j2 = story.leads!.find((l) => l.id === 'J2')!;
+    expect(j2.liars.junior).toEqual(['vex', 'rosa']);
+    const rosa = junior.cast.find((c) => c.id === 'rosa')!;
+    expect(rosa.reliability).toBe('mistaken');
+  });
+});
+

@@ -108,6 +108,13 @@ export interface CastMember {
   voice?: Voice;
 }
 
+/** A newspaper scrap. In the body, a run of ▒ is torn-away text. */
+export interface Clipping {
+  paper: string;
+  headline: Text;
+  body: Text;
+}
+
 export interface Lead {
   id: string;
   type: LeadType;
@@ -134,6 +141,8 @@ export interface Lead {
   fact: Text;
   /** Who this lead's fact points at. An accusation may only lean on facts that point at the accused. */
   pointsTo?: string[];
+  /** Torn newspaper scraps shown above the puzzle. Words torn away are runs of ▒. Keep what they say true to the answer. */
+  clippings?: Clipping[];
   /** The lead that follows this one at once: closing this lead offers to go straight on to it (a two-step finale). */
   then?: string;
 }
@@ -279,6 +288,8 @@ export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>
   handover?: Handover;
   /** Shown on this rank's briefing page, before the board. */
   opening?: SceneLine[];
+  /** The newspaper front page about the crime, shown on the briefing page before anything else. */
+  incident?: Clipping;
 };
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
