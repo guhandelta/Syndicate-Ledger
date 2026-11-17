@@ -817,7 +817,12 @@
           "text": { "crime": "Your job: find out who is telling the truth, and where the chest went.", "friendly": "Your job: find out who is telling the truth, and where the chest went." }
         }
       ],
-      "setup": {
+      "incident": {
+          "paper": "Port Calder Gazette",
+          "headline": { "crime": "Gold Coin chest vanishes!", "friendly": "Gold Coin chest vanishes!" },
+          "body": { "crime": "Port Calder woke to a festival without its prize. The Gold Coin chest, filled with festival coins at the harbor ice house, was found empty on the morning of the Gold Coin Festival. It was last seen being counted by Rosa Diaz at the fish hall. Harbormaster Kane Hollis says a stranger did it. Police have no suspects, and the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 is still missing.", "friendly": "Port Calder woke up to a festival with no prize! The Gold Coin chest, filled with festival coins at the harbor ice house, was empty on the morning of the Gold Coin Festival. Rosa Diaz was the last to count it at the fish hall. Kane Hollis says a stranger did it. Nobody knows where the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 went." }
+        },
+        "setup": {
         "crime": "Port Calder is a small harbor town, and tonight is the Gold Coin Festival. Every year the town locks its prize coins in one chest on the dock, and every year nothing goes wrong. This morning the chest is empty. Nobody saw it leave, the market is full of nervous whispers, and everybody agrees it must have been a sneaky stranger. You are new in town and nobody owes you a thing, but Tip, the harbor helper, has already offered to show you around. Somebody here knows where those coins went.",
         "friendly": "Port Calder is a little harbor town, and tonight is the Gold Coin Festival! Every year the town keeps its prize coins in one chest on the dock, and every year they are safe. This morning the chest is empty! Nobody saw a thing, the market is buzzing, and everyone says a sneaky stranger did it. You are new in town, but Tip, the helpful harbor kid, has already offered to show you around. Somebody here knows where those coins went."
       },
@@ -831,10 +836,7 @@
             "crime": "Fish market cash book",
             "friendly": "The festival notebook"
           },
-          "intro": {
-            "crime": "Rosa keeps the market cash book, but its pages are smudged. Fill in how many coins each person carried each hour. Then check each statement beside the grid against your numbers and mark it True or Lie.",
-            "friendly": "Rosa's notebook got smudged. Fill in how many coins each person carried each hour! Then check what people say against your numbers and mark each one True or Lie."
-          },
+          "intro": { "crime": "This is Rosa's cash book from the night the prize chest was filled, coin by coin. It got smudged. Fill in how many coins each person carried each hour, then check what people say against your numbers and mark each one True or Lie.", "friendly": "This is Rosa's notebook from the night the chest was filled, coin by coin. It got smudged! Fill in how many coins each person carried each hour. Then check what people say against your numbers and mark each one True or Lie." },
           "columns": [
             "vex",
             "kane",
@@ -877,10 +879,7 @@
             "crime": "The night of the empty chest",
             "friendly": "The night the chest went empty"
           },
-          "intro": {
-            "crime": "Put the night in order. Every time has exactly one moment. Not every witness tells the truth.",
-            "friendly": "Put the night in order! Each time has exactly one thing that happened. Somebody might fib."
-          },
+          "intro": { "crime": "The Gazette printed torn scraps about the night the chest vanished. Use them with the witnesses to put the night in order. Every time has one moment. One witness is lying and one is only half right.", "friendly": "The Gazette printed some scraps about the night the chest vanished, but bits are torn off. Use them with what the witnesses say to put the night in order! One witness fibs and one only half remembers." },
           "columns": [],
           "rows": [
             "6 PM",
@@ -911,22 +910,41 @@
               "friendly": "The harbor bell rings"
             }
           ],
+          "clippings": [
+            {
+              "paper": "Port Calder Gazette",
+              "headline": { "crime": "Festival chest gone", "friendly": "Festival chest gone" },
+              "body": { "crime": "The Gold Coin Festival began under the pier lamps, which went out as the six o'clock bell \u2592\u2592\u2592\u2592\u2592\u2592\u2592 lamplighter. By morning the prize chest was \u2592\u2592\u2592\u2592\u2592\u2592\u2592 ice house.", "friendly": "The Gold Coin Festival began under the pier lamps, which went out as the six o'clock bell \u2592\u2592\u2592\u2592\u2592\u2592\u2592 lamplighter. By morning the prize chest was \u2592\u2592\u2592\u2592\u2592\u2592\u2592 ice house." }
+            },
+            {
+              "paper": "Port Calder Gazette",
+              "headline": { "crime": "A cry on the pier", "friendly": "A cry on the pier" },
+              "body": { "crime": "Neighbours report a loud cry of \"Stop!\" along the pier, an hour before the chest \u2592\u2592\u2592\u2592\u2592\u2592\u2592 nobody saw who \u2592\u2592\u2592\u2592\u2592\u2592\u2592 shouted.", "friendly": "Neighbours report a loud cry of \"Stop!\" along the pier, an hour before the chest \u2592\u2592\u2592\u2592\u2592\u2592\u2592 nobody saw who \u2592\u2592\u2592\u2592\u2592\u2592\u2592 shouted." }
+            },
+            {
+              "paper": "Port Calder Gazette",
+              "headline": { "crime": "Cart at the fish hall", "friendly": "Cart at the fish hall" },
+              "body": { "crime": "A boy's cart was seen rattling past the fish hall at nine o'clock, \u2592\u2592\u2592\u2592\u2592\u2592\u2592 already empty, the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 chest long gone.", "friendly": "A boy's cart was seen rattling past the fish hall at nine o'clock, \u2592\u2592\u2592\u2592\u2592\u2592\u2592 already empty, the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 chest long gone." }
+            }
+          ],
           "speakers": [
             "juno",
             "vex",
-            "kane"
+            "kane",
+            "rosa"
           ],
           "liars": {
             "junior": [
-              "vex"
+              "vex",
+              "rosa"
             ],
             "detective": [],
             "inspector": [],
             "chief": []
           },
           "fact": {
-            "crime": "Tip's cart was by the fish hall before the chest was carried off, so Tip was part of it.",
-            "friendly": "Tip's cart was by the fish hall before the chest moved. Tip was in on it!"
+            "crime": "Tip's cart passed the fish hall at nine, an hour after the chest was carried off, so Tip was part of it.",
+            "friendly": "Tip's cart passed the fish hall an hour after the chest moved. Tip was in on it!"
           },
           "pointsTo": [
             "tip"
@@ -943,10 +961,7 @@
             "crime": "Who whispered to whom",
             "friendly": "Who was whispering?"
           },
-          "intro": {
-            "crime": "The harbor office counts how many people each person spoke to. Work out who was in contact with whom.",
-            "friendly": "Everyone counted who they whispered with. Work out who whispered with whom!"
-          },
+          "intro": { "crime": "After the theft the harbor office asked everyone who they had spoken to. The Harbor Whispers column is mostly right but not about the answer. Work out who was in contact with whom.", "friendly": "After the theft, everyone counted who they whispered with. The Harbor Whispers gossip column is mostly right, but it will not give you the answer! Work out who whispered with whom." },
           "columns": [
             "tip",
             "vex",
@@ -957,6 +972,13 @@
             "karunakaran"
           ],
           "rows": [],
+          "clippings": [
+            {
+              "paper": "Harbor Whispers",
+              "headline": { "crime": "Who talked to whom?", "friendly": "Who talked to whom?" },
+              "body": { "crime": "Festival eve had the whole harbor whispering. Kane Hollis and Rosa Diaz were seen deep in talk near the pier, and some say the harbor kid joined them \u2592\u2592\u2592\u2592\u2592\u2592\u2592 though others swear he was on the road all evening. The band played on \u2592\u2592\u2592\u2592\u2592\u2592\u2592 the lamps.", "friendly": "Festival eve had the whole harbor whispering. Kane Hollis and Rosa Diaz were seen deep in talk near the pier, and some say the harbor kid joined them \u2592\u2592\u2592\u2592\u2592\u2592\u2592 though others swear he was on the road all evening. The band played on \u2592\u2592\u2592\u2592\u2592\u2592\u2592 the lamps." }
+            }
+          ],
           "speakers": [
             "tip",
             "rosa",
@@ -993,10 +1015,7 @@
             "crime": "Where the chest went",
             "friendly": "Where did the chest go?"
           },
-          "intro": {
-            "crime": "The chest was carried through the harbor one room at a time, along the corridors. At each time it was in one place. Find the walk.",
-            "friendly": "The chest was carried from room to room along the corridors. Work out where it was at each time!"
-          },
+          "intro": { "crime": "The chest left the ice house that night. It was carried from room to room along the corridors. Work out where it was at each time.", "friendly": "The chest left the ice house that night and was carried from room to room along the corridors. Work out where it was at each time!" },
           "columns": [],
           "rows": [
             "8 PM",
@@ -1059,10 +1078,7 @@
             "crime": "The Ice house lock",
             "friendly": "The Ice house lock"
           },
-          "intro": {
-            "crime": "The chest is locked with a code. Every digit is different. Work out the code from what the witnesses say.",
-            "friendly": "The chest has a secret code. Every digit is different. Use what people say to find it!"
-          },
+          "intro": { "crime": "The chest ended up behind a locked door at the ice house. Every digit of the code is different. Use what people say to find it.", "friendly": "The chest ended up behind a locked door at the ice house, and the lock has a secret code. Every digit is different. Use what people say to find it!" },
           "columns": [],
           "rows": [],
           "speakers": [

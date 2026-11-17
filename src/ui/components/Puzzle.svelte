@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Clipping from './Clipping.svelte';
   import { rules } from '../../game/state';
   import { liarLine } from '../puzzleHelpers';
   import type { Session } from '../session.svelte';
@@ -32,6 +33,9 @@
     </div>
   </div>
   <p class="intro">{session.T(lead.intro)}</p>
+  {#if lead.clippings?.length}
+    <div class="clippings">{#each lead.clippings as clip, k (k)}<Clipping {session} {clip} tilt={k} />{/each}</div>
+  {/if}
   {#if lead.type === 'surveillance'}
     <p class="room-key"><strong>Rooms along the pier:</strong> {lead.rooms!.slice(0, n).map((rm, k) => `${k + 1} ${rm}`).join(' · ')}</p>
   {/if}

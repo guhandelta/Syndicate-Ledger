@@ -100,3 +100,11 @@ export function abilityLabel(c: CastMember): string {
     partner: 'Old partner: explains the next step (1 favor)',
   }[c.ability!];
 }
+
+/** Splits a clipping's text into readable words and torn-away gaps (runs of ▒). */
+export function tornParts(body: string): { text: string; torn: boolean }[] {
+  return body
+    .split(/(▒+)/)
+    .filter((x) => x !== '')
+    .map((x) => ({ text: x, torn: x.startsWith('▒') }));
+}

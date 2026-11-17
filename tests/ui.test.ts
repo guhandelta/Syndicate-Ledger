@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dupe, initials, liarLine, zoneCombos } from '../src/ui/puzzleHelpers';
+import { dupe, initials, liarLine, tornParts, zoneCombos } from '../src/ui/puzzleHelpers';
 
 describe('puzzle helpers', () => {
   it('spots a repeated number in a row or column', () => {
@@ -63,5 +63,15 @@ describe('puzzle helpers', () => {
   it('makes avatar initials without titles or quotes', () => {
     expect(initials('Sgt. Dex Okafor')).toBe('DO');
     expect(initials('"Tip" Callahan')).toBe('TC');
+  });
+
+  it('splits newspaper text into words and torn gaps', () => {
+    expect(tornParts('The chest ▒▒▒ gone ▒')).toEqual([
+      { text: 'The chest ', torn: false },
+      { text: '▒▒▒', torn: true },
+      { text: ' gone ', torn: false },
+      { text: '▒', torn: true },
+    ]);
+    expect(tornParts('')).toEqual([]);
   });
 });

@@ -12,6 +12,7 @@ import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { CIPHER_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
 import { carriedEvidence, caseForRank, partOf } from '../src/game/rankStory';
+import { t } from '../src/game/text';
 import { validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
 
@@ -52,6 +53,10 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
     for (const id of [...lead.columns, ...lead.speakers]) if (!castIds.has(id)) fail(`${lead.id}: unknown person ${id}`);
     for (const id of lead.opensAfter) if (!leadIds.has(id)) fail(`${lead.id}: opensAfter unknown lead ${id}`);
     if (!LEAD_TYPES.includes(lead.type)) fail(`${lead.id}: unknown type "${lead.type}"`);
+    for (const [k, c] of (lead.clippings ?? []).entries()) {
+      for (const tone of ['crime', 'friendly'] as const)
+        if (!c.paper || !t(c.headline, tone) || t(c.body, tone).replace(/▒/g, '').trim().length < 40) fail(`${lead.id}: clipping ${k + 1} needs a paper, a headline and a readable body (${tone})`);
+    }
     if (lead.type === 'timeline') {
       // a timeline has a time for each moment, and the moments are the columns
       if ((lead.moments?.length ?? 0) < MAX_SIZE || lead.rows.length < MAX_SIZE) fail(`${lead.id}: timeline leads need ${MAX_SIZE} moments and ${MAX_SIZE} times so every preset can be built`);

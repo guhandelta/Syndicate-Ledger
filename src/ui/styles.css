@@ -415,3 +415,4 @@ kbd {
 
 .scene { margin: 18px 0; display: grid; gap: 10px; }
 .scene .narration { font-style: italic; color: var(--muted); margin: 4px 0; }
+.clippings { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 1rem 0 1.4rem; align-items: flex-start; }

@@ -57,7 +57,7 @@ export async function solveLead(page: Page, preset: Preset, leadId: string) {
   const p = book[`${leadId}:${preset}`];
   if (p.type === 'timeline') {
     const moments = page.locator('ul.moments > li.moment');
-    for (let m = 0; m < p.size; m++) await moments.nth(m).locator('select').selectOption(String(p.solution[m]));
+    for (let m = 0; m < p.size; m++) if (!p.givens.some((g) => g.m === m)) await moments.nth(m).locator('select').selectOption(String(p.solution[m]));
   } else if (p.type === 'network') {
     const rows = page.locator('ul.pairs > li.pair');
     for (let k = 0; k < p.links.length; k++) await rows.nth(k).getByRole('button', { name: p.links[k] ? 'In contact' : 'Never', exact: true }).click();
