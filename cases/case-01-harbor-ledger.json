@@ -1205,7 +1205,9 @@
         ],
         "carried": {
           "title": { "crime": "Page forty of the gate book", "friendly": "Page forty of the gate book" },
-          "fact": { "crime": "The harbor gate book says Crane was at the dock the night of the safe. Every entry on page forty is in the same neat hand, written to order.", "friendly": "The gate book says Crane was at the dock that night. Every line on the page is in the same neat writing." }
+          "fact": { "crime": "The harbor gate book says Crane was at the dock the night of the safe. Every entry on page forty is in the same neat hand, written to order.", "friendly": "The gate book says Crane was at the dock that night. Every line on the page is in the same neat writing." },
+          "changed": { "crime": "Crane is in custody, and his private ledger proves he robbed his own safe. But the gate book puts him at the dock at the exact minute the safe was opened. His alibi is too perfect.", "friendly": "Mr. Crane is caught, and his ledger shows he emptied his own safe. But the gate book says he was at the dock at that very minute. How?" },
+          "open": { "crime": "Who wrote page forty, and who paid for the alibi? Somebody knew exactly when the police would look.", "friendly": "Who wrote page forty, and who helped Mr. Crane? Somebody knew when the police would look." }
         }
       },
       "opening": [
