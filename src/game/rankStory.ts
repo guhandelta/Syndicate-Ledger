@@ -111,5 +111,11 @@ export function carriedInto(cf: CaseFile, preset: Preset) {
   return carried ? { ...carried, from } : undefined;
 }
 
+/** The handed-over object as accusation evidence: it can be leaned on only when it says who it points at. */
+export function carriedEvidence(cf: CaseFile, preset: Preset) {
+  const c = carriedInto(cf, preset);
+  return c?.pointsTo?.length ? { ...c, id: `carried:${c.from}` } : undefined;
+}
+
 /** The rank a solved part opens, if there is one above it. */
 export const rankAbove = (preset: Preset): Preset | undefined => PRESETS[PRESETS.indexOf(preset) + 1];

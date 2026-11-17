@@ -8,6 +8,7 @@ import { fittingOrders, freshTrueTimeClaim, type TimeClaim, type TimelinePuzzle 
 import type { Claim, GeneratedPuzzle, Grid } from '../engine/types';
 import type { AnyClaim, AnyPuzzle, CaseEvent, CaseFile, Ending, Preset, PuzzleBook } from './caseTypes';
 import { PRESET_RULES } from './presets';
+import { carriedEvidence } from './rankStory';
 
 export type Mark = 'unknown' | 'true' | 'lie';
 
@@ -483,6 +484,10 @@ export function proofHolds(g: Game, personId: string, evidence: string[]): boole
   const chosen = new Set(evidence);
   if (!needs.every((id) => chosen.has(id))) return false;
   return evidence.every((id) => {
+    if (id.startsWith('carried:')) {
+      const c = carriedEvidence(g.cf, g.s.preset);
+      return c?.id === id && !!c.pointsTo?.includes(personId);
+    }
     const lead = g.cf.leads.find((l) => l.id === id);
     return !!lead && g.s.leads[id].solved && !!lead.pointsTo?.includes(personId);
   });
