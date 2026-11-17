@@ -362,7 +362,8 @@
       "columns": ["vex", "kane", "juno", "tip", "rosa", "crane", "karunakaran"],
       "rows": ["9pm", "10pm", "11pm", "Midnight", "1am", "2am", "3am"],
       "rooms": ["Harbor office", "Ice house", "Warehouse 9", "Fish hall", "Net loft", "Boathouse", "Crane Shipping"],
-      "speakers": ["juno", "vex", "kane"],
+      "anchors": [{ "time": "Midnight", "person": "vex", "value": 3 }],
+          "speakers": ["juno", "vex", "kane"],
       "liars": { "junior": [], "detective": ["vex"], "inspector": ["vex"], "chief": ["vex"] },
       "fact": { "crime": "Vex was inside Warehouse 9 at midnight, not at home as he claims.", "friendly": "Vex was in Warehouse 9 at midnight. He said he was at home!" },
       "pointsTo": ["vex"]

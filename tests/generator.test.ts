@@ -73,4 +73,10 @@ describe('verifyUnique reports what is wrong', () => {
     expect(verifyUnique({ ...p, solution: otherSolution })).toMatchObject({ ok: false });
     expect(verifyUnique({ ...p, truth: p.truth.map((t) => !t) })).toMatchObject({ ok: false, reason: 'stored truth does not match the solution' });
   });
+
+  it('plants an anchor in the answer, and only answers with it are kept', () => {
+    const p = generatePuzzle(base({ size: 5, type: 'surveillance', speakers: [{ id: 'a', lies: 1 }], seed: 11, anchors: [{ cell: [3, 0], value: 3 }] }), 3000);
+    expect(p.solution[3][0]).toBe(3);
+    expect(verifyUnique(p).ok).toBe(true);
+  });
 });
