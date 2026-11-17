@@ -82,15 +82,19 @@
         <p>You are a detective. Each <strong>lead</strong> is a number puzzle, and solving it proves one fact about the crime. When you have enough facts, you name who did it.</p>
         <ol>
           <li><strong>Pick a lead</strong> on the evidence board (or walk to its door in the town). Opening a lead {timed ? 'costs hours on the clock' : 'is free in Junior'}.</li>
-          <li><strong>Fill the grid.</strong> Rows are times, columns are people. Every number appears once in each row and once in each column.
+          <li><strong>Solve the puzzle.</strong> Leads come in different kinds, and each one explains its own rules when you open it.
             <ul>
-              <li><strong>Cash ledgers:</strong> the numbers are {tone === 'friendly' ? 'coins' : 'cash in $k'}. Each outlined zone must add up to the total in its corner.</li>
-              <li><strong>Camera logs:</strong> the numbers are rooms along the pier. A few sightings are already filled in.</li>
+              <li><strong>Cash ledgers:</strong> a grid where every number appears once in each row and column. The numbers are {tone === 'friendly' ? 'coins' : 'cash in $k'}, and each outlined zone must add up to the total in its corner.</li>
+              <li><strong>Camera logs:</strong> a grid of rooms along the pier. A few sightings are already filled in.</li>
+              <li><strong>Timelines:</strong> put each person in the right place at the right time. Every time slot is used once.</li>
+              <li><strong>Floorplan walks:</strong> a timeline where people can only move along corridors that join two rooms.</li>
+              <li><strong>Contact pairs:</strong> each person is told how many others they contacted. Decide, pair by pair, who talked to whom.</li>
+              <li><strong>Lock codes:</strong> work out a code whose digits are all different, using the clues people give you.</li>
             </ul>
           </li>
-          <li><strong>Test the statements.</strong> Witnesses say things about the grid. You're told how many of them are lies. Check each one against your grid and mark it <em>True</em> or <em>Lie</em>.</li>
+          <li><strong>Test the statements.</strong> Witnesses say things about the puzzle. You're told how many of them are lies. A <em>lie</em> is on purpose; an <em>honest mistake</em> is a wrong statement from someone who is not hiding anything. Check each one against your grid and mark it <em>True</em> or <em>Lie</em>.</li>
           <li><strong>Close the lead.</strong> If the grid and your marks are right, you get a fact for your case notes. Catching a liar also earns you a favor.</li>
-          <li><strong>Make your accusation</strong> when the facts point to someone. Name a person, then tick the solved leads that prove it: a right name with weak proof is refused and costs a try. You can accuse only a few people, each only a couple of times, and an innocent person you accuse stops being so helpful. Run out of chances and the case is lost.</li>
+          <li><strong>Make your accusation</strong> when the facts point to someone. Name a person, then tick the solved leads that prove it: a right name with weak proof is refused and costs a try. This rank lets you accuse up to {r.accuse.people} people, {r.accuse.perPerson} tries each{timed ? `, and the ${hours}-hour clock keeps running` : ''}. Some solved facts are red herrings, so choose carefully. An innocent person you accuse stops being so helpful. Run out of tries or people and the case is lost.</li>
         </ol>
         <h3>Favors and allies</h3>
         <p>Favors pay for help. You start with {r.startFavors}. Inside a lead, call an ally:</p>
@@ -113,6 +117,7 @@
             <tr><th scope="row">Clock</th><td>{timed ? `${hours} hours over ${cf.clock.days} days (${cf.clock.hoursPerDay} a day)` : 'No clock. Take as long as you like.'}</td></tr>
             <tr><th scope="row">Favors at the start</th><td>{r.startFavors}</td></tr>
             <tr><th scope="row">Who might be lying</th><td>{FLAGS[r.flagLiars]}{r.liarRange ? ' You are told a range for how many lies there are, not the exact number.' : ''}</td></tr>
+            <tr><th scope="row">Accusations</th><td>Up to {r.accuse.people} people, {r.accuse.perPerson} tries each.</td></tr>
             <tr><th scope="row">Wrong numbers</th><td>{MISTAKES[r.mistakes]}</td></tr>
             <tr><th scope="row">Things that happen</th><td>{EVENTS[r.events]}</td></tr>
           </tbody>

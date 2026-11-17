@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import type { CaseFile, GridBook } from '../src/game/caseTypes';
 import {
   accuse, accusedPeople, accuseStatus, addFlag, buyTip, canAccuse, canStillWin, caseOver, checkLead, clockOn, dayLabel, evidenceLeads, failedTries,
-  fireEvents, gapCells, hoursLeft, leadCost, leadOpen, newGame, proofHolds, gridOf as puzzleOf, recoverSpeaker, refusing, rules, solveLead, spendFavors,
+  fireEvents, gapCells, hoursLeft, leadCost, leadOpen, newGame, proofHolds, proofProblems, gridOf as puzzleOf, recoverSpeaker, refusing, rules, solveLead, spendFavors,
   spendHours, stars, startLead, submitAccusation, timeUp, totalHours, triesLeft, trustOf,
 } from '../src/game/state';
 import { caseForRank } from '../src/game/rankStory';
@@ -251,6 +251,14 @@ describe('accusations', () => {
     for (const id of ['L1', 'L2', 'L3', 'L4']) solve(g, id);
     return g;
   };
+
+  it('says which facts do not count and whether the proof has gaps', () => {
+    const g = solved();
+    expect(proofProblems(g, 'crane', ['L3', 'L4'])).toEqual({ wrong: [], incomplete: false });
+    expect(proofProblems(g, 'crane', ['L3', 'L4', 'L1'])).toEqual({ wrong: ['L1'], incomplete: false });
+    expect(proofProblems(g, 'crane', ['L3'])).toEqual({ wrong: [], incomplete: true });
+    expect(proofProblems(g, 'kane', ['LX'])).toEqual({ wrong: ['LX'], incomplete: true });
+  });
 
   it('accepts only complete proof that points at the person', () => {
     const g = solved();
