@@ -29,7 +29,7 @@ describe('idle tips', () => {
     expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/Open Fish market cash book/);
     expect(idleHint(ctx({ game: g, screen: 'town' })).todo).toMatch(/Walk to Fish hall and press E/);
     solve(g, 'L1');
-    expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/Dock camera log.*Tip's payment records/);
+    expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/Open Dock camera log/);
   });
 
   it('sends the player to accuse once every lead is solved', () => {
