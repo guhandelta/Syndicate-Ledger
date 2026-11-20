@@ -166,9 +166,9 @@ describe('newspaper clues in the Junior story', () => {
   });
   it('has one lie and one honest mix-up among the timeline witnesses', () => {
     const j2 = story.leads!.find((l) => l.id === 'J2')!;
-    expect(j2.liars.junior).toEqual(['vex', 'rosa']);
-    const rosa = junior.cast.find((c) => c.id === 'rosa')!;
-    expect(rosa.reliability).toBe('mistaken');
+    expect(j2.liars.junior).toEqual(['vex', 'meena']);
+    const meena = junior.cast.find((c) => c.id === 'meena')!;
+    expect(meena.reliability).toBe('mistaken');
   });
 });
 

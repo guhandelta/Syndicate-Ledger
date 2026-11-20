@@ -47,8 +47,8 @@ describe('people and doors', () => {
     const door = town.doors.find((d) => d.lead === 'L1')!;
     expect(nearest(town, door.at, [])).toMatchObject({ kind: 'door', door: { lead: 'L1' } });
     expect(nearest(town, [0, 12], [])).toBeNull();
-    const rosa = town.npcs.find((n) => n.cast === 'rosa')!;
-    expect(nearest(town, [rosa.at[0], rosa.at[1] + 1], [{ npc: rosa, at: rosa.at }])).toMatchObject({ kind: 'npc', npc: { cast: 'rosa' } });
+    const meena = town.npcs.find((n) => n.cast === 'meena')!;
+    expect(nearest(town, [meena.at[0], meena.at[1] + 1], [{ npc: meena, at: meena.at }])).toMatchObject({ kind: 'npc', npc: { cast: 'meena' } });
   });
 
   it('moves a person along their path and back', () => {
@@ -63,9 +63,9 @@ describe('people and doors', () => {
   });
 
   it('removes a witness once their leaving event has fired', () => {
-    const juno = town.npcs.find((n) => n.cast === 'juno')!;
-    expect(npcPresent(juno, [])).toBe(true);
-    expect(npcPresent(juno, ['juno-leaves'])).toBe(false);
+    const nevethitha = town.npcs.find((n) => n.cast === 'nevethitha')!;
+    expect(npcPresent(nevethitha, [])).toBe(true);
+    expect(npcPresent(nevethitha, ['nevethitha-leaves'])).toBe(false);
   });
 });
 
@@ -107,7 +107,7 @@ describe('story shots', () => {
   });
 
   it('follows timed events and the end of the trail', () => {
-    expect(ids([], ['juno-leaves'])).toEqual(['juno-gone']);
+    expect(ids([], ['nevethitha-leaves'])).toEqual(['nevethitha-gone']);
     const seen = ['cameras-open', 'lockup-open'];
     expect(ids(['L1', 'L2', 'L3'], ['warehouse-burns'], seen)).toEqual(['warehouse-hit', 'warehouse-open']);
     expect(ids(['L1', 'L2', 'L3', 'L4'], [], [...seen, 'warehouse-open'])).toEqual(['to-the-desk']);
@@ -132,7 +132,7 @@ describe('story shots', () => {
     const bad = (shot: object) => validateTown({ ...town, shots: [{ ...base, id: 'x', ...shot }] } as Town, cf);
     expect(bad({ when: { leadOpens: 'L1' } })).toContain('Shot "x" waits for L1 to open, but it is open from the start');
     expect(bad({ when: { event: 'nope' } })).toContain('Shot "x" waits on unknown event nope');
-    expect(bad({ focus: { npc: 'juno' } })).toContain('Shot "x" looks at juno, who may have left town by then');
+    expect(bad({ focus: { npc: 'nevethitha' } })).toContain('Shot "x" looks at nevethitha, who may have left town by then');
     expect(bad({ focus: { door: 'nope' } })).toContain('Shot "x" looks at unknown door nope');
     expect(bad({ seconds: 30 })).toContain('Shot "x" must last 2 to 8 seconds');
   });

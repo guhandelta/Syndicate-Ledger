@@ -35,7 +35,7 @@ Every puzzle is an N×N grid filled with 1 to N, with no repeats in any row or c
 
 **Statements**
 
-- A statement is something a character says that can be checked against the grid, such as "At 10pm, Vex moved more than Kane" or "Rosa's 9pm and 10pm runs add up to $7k".
+- A statement is something a character says that can be checked against the grid, such as "At 10pm, Vex moved more than Kane" or "Meena's 9pm and 10pm runs add up to $7k".
 - Each statement belongs to a speaker, and the speaker's reliability decides whether it is true (section 4).
 - Every statement MUST be a rule the code can check. Opinions and vague hints are flavor text only.
 
@@ -187,12 +187,12 @@ Junior version: the Gold Coin Festival prize chest is empty, and the Tidewater G
 | --- | --- | --- | --- |
 | Vex Lorne | Suspect | Liar | Courier who moves the cash; lies to protect the boss |
 | Kane Hollis | Suspect | Honest | Dock foreman; looks guilty, isn't |
-| Rosa Diaz | Witness | Mistaken | Fish market owner; sometimes rushed |
-| Juno Park | Witness | Honest | Night guard; leaves town at the start of Day 2 |
+| Meena Selvi | Witness | Mistaken | Fish market owner; sometimes rushed |
+| Nevethitha Rajan | Witness | Honest | Night guard; leaves town at the start of Day 2 |
 | Capt. Karunakaran Velu | Witness | Honest | Harbor pilot; guides ships in and out. The 7th person in every grid, so seen only at Chief (7×7) |
 | "Tip" Callahan | Informant | Double agent | Helpful at first, then works for the boss |
 | Silas Crane | Boss | Never speaks | Shipping owner who staged the theft |
-| Mara Quill | Ally | Honest | Accountant |
+| Kavya Narayanan | Ally | Honest | Accountant |
 | Sgt. Dex Okafor | Ally | Honest | Old partner |
 | Dr. Lin Abara | Ally | Honest | Forensic analyst |
 | Officer Cole | Ally | Honest | Undercover cop |
@@ -204,13 +204,13 @@ Junior version: the Gold Coin Festival prize chest is empty, and the Tidewater G
 | L1 | Fish market cash book | Start (tutorial) | Ledger | 0 | Cash moves through the fish market; Vex carries the biggest bags |
 | L2 | Dock camera log | After L1 | Surveillance | 1 (Vex) | Vex was in Warehouse 9 at midnight, not at home |
 | L3 | Tip's payment records | After L1 | Ledger | 1 (Tip) | Payments go to an account owned by Crane Shipping |
-| L4 | The harbormaster's private ledger | After L2 and L3 | Ledger, hard | 2 (Vex, Rosa mistaken) | Crane staged the theft |
+| L4 | The harbormaster's private ledger | After L2 and L3 | Ledger, hard | 2 (Vex, Meena mistaken) | Crane staged the theft |
 
 **Clock and events**
 
 The budget is 3 days of 4 working hours, 12 hours in total. Working all four leads costs 8, so the player has 4 hours for informants and side choices.
 
-- **Start of Day 2: Juno leaves town.** If L2 hasn't been started by then, Juno's statements are lost unless the player tracks her down (1 hour + 1 favor).
+- **Start of Day 2: Nevethitha leaves town.** If L2 hasn't been started by then, Nevethitha's statements are lost unless the player tracks her down (1 hour + 1 favor).
 - **Tip's trap.** After L1, Tip offers to "look after" Warehouse 9 for 1 favor. If the player accepts, the warehouse burns at the end of Day 2, and if L4 hasn't been started by then it costs 1 extra hour.
 - **End of Day 3: the ship sails.** The clock ends and the player must accuse.
 
@@ -220,7 +220,7 @@ The budget is 3 days of 4 working hours, 12 hours in total. Working all four lea
 | --- | --- |
 | Full bust | Accuse Crane with L4 solved and Tip exposed |
 | The boss walks | Accuse Vex or Tip, or accuse Crane without the full trail |
-| Wrong arrest | Accuse Kane, Rosa, Juno or Capt. Karunakaran |
+| Wrong arrest | Accuse Kane, Meena, Nevethitha or Capt. Karunakaran |
 
 The verdict screen MUST explain every lie the player caught or missed, and who each liar was protecting.
 
@@ -299,6 +299,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-20 | Renamed Juno Park, Rosa Diaz and Mara Quill to Nevethitha Rajan, Meena Selvi and Kavya Narayanan everywhere (ids `nevethitha`, `meena`, `kavya`) and swapped in their new art: all seven faces, the Junior faces, and the 3D town figures. |
 | 2026-11-16 | Rank handovers: a rank story may have a `handover` (a short scene shown after its part is uncovered, plus one carried object that appears in the next rank's case notes) and an `opening` scene on the next rank's briefing. Lines can be conditioned on `rank`. Case 1: the CS-9 lock plate carries Junior into Detective. The carried object is shown, not yet usable as proof |
 | 2026-11-16 | Case 1 Junior plays its own story ("The friendly face"): five leads (cash book, timeline, network, map, then a code lock as a two-step finale: closing the map lead offers to go straight on to the code lead via `then`). Town doors may name a lead per rank (`leadFor`). Junior culprit is Tip. |
 | 2026-11-16 | Dialogue depth: all 7 faces for every Case 1 person (Guha's art), a face and tell per line, greetings that change with what the player did, opinions asked about one person at a time and kept on cast cards, words spoken one by one with pauses and stress (section 7) |
@@ -316,7 +317,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 | 2026-11-15 | Chief now plays 7×7 grids on the Inspector clock (no more −1 hour). Every lead gains a 7th person (Capt. Karunakaran Velu, the harbor pilot, a new honest witness), a 7th row, and camera grids a 7th room (Crane Shipping). The 7×7 opening ledger starts with 7 cells filled in so it stays at the opening grade (sections 2, 5, 6) |
 | 2026-11-14 | Added a What now? button to the latest game: on demand, it shows what the player can do on the current screen and what to try next (the same hint logic as the 5-minute idle tip, plus the list of options). Never gives a number away (section 9) |
 | 2026-11-14 | Added a case notebook to both the latest game and v1: a Notebook button opens a side panel to jot down suspects, clues and lies, saved in the browser as you type, with a "Stuck? Try this" list of tips. v1 is still built from its original commit with only this added (section 9) |
-| 2026-11-15 | Fixed a hole in the witness-leaves event: when Juno left, L2 could end up with more than one answer at Junior and Inspector. The camera footage now shows just enough cells to keep exactly one answer (section 3). Added 100% unit coverage of the engine, game rules, town rules and UI helpers, enforced in CI (section 9) |
+| 2026-11-15 | Fixed a hole in the witness-leaves event: when Nevethitha left, L2 could end up with more than one answer at Junior and Inspector. The camera footage now shows just enough cells to keep exactly one answer (section 3). Added 100% unit coverage of the engine, game rules, town rules and UI helpers, enforced in CI (section 9) |
 | 2026-11-14 | Made the case notebook richer: a ready-made case sheet, an Alibi line, and grouped how-to tips (the grid, where to start, statements, favors, accusing) (section 9) |
 | 2026-11-14 | Added hard accusation rules: proof from solved leads, 3 people and 2 tries each (Junior 4 and 3), refused innocents stop cooperating (+1 h), a case-lost ending that wipes notes and reveals nothing (sections 3, 7) |
 | 2026-11-14 | Added in-game help (the ? button or the ? / H key on every screen): how to play, the chosen rank's rules and how to think at that rank, the case's lead order, clock rumors and cast without spoilers, and controls. After 5 minutes with no key, click or tap, a corner tip says where the player is and what to do next; it points the way without giving numbers away and doesn't cost stars (section 9) |
@@ -324,6 +325,6 @@ A case is not done until every item below passes. Items marked (auto) are checke
 | 2026-11-13 | Added story shots to the town: scripted, skippable camera shots with a caption that play once when a lead opens, a lead is solved or a timed event fires (section 9) |
 | 2026-11-12 | Added an optional walkable 3D town for PC (prototype for Case 1): leads open from doors, people stand and walk in the harbor, cameras switch by moment. The evidence board stays the full, touch-friendly way to play (section 9) |
 | 2026-11-12 | Moved the UI to Svelte 5 with no change to rules or saves; added end-to-end and accessibility tests (section 9) |
-| 2026-11-12 | Built v1. Event times are start or end of a day; events can't hit a lead that's already started; Juno can be tracked down for 1 hour + 1 favor; added Dr. Lin Abara and Officer Cole as allies; the boss is shown as an ordinary suspect |
+| 2026-11-12 | Built v1. Event times are start or end of a day; events can't hit a lead that's already started; Nevethitha can be tracked down for 1 hour + 1 favor; added Dr. Lin Abara and Officer Cole as allies; the boss is shown as an ordinary suspect |
 | 2026-11-12 | Added surveillance (rooms) grids; Case 1 cut to 4 leads and a 12-hour clock; Chief gets a liar range; v1 scope set to one story |
 | 2026-11-12 | First draft of the rule book and Case 1 brief |

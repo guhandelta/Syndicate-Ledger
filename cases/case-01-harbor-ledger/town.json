@@ -23,15 +23,15 @@
     { "id": "police", "at": [-22.5, -2.9], "label": "Harbor police desk", "goto": "accuse" }
   ],
   "npcs": [
-    { "cast": "rosa", "at": [1.6, -1.4] },
+    { "cast": "meena", "at": [1.6, -1.4] },
     { "cast": "kane", "at": [-9, 0.6], "path": [[-9, 4.5]] },
     { "cast": "vex", "at": [22.5, -2.2], "path": [[17.5, 0.8]] },
-    { "cast": "juno", "at": [10.8, 2.6], "untilEvent": "juno-leaves" },
+    { "cast": "nevethitha", "at": [10.8, 2.6], "untilEvent": "nevethitha-leaves" },
     { "cast": "tip", "at": [0.9, 6.2] },
     { "cast": "crane", "at": [-16, 7.4] },
     { "cast": "cole", "at": [-13.5, -2.3] },
     { "cast": "dex", "at": [10.6, 7.3] },
-    { "cast": "mara", "at": [17.6, 7.4] },
+    { "cast": "kavya", "at": [17.6, 7.4] },
     { "cast": "lin", "at": [21, 4.6], "path": [[25, 4.6]] },
     { "cast": "karunakaran", "at": [-14, -9.8] }
   ],
@@ -77,8 +77,8 @@
       "caption": { "crime": "Tip keeps his own books in a lock-up under the Net loft.", "friendly": "Tip hides his notes in a little room under the Net loft." }
     },
     {
-      "id": "juno-gone", "when": { "event": "juno-leaves" }, "focus": { "door": "camera-post" }, "distance": 6, "height": 2.4, "angle": 60, "orbit": 8, "seconds": 4,
-      "caption": { "crime": "Day 2. Juno's post by the cameras stands empty.", "friendly": "Day 2. Juno has gone on her trip, so nobody is at the camera post." }
+      "id": "nevethitha-gone", "when": { "event": "nevethitha-leaves" }, "focus": { "door": "camera-post" }, "distance": 6, "height": 2.4, "angle": 60, "orbit": 8, "seconds": 4,
+      "caption": { "crime": "Day 2. Nevethitha's post by the cameras stands empty.", "friendly": "Day 2. Nevethitha has gone on her trip, so nobody is at the camera post." }
     },
     {
       "id": "warehouse-hit", "when": { "event": "warehouse-burns" }, "focus": { "building": "warehouse-9" }, "distance": 13, "height": 5.5, "angle": 25, "orbit": -6, "seconds": 5,

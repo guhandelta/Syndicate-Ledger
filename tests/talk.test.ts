@@ -24,8 +24,8 @@ describe('rank conditions and the changed greetings', () => {
     expect(meets(g, { rank: ['junior'] })).toBe(false);
   });
 
-  it('Tip, Vex, Rosa and Kane greet differently once the Junior part is behind the player', () => {
-    for (const id of ['tip', 'vex', 'rosa', 'kane']) {
+  it('Tip, Vex, Meena and Kane greet differently once the Junior part is behind the player', () => {
+    for (const id of ['tip', 'vex', 'meena', 'kane']) {
       const detective = greetingFor(game(), person(id))!;
       const junior = greetingFor(newGame(cf, book, 'junior'), person(id))!;
       expect(detective.when?.rank).toEqual(['detective']);
@@ -90,7 +90,7 @@ describe('greetings and opinions', () => {
     expect(greetingFor(g, tip)).toBe(tip.greeting);
     addFlag(g, 'tip-trap');
     expect(greetingFor(g, tip)?.when?.flags).toEqual(['tip-trap']);
-    expect(greetingFor(g, person('mara'))).toBe(person('mara').greeting);
+    expect(greetingFor(g, person('kavya'))).toBe(person('kavya').greeting);
     expect(greetingFor(g, { ...tip, greetings: undefined, greeting: undefined })).toBeUndefined();
     expect(greetingFor(g, { ...tip, greetings: undefined, greeting: { text: 'x', when: { solved: ['L4'] } } })).toBeUndefined();
   });
@@ -103,7 +103,7 @@ describe('greetings and opinions', () => {
     addFlag(g, 'tip-exposed');
     expect(tipOnCrane().face).toBe('scared');
     expect(opinionsOf(g, crane).filter((o) => o.about === 'tip')).toHaveLength(1);
-    expect(opinionsOf(g, person('mara'))).toEqual([]);
+    expect(opinionsOf(g, person('kavya'))).toEqual([]);
   });
 
   it('remembers what was heard, once, and the notebook shows it as it stands now', () => {
@@ -111,9 +111,9 @@ describe('greetings and opinions', () => {
     expect(heardAbout(g, 'crane')).toEqual([]);
     hearOpinion(g, 'tip', 'crane');
     hearOpinion(g, 'tip', 'crane');
-    hearOpinion(g, 'juno', 'crane');
-    expect(g.s.heard).toEqual(['tip:crane', 'juno:crane']);
-    expect(heardAbout(g, 'crane').map((h) => h.speaker.id)).toEqual(['juno', 'tip']);
+    hearOpinion(g, 'nevethitha', 'crane');
+    expect(g.s.heard).toEqual(['tip:crane', 'nevethitha:crane']);
+    expect(heardAbout(g, 'crane').map((h) => h.speaker.id)).toEqual(['nevethitha', 'tip']);
     addFlag(g, 'tip-exposed');
     expect(heardAbout(g, 'crane').find((h) => h.speaker.id === 'tip')!.opinion.face).toBe('scared');
     // an opinion that no longer holds drops out

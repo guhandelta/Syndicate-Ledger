@@ -72,9 +72,9 @@ describe('events', () => {
   it('fires once, honours flags and solved leads, and skips started leads', () => {
     const g = fresh();
     g.s.hoursUsed = 4;
-    expect(fireEvents(g).map((e) => e.id)).toEqual(['juno-leaves']);
+    expect(fireEvents(g).map((e) => e.id)).toEqual(['nevethitha-leaves']);
     expect(fireEvents(g)).toEqual([]);
-    expect(g.s.leads.L2.missingSpeakers).toEqual(['juno']);
+    expect(g.s.leads.L2.missingSpeakers).toEqual(['nevethitha']);
 
     const started = fresh();
     startLead(started, 'L2');
@@ -98,20 +98,20 @@ describe('events', () => {
     expect(fireEvents(flagged).map((e) => e.id)).toContain('ship-sails');
   });
 
-  it('shows the cells that keep a lead solvable when Juno leaves, and nothing when already unique', () => {
+  it('shows the cells that keep a lead solvable when Nevethitha leaves, and nothing when already unique', () => {
     const g = fresh('junior');
-    g.s.leads.L2.missingSpeakers = ['juno'];
+    g.s.leads.L2.missingSpeakers = ['nevethitha'];
     expect(gapCells(g, 'L2').length).toBeGreaterThan(0);
-    // at Chief the statements alone still settle the grid without Juno
+    // at Chief the statements alone still settle the grid without Nevethitha
     const c = fresh('chief');
-    c.s.leads.L2.missingSpeakers = ['juno'];
+    c.s.leads.L2.missingSpeakers = ['nevethitha'];
     expect(gapCells(c, 'L2')).toEqual([]);
   });
 
   it('accounts for cells already shown when finding the gap', () => {
     const g = fresh('junior');
     const p = puzzleOf(g, 'L2');
-    g.s.leads.L2.missingSpeakers = ['juno'];
+    g.s.leads.L2.missingSpeakers = ['nevethitha'];
     g.s.leads.L2.revealed = [[0, 0]];
     expect(gapCells(g, 'L2').every(([r, c]) => !(r === 0 && c === 0) && p.solution[r][c] > 0)).toBe(true);
   });
@@ -120,14 +120,14 @@ describe('events', () => {
     const g = fresh();
     g.s.hoursUsed = 4;
     fireEvents(g);
-    expect(recoverSpeaker(g, 'L1', 'juno')).toBe('cant');
+    expect(recoverSpeaker(g, 'L1', 'nevethitha')).toBe('cant');
     g.s.favors = 0;
-    expect(recoverSpeaker(g, 'L2', 'juno')).toBe('cant');
+    expect(recoverSpeaker(g, 'L2', 'nevethitha')).toBe('cant');
     g.s.favors = 3;
     g.s.hoursUsed = 12;
-    expect(recoverSpeaker(g, 'L2', 'juno')).toBe('cant');
+    expect(recoverSpeaker(g, 'L2', 'nevethitha')).toBe('cant');
     g.s.hoursUsed = 4;
-    expect(recoverSpeaker(g, 'L2', 'juno')).toEqual([]);
+    expect(recoverSpeaker(g, 'L2', 'nevethitha')).toEqual([]);
     expect(g.s.leads.L2.missingSpeakers).toEqual([]);
     expect(g.s.favors).toBe(2);
     expect(g.s.hoursUsed).toBe(5);
@@ -135,7 +135,7 @@ describe('events', () => {
     expect(events.find((e) => e.effect.type !== 'removeSpeaker')).toBeTruthy();
     const j = fresh('junior');
     j.s.favors = 1;
-    expect(recoverSpeaker(j, 'L2', 'juno')).toEqual([]);
+    expect(recoverSpeaker(j, 'L2', 'nevethitha')).toEqual([]);
     const other = fresh();
     expect(recoverSpeaker(other, 'L2', 'vex')).toBe('cant');
   });
@@ -168,8 +168,8 @@ describe('checking a lead and trust', () => {
   it('skips statements of witnesses who left', () => {
     const g = fresh();
     fill(g, 'L2');
-    g.s.leads.L2.missingSpeakers = ['juno'];
-    g.s.leads.L2.marks = g.s.leads.L2.marks.map((m, i) => (puzzleOf(g, 'L2').statements[i].speaker === 'juno' ? 'unknown' : m));
+    g.s.leads.L2.missingSpeakers = ['nevethitha'];
+    g.s.leads.L2.marks = g.s.leads.L2.marks.map((m, i) => (puzzleOf(g, 'L2').statements[i].speaker === 'nevethitha' ? 'unknown' : m));
     expect(checkLead(g, 'L2')).toBe('solved');
   });
 
@@ -185,36 +185,36 @@ describe('checking a lead and trust', () => {
 
   it('reports every trust state', () => {
     const g = fresh();
-    expect(trustOf(g, 'rosa')).toBe('unknown');
+    expect(trustOf(g, 'meena')).toBe('unknown');
     startLead(g, 'L1');
-    expect(trustOf(g, 'rosa')).toBe('unknown');
+    expect(trustOf(g, 'meena')).toBe('unknown');
     const p = puzzleOf(g, 'L1');
-    const rosaAt = p.statements.findIndex((s) => s.speaker === 'rosa');
-    g.s.leads.L1.marks[rosaAt] = 'lie';
-    expect(trustOf(g, 'rosa')).toBe('suspicious');
+    const meenaAt = p.statements.findIndex((s) => s.speaker === 'meena');
+    g.s.leads.L1.marks[meenaAt] = 'lie';
+    expect(trustOf(g, 'meena')).toBe('suspicious');
     fill(g, 'L1');
     solveLead(g, 'L1');
-    expect(['verified', 'mistaken', 'caught']).toContain(trustOf(g, 'rosa'));
-    addFlag(g, 'refuses:rosa');
-    addFlag(g, 'refuses:rosa');
-    expect(trustOf(g, 'rosa')).toBe('refuses');
-    expect(refusing(g, 'rosa')).toBe(true);
+    expect(['verified', 'mistaken', 'caught']).toContain(trustOf(g, 'meena'));
+    addFlag(g, 'refuses:meena');
+    addFlag(g, 'refuses:meena');
+    expect(trustOf(g, 'meena')).toBe('refuses');
+    expect(refusing(g, 'meena')).toBe(true);
   });
 
   it('tells a mistaken witness from a caught liar', () => {
     const c = clone();
     const g = fresh('inspector', c);
-    const rosa = c.cast.find((x) => x.id === 'rosa')!;
-    const lead = c.leads.find((l) => l.speakers.includes('rosa'))!;
+    const meena = c.cast.find((x) => x.id === 'meena')!;
+    const lead = c.leads.find((l) => l.speakers.includes('meena'))!;
     const p = puzzleOf(g, lead.id);
-    const idx = p.statements.findIndex((s) => s.speaker === 'rosa');
+    const idx = p.statements.findIndex((s) => s.speaker === 'meena');
     p.truth[idx] = false;
     startLead(g, lead.id);
     g.s.leads[lead.id].solved = true;
-    rosa.reliability = 'mistaken';
-    expect(trustOf(g, 'rosa')).toBe('mistaken');
-    rosa.reliability = 'liar';
-    expect(trustOf(g, 'rosa')).toBe('caught');
+    meena.reliability = 'mistaken';
+    expect(trustOf(g, 'meena')).toBe('mistaken');
+    meena.reliability = 'liar';
+    expect(trustOf(g, 'meena')).toBe('caught');
     p.truth[idx] = true;
   });
 });
@@ -309,8 +309,8 @@ describe('accusations', () => {
     expect(submitAccusation(g, 'crane', ['L3', 'L4'])).toEqual({ kind: 'blocked', why: 'locked' });
     submitAccusation(g, 'vex', []);
     submitAccusation(g, 'tip', []);
-    submitAccusation(g, 'rosa', []);
-    expect(accusedPeople(g)).toEqual(['crane', 'vex', 'tip', 'rosa']);
+    submitAccusation(g, 'meena', []);
+    expect(accusedPeople(g)).toEqual(['crane', 'vex', 'tip', 'meena']);
     expect(accuseStatus(g, 'kane')).toBe('no-room');
     expect(submitAccusation(g, 'kane', [])).toEqual({ kind: 'blocked', why: 'no-room' });
     expect(canStillWin(g)).toBe(true);

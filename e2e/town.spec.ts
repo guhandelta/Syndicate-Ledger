@@ -31,15 +31,15 @@ test('walk to the fish market, talk to a witness and open the first lead from it
   await expect(page).toHaveURL(/#\/town$/);
   await expect(prompt).toContainText('keep working on "Fish market cash book"');
 
-  // Rosa stands just west of the door
+  // Meena stands just west of the door
   await page.keyboard.down('ArrowLeft');
-  await expect(prompt).toContainText('Talk to Rosa Diaz', { timeout: 30_000 });
+  await expect(prompt).toContainText('Talk to Meena Selvi', { timeout: 30_000 });
   await page.keyboard.up('ArrowLeft');
   await page.keyboard.press('KeyE');
   const talk = page.getByRole('dialog');
-  await expect(talk.getByRole('heading')).toHaveText('Rosa Diaz');
+  await expect(talk.getByRole('heading')).toHaveText('Meena Selvi');
   await expect(talk).toContainText('Has statements in: L1 Fish market cash book');
-  // ask Rosa what she thinks of Kane: the answer comes with how she says it
+  // ask Meena what she thinks of Kane: the answer comes with how she says it
   await talk.getByRole('group', { name: 'Ask about someone' }).getByRole('button', { name: 'Kane Hollis' }).click();
   await expect(talk).toContainText('Kane scares my customers... I think he was near the market that night.');
   await expect(talk.locator('.tell')).toContainText('rubs her hands');
@@ -53,8 +53,8 @@ test('walk to the fish market, talk to a witness and open the first lead from it
   await expect(page.getByRole('button', { name: /Camera: Behind/ })).toBeVisible();
   await page.keyboard.press('KeyB');
   await expect(page.getByRole('heading', { name: 'Leads' })).toBeVisible();
-  // what Rosa said is kept on Kane's card
-  await expect(page.getByRole('list', { name: 'What others say about Kane Hollis' })).toContainText('Rosa Diaz:');
+  // what Meena said is kept on Kane's card
+  await expect(page.getByRole('list', { name: 'What others say about Kane Hollis' })).toContainText('Meena Selvi:');
 });
 
 test('story shots play once when new leads open, and can be skipped', async ({ page }) => {
