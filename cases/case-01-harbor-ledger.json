@@ -94,16 +94,16 @@
           }
         },
         {
-          "about": "rosa",
+          "about": "meena",
           "text": {
-            "crime": "Rosa counts every coin twice. If her book is wrong, someone changed it.",
-            "friendly": "Rosa counts everything twice. If her notebook is wrong, someone changed it."
+            "crime": "Meena counts every coin twice. If her book is wrong, someone changed it.",
+            "friendly": "Meena counts everything twice. If her notebook is wrong, someone changed it."
           },
           "voice": "calm"
         }
       ]
     },
-    { "id": "rosa", "name": "Rosa Diaz", "role": "witness", "reliability": "mistaken", "voice": "nervous", "color": "#be185d",
+    { "id": "meena", "name": "Meena Selvi", "role": "witness", "reliability": "mistaken", "voice": "nervous", "color": "#be185d",
       "blurb": { "crime": "Runs the fish market. Busy, sharp, sometimes rushed.", "friendly": "Runs the fish market. Always in a hurry." },
       "greeting": { "voice": "nervous", "text": { "crime": "Detective? Make it quick, the morning catch won't sell itself.", "friendly": "Oh! Hi! Sorry, I'm super busy today!" } },
       "greetings": [
@@ -141,7 +141,7 @@
         }
       ]
     },
-    { "id": "juno", "name": "Juno Park", "role": "witness", "reliability": "honest", "color": "#0369a1",
+    { "id": "nevethitha", "name": "Nevethitha Rajan", "role": "witness", "reliability": "honest", "color": "#0369a1",
       "blurb": { "crime": "Night guard on the docks. Leaving town soon.", "friendly": "Night guard on the docks. Going on a trip soon." },
       "greeting": { "voice": "speech", "text": { "crime": "I watched the docks all night. Ask now, my bus leaves soon.", "friendly": "I watched the docks all night! Ask me before my trip." } },
       "opinions": [
@@ -304,7 +304,7 @@
         }
       ]
     },
-    { "id": "mara", "name": "Mara Quill", "role": "ally", "ability": "accountant", "reliability": "honest", "color": "#0f766e",
+    { "id": "kavya", "name": "Kavya Narayanan", "role": "ally", "ability": "accountant", "reliability": "honest", "color": "#0f766e",
       "blurb": { "crime": "Forensic accountant. Sees patterns in totals.", "friendly": "Counts things super fast." },
       "greeting": { "voice": "speech", "text": { "crime": "Bring me the totals. Numbers don't lie, even when people do.", "friendly": "Give me numbers and I'll count them super fast!" } } },
     { "id": "dex", "name": "Sgt. Dex Okafor", "role": "ally", "ability": "partner", "reliability": "honest", "voice": "calm", "color": "#a16207",
@@ -333,10 +333,10 @@
           }
         },
         {
-          "about": "juno",
+          "about": "nevethitha",
           "text": {
-            "crime": "Juno keeps a better log than my harbor office. If she wrote it, it happened.",
-            "friendly": "Juno writes everything down. If she wrote it, it's true."
+            "crime": "Nevethitha keeps a better log than my harbor office. If she wrote it, it happened.",
+            "friendly": "Nevethitha writes everything down. If she wrote it, it's true."
           },
           "voice": "calm"
         }
@@ -347,10 +347,10 @@
     {
       "id": "L1", "type": "ledger", "cost": 2, "opensAfter": [],
       "title": { "crime": "Fish market cash book", "friendly": "The fish market notebook" },
-      "intro": { "crime": "Rosa keeps a cash book for the market. Somebody has been writing in it at night. Work out who moved how much each hour.", "friendly": "Rosa's notebook has numbers in it from last night. Work out how many coins each person carried each hour." },
-      "columns": ["vex", "kane", "rosa", "tip", "juno", "crane", "karunakaran"],
+      "intro": { "crime": "Meena keeps a cash book for the market. Somebody has been writing in it at night. Work out who moved how much each hour.", "friendly": "Meena's notebook has numbers in it from last night. Work out how many coins each person carried each hour." },
+      "columns": ["vex", "kane", "meena", "tip", "nevethitha", "crane", "karunakaran"],
       "rows": ["8pm", "9pm", "10pm", "11pm", "Midnight", "1am", "2am"],
-      "speakers": ["rosa", "kane"],
+      "speakers": ["meena", "kane"],
       "liars": { "junior": [], "detective": [], "inspector": [], "chief": [] },
       "fact": { "crime": "Cash moves through the fish market every night, and Vex carries the biggest bags.", "friendly": "The coins go through the fish market at night, and Vex carries the most." },
       "pointsTo": ["vex"]
@@ -358,12 +358,12 @@
     {
       "id": "L2", "type": "surveillance", "cost": 2, "opensAfter": ["L1"],
       "title": { "crime": "Dock camera log", "friendly": "The dock cameras" },
-      "intro": { "crime": "The dock cameras caught a few people in a few rooms. Juno was on duty. Work out who was in which room each hour. Rooms are numbered along the pier.", "friendly": "The cameras saw some people in some rooms. Work out who was in which room each hour. Rooms are numbered along the pier." },
-      "columns": ["vex", "kane", "juno", "tip", "rosa", "crane", "karunakaran"],
+      "intro": { "crime": "The dock cameras caught a few people in a few rooms. Nevethitha was on duty. Work out who was in which room each hour. Rooms are numbered along the pier.", "friendly": "The cameras saw some people in some rooms. Work out who was in which room each hour. Rooms are numbered along the pier." },
+      "columns": ["vex", "kane", "nevethitha", "tip", "meena", "crane", "karunakaran"],
       "rows": ["9pm", "10pm", "11pm", "Midnight", "1am", "2am", "3am"],
       "rooms": ["Harbor office", "Ice house", "Warehouse 9", "Fish hall", "Net loft", "Boathouse", "Crane Shipping"],
       "anchors": [{ "time": "Midnight", "person": "vex", "value": 3 }],
-          "speakers": ["juno", "vex", "kane"],
+          "speakers": ["nevethitha", "vex", "kane"],
       "liars": { "junior": [], "detective": ["vex"], "inspector": ["vex"], "chief": ["vex"] },
       "fact": { "crime": "Vex was inside Warehouse 9 at midnight, not at home as he claims.", "friendly": "Vex was in Warehouse 9 at midnight. He said he was at home!" },
       "pointsTo": ["vex"]
@@ -372,9 +372,9 @@
       "id": "L3", "type": "ledger", "cost": 2, "opensAfter": ["L2"],
       "title": { "crime": "Tip's payment records", "friendly": "Tip's secret notes" },
       "intro": { "crime": "Tip hands over his payment records, a little too eagerly. Work out the payments and check what Tip says about them.", "friendly": "Tip gives you his notes. He seems very keen to help. Check if what he says matches the numbers." },
-      "columns": ["tip", "vex", "rosa", "kane", "crane", "juno", "karunakaran"],
+      "columns": ["tip", "vex", "meena", "kane", "crane", "nevethitha", "karunakaran"],
       "rows": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      "speakers": ["tip", "rosa", "kane"],
+      "speakers": ["tip", "meena", "kane"],
       "liars": { "junior": ["tip"], "detective": ["tip"], "inspector": ["tip"], "chief": ["tip"] },
       "fact": { "crime": "Every payment ends up in an account owned by Crane Shipping. Tip lied to cover it.", "friendly": "All the coins go to the shipping company. Tip fibbed to hide it!" },
       "pointsTo": ["tip", "crane"]
@@ -383,20 +383,20 @@
       "id": "L4", "type": "ledger", "cost": 2, "opensAfter": ["L3"], "hard": true,
       "title": { "crime": "The harbormaster's private ledger", "friendly": "The secret ledger" },
       "intro": { "crime": "Hidden in Warehouse 9: a private ledger in Crane's handwriting. Crack it and the whole trail is exposed.", "friendly": "Hidden in Warehouse 9: a secret book in Mr. Crane's handwriting! Crack it to solve the case." },
-      "columns": ["crane", "vex", "rosa", "kane", "tip", "juno", "karunakaran"],
+      "columns": ["crane", "vex", "meena", "kane", "tip", "nevethitha", "karunakaran"],
       "rows": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-      "speakers": ["vex", "rosa", "kane"],
-      "liars": { "junior": ["vex"], "detective": ["vex"], "inspector": ["vex", "rosa"], "chief": ["vex", "rosa"] },
+      "speakers": ["vex", "meena", "kane"],
+      "liars": { "junior": ["vex"], "detective": ["vex"], "inspector": ["vex", "meena"], "chief": ["vex", "meena"] },
       "fact": { "crime": "Crane staged the theft. The $90k never left his company. It was washed through the market to pay the syndicate.", "friendly": "Mr. Crane hid the coins himself and blamed someone else!" },
       "pointsTo": ["crane"]
     }
   ],
   "events": [
     {
-      "id": "juno-leaves", "at": 4, "unlessSolved": "L2",
-      "effect": { "type": "removeSpeaker", "lead": "L2", "speaker": "juno", "recover": { "hours": 1, "favors": 1 } },
-      "rumor": { "crime": "Juno's bus ticket is for the start of Day 2.", "friendly": "Juno is going on a trip at the start of Day 2." },
-      "message": { "crime": "Juno has left town. Tracking her down for her statement will cost time and a favor. If her statement left a gap, the camera footage fills it in.", "friendly": "Juno went on her trip! You can still call her, but it costs time and a favor. If a spot is now missing, the cameras show it." }
+      "id": "nevethitha-leaves", "at": 4, "unlessSolved": "L2",
+      "effect": { "type": "removeSpeaker", "lead": "L2", "speaker": "nevethitha", "recover": { "hours": 1, "favors": 1 } },
+      "rumor": { "crime": "Nevethitha's bus ticket is for the start of Day 2.", "friendly": "Nevethitha is going on a trip at the start of Day 2." },
+      "message": { "crime": "Nevethitha has left town. Tracking her down for her statement will cost time and a favor. If her statement left a gap, the camera footage fills it in.", "friendly": "Nevethitha went on her trip! You can still call her, but it costs time and a favor. If a spot is now missing, the cameras show it." }
     },
     {
       "id": "warehouse-burns", "at": 8, "ifFlag": "tip-trap", "unlessSolved": "L4",
@@ -431,12 +431,12 @@
       "when": {
         "kind": "wrong-mark",
         "lead": "L1",
-        "speaker": "rosa",
+        "speaker": "meena",
         "marked": "lie"
       },
       "message": {
-        "crime": "Something about Rosa's story bothered you, and your instinct is off this time. Her cash book is accurate, so take her at her word.",
-        "friendly": "Rosa's notebook is right and your hunch was wrong. Trust her and look again!"
+        "crime": "Something about Meena's story bothered you, and your instinct is off this time. Her cash book is accurate, so take her at her word.",
+        "friendly": "Meena's notebook is right and your hunch was wrong. Trust her and look again!"
       }
     },
     {
@@ -468,11 +468,11 @@
       ],
       "when": {
         "kind": "event",
-        "event": "juno-leaves"
+        "event": "nevethitha-leaves"
       },
       "message": {
-        "crime": "Juno clocked out and left town before you reached her. Her camera notes are gone unless you track her down.",
-        "friendly": "Juno went on holiday before you asked her. Find her to get her notes back!"
+        "crime": "Nevethitha clocked out and left town before you reached her. Her camera notes are gone unless you track her down.",
+        "friendly": "Nevethitha went on holiday before you asked her. Find her to get her notes back!"
       }
     },
     {
@@ -574,11 +574,11 @@
       "when": {
         "kind": "wrong-mark",
         "lead": "L4",
-        "speaker": "rosa",
+        "speaker": "meena",
         "marked": "true"
       },
       "message": {
-        "crime": "Rosa made an honest mistake in her ledger, and in this case the mistake hides the truth. You took it at face value. Check the numbers again."
+        "crime": "Meena made an honest mistake in her ledger, and in this case the mistake hides the truth. You took it at face value. Check the numbers again."
       }
     },
     {
@@ -682,7 +682,7 @@
       "text": { "crime": "You made an arrest, but without the full trail Crane's lawyers tear the case apart. The ship sails on schedule.", "friendly": "You caught a helper, but the boss got away on the boat." }
     },
     {
-      "id": "wrong-arrest", "accuse": ["kane", "rosa", "juno", "karunakaran"],
+      "id": "wrong-arrest", "accuse": ["kane", "meena", "nevethitha", "karunakaran"],
       "title": { "crime": "Wrong arrest", "friendly": "Oops, wrong person" },
       "text": { "crime": "You arrested an innocent person. The syndicate couldn't have planned it better.", "friendly": "That person didn't do it! The gang is laughing all the way to their boat." }
     }
@@ -737,7 +737,7 @@
             "voice": "calm"
           },
           {
-            "who": "rosa",
+            "who": "meena",
             "text": {
               "crime": "Tip? You carried my fish crates all week!",
               "friendly": "Tip? You carried my fish crates all week!"
@@ -800,7 +800,7 @@
           "text": { "crime": "Port Calder, the morning of the Gold Coin Festival. Last night the prize chest was full of festival coins. This morning it is gone.", "friendly": "Port Calder, the morning of the Gold Coin Festival. Last night the prize chest was full of festival coins. This morning it is gone." }
         },
         {
-          "who": "rosa",
+          "who": "meena",
           "text": { "crime": "Every coin, gone! I wrote down who carried what, but my notebook has gaps.", "friendly": "Every coin, gone! I wrote down who carried what, but my notebook has gaps." },
           "voice": "nervous"
         },
@@ -821,7 +821,7 @@
       "incident": {
           "paper": "Port Calder Gazette",
           "headline": { "crime": "Gold Coin chest vanishes!", "friendly": "Gold Coin chest vanishes!" },
-          "body": { "crime": "Port Calder woke to a festival without its prize. The Gold Coin chest, filled with festival coins at the harbor ice house, was found empty on the morning of the Gold Coin Festival. It was last seen being counted by Rosa Diaz at the fish hall. Harbormaster Kane Hollis says a stranger did it. Police have no suspects, and the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 is still missing.", "friendly": "Port Calder woke up to a festival with no prize! The Gold Coin chest, filled with festival coins at the harbor ice house, was empty on the morning of the Gold Coin Festival. Rosa Diaz was the last to count it at the fish hall. Kane Hollis says a stranger did it. Nobody knows where the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 went." }
+          "body": { "crime": "Port Calder woke to a festival without its prize. The Gold Coin chest, filled with festival coins at the harbor ice house, was found empty on the morning of the Gold Coin Festival. It was last seen being counted by Meena Selvi at the fish hall. Harbormaster Kane Hollis says a stranger did it. Police have no suspects, and the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 is still missing.", "friendly": "Port Calder woke up to a festival with no prize! The Gold Coin chest, filled with festival coins at the harbor ice house, was empty on the morning of the Gold Coin Festival. Meena Selvi was the last to count it at the fish hall. Kane Hollis says a stranger did it. Nobody knows where the \u2592\u2592\u2592\u2592\u2592\u2592\u2592 went." }
         },
         "setup": {
         "crime": "Port Calder is a small harbor town, and tonight is the Gold Coin Festival. Every year the town locks its prize coins in one chest on the dock, and every year nothing goes wrong. This morning the chest is empty. Nobody saw it leave, the market is full of nervous whispers, and everybody agrees it must have been a sneaky stranger. You are new in town and nobody owes you a thing, but Tip, the harbor helper, has already offered to show you around. Somebody here knows where those coins went.",
@@ -837,13 +837,13 @@
             "crime": "Fish market cash book",
             "friendly": "The festival notebook"
           },
-          "intro": { "crime": "This is Rosa's cash book from the night the prize chest was filled, coin by coin. It got smudged. Fill in how many coins each person carried each hour, then check what people say against your numbers and mark each one True or Lie.", "friendly": "This is Rosa's notebook from the night the chest was filled, coin by coin. It got smudged! Fill in how many coins each person carried each hour. Then check what people say against your numbers and mark each one True or Lie." },
+          "intro": { "crime": "This is Meena's cash book from the night the prize chest was filled, coin by coin. It got smudged. Fill in how many coins each person carried each hour, then check what people say against your numbers and mark each one True or Lie.", "friendly": "This is Meena's notebook from the night the chest was filled, coin by coin. It got smudged! Fill in how many coins each person carried each hour. Then check what people say against your numbers and mark each one True or Lie." },
           "columns": [
             "vex",
             "kane",
-            "rosa",
+            "meena",
             "tip",
-            "juno",
+            "nevethitha",
             "crane",
             "karunakaran"
           ],
@@ -855,7 +855,7 @@
             "10 PM"
           ],
           "speakers": [
-            "rosa",
+            "meena",
             "kane"
           ],
           "liars": {
@@ -929,15 +929,15 @@
             }
           ],
           "speakers": [
-            "juno",
+            "nevethitha",
             "vex",
             "kane",
-            "rosa"
+            "meena"
           ],
           "liars": {
             "junior": [
               "vex",
-              "rosa"
+              "meena"
             ],
             "detective": [],
             "inspector": [],
@@ -964,9 +964,9 @@
           "columns": [
             "tip",
             "vex",
-            "rosa",
+            "meena",
             "kane",
-            "juno",
+            "nevethitha",
             "crane",
             "karunakaran"
           ],
@@ -975,17 +975,17 @@
             {
               "paper": "Harbor Whispers",
               "headline": { "crime": "Who talked to whom?", "friendly": "Who talked to whom?" },
-              "body": { "crime": "Festival eve had the whole harbor whispering. Kane Hollis and Rosa Diaz were seen deep in talk near the pier, and some say the harbor kid joined them \u2592\u2592\u2592\u2592\u2592\u2592\u2592 though others swear he was on the road all evening. The band played on \u2592\u2592\u2592\u2592\u2592\u2592\u2592 the lamps.", "friendly": "Festival eve had the whole harbor whispering. Kane Hollis and Rosa Diaz were seen deep in talk near the pier, and some say the harbor kid joined them \u2592\u2592\u2592\u2592\u2592\u2592\u2592 though others swear he was on the road all evening. The band played on \u2592\u2592\u2592\u2592\u2592\u2592\u2592 the lamps." }
+              "body": { "crime": "Festival eve had the whole harbor whispering. Kane Hollis and Meena Selvi were seen deep in talk near the pier, and some say the harbor kid joined them \u2592\u2592\u2592\u2592\u2592\u2592\u2592 though others swear he was on the road all evening. The band played on \u2592\u2592\u2592\u2592\u2592\u2592\u2592 the lamps.", "friendly": "Festival eve had the whole harbor whispering. Kane Hollis and Meena Selvi were seen deep in talk near the pier, and some say the harbor kid joined them \u2592\u2592\u2592\u2592\u2592\u2592\u2592 though others swear he was on the road all evening. The band played on \u2592\u2592\u2592\u2592\u2592\u2592\u2592 the lamps." }
             }
           ],
           "speakers": [
             "tip",
-            "rosa",
+            "meena",
             "kane"
           ],
           "liars": {
             "junior": [
-              "rosa"
+              "meena"
             ],
             "detective": [],
             "inspector": [],
@@ -1043,13 +1043,13 @@
             }
           ],
           "speakers": [
-            "rosa",
+            "meena",
             "kane",
-            "juno"
+            "nevethitha"
           ],
           "liars": {
             "junior": [
-              "rosa"
+              "meena"
             ],
             "detective": [],
             "inspector": [],
@@ -1079,7 +1079,7 @@
           "rows": [],
           "speakers": [
             "tip",
-            "juno",
+            "nevethitha",
             "kane"
           ],
           "liars": {
@@ -1139,8 +1139,8 @@
           "id": "wrong-arrest",
           "accuse": [
             "kane",
-            "rosa",
-            "juno",
+            "meena",
+            "nevethitha",
             "karunakaran"
           ],
           "title": {
@@ -1292,7 +1292,7 @@
             "text": { "crime": "Your phone buzzes on the desk. Sgt. Dex Okafor. You let it ring, and when you call back the line is dead.", "friendly": "Your phone buzzes on the desk. Sgt. Dex Okafor. You let it ring, and when you call back the line is dead." }
           },
           {
-            "text": { "crime": "Next, you will see the case through the eyes of Mara Quill.", "friendly": "Next, you will see the case through the eyes of Mara Quill." }
+            "text": { "crime": "Next, you will see the case through the eyes of Kavya Narayanan.", "friendly": "Next, you will see the case through the eyes of Kavya Narayanan." }
           }
         ],
         "carried": {
@@ -1358,8 +1358,8 @@
       "ready": false
     },
     {
-      "id": "mara",
-      "name": "Mara Quill",
+      "id": "kavya",
+      "name": "Kavya Narayanan",
       "blurb": "The accountant who can read a cash book like a diary.",
       "ready": false
     },

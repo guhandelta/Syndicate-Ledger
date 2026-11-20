@@ -38,17 +38,17 @@ describe('missed-clue data', () => {
 describe('wrong marks', () => {
   it('nudges when the player doubts an honest witness (L1-1)', () => {
     const g = newGame(cf, book, 'detective');
-    const rosa = wrongIndexes(g, 'L1', 'rosa');
-    fillLead(g, 'L1', [rosa[0]]);
+    const meena = wrongIndexes(g, 'L1', 'meena');
+    fillLead(g, 'L1', [meena[0]]);
     expect(checkLead(g, 'L1')).toBe('marks-wrong');
     const evs = markMistakes(g, 'L1');
-    expect(evs).toEqual([expect.objectContaining({ kind: 'wrong-mark', speaker: 'rosa', marked: 'lie' })]);
+    expect(evs).toEqual([expect.objectContaining({ kind: 'wrong-mark', speaker: 'meena', marked: 'lie' })]);
     expect(ids(pendingClues(g, evs[0]))).toEqual(['L1-1']);
   });
 
   it('shows a clue only once', () => {
     const g = newGame(cf, book, 'detective');
-    const ev: ClueEvent = { kind: 'wrong-mark', lead: 'L1', speaker: 'rosa', marked: 'lie' };
+    const ev: ClueEvent = { kind: 'wrong-mark', lead: 'L1', speaker: 'meena', marked: 'lie' };
     const clues = pendingClues(g, ev);
     expect(clues.length).toBe(1);
     markCluesShown(g, clues);
@@ -62,8 +62,8 @@ describe('wrong marks', () => {
     expect(ids(pendingClues(det, { kind: 'wrong-mark', lead: 'L2', speaker: 'vex', marked: 'true' }))).toEqual(['L2-2']);
   });
 
-  it('shows L4-2 for Rosa only in Inspector and Chief', () => {
-    const ev: ClueEvent = { kind: 'wrong-mark', lead: 'L4', speaker: 'rosa', marked: 'true' };
+  it('shows L4-2 for Meena only in Inspector and Chief', () => {
+    const ev: ClueEvent = { kind: 'wrong-mark', lead: 'L4', speaker: 'meena', marked: 'true' };
     expect(ids(pendingClues(newGame(cf, book, 'detective'), ev))).toEqual([]);
     expect(ids(pendingClues(newGame(cf, book, 'inspector'), ev))).toEqual(['L4-2']);
   });
@@ -82,18 +82,18 @@ describe('unmarked statements', () => {
 });
 
 describe('events', () => {
-  it('fires L2-1 when Juno leaves before L2 is started', () => {
+  it('fires L2-1 when Nevethitha leaves before L2 is started', () => {
     const g = newGame(cf, book, 'detective');
     const fired = spendHours(g, 4);
-    expect(fired.map((e) => e.id)).toContain('juno-leaves');
-    expect(ids(pendingClues(g, { kind: 'event', event: 'juno-leaves' }))).toEqual(['L2-1']);
+    expect(fired.map((e) => e.id)).toContain('nevethitha-leaves');
+    expect(ids(pendingClues(g, { kind: 'event', event: 'nevethitha-leaves' }))).toEqual(['L2-1']);
   });
 
   it('does not fire L2-1 once L2 is started', () => {
     const g = newGame(cf, book, 'detective');
     g.s.leads.L2.started = true;
     fireEvents(g);
-    expect(spendHours(g, 4).map((e) => e.id)).not.toContain('juno-leaves');
+    expect(spendHours(g, 4).map((e) => e.id)).not.toContain('nevethitha-leaves');
   });
 
   it('fires L4-3 and X-1 when the Tip trap was bought and Warehouse 9 burns', () => {
@@ -130,7 +130,7 @@ describe('accusations', () => {
 
   it('nudges X-2 for someone whose statements were never checked', () => {
     const g = newGame(cf, book, 'detective');
-    expect(ids(pendingClues(g, { kind: 'accuse', person: 'mara' }))).toContain('X-2');
+    expect(ids(pendingClues(g, { kind: 'accuse', person: 'kavya' }))).toContain('X-2');
   });
 
   it('does not nudge X-2 once that person has a checked statement', () => {
@@ -142,9 +142,9 @@ describe('accusations', () => {
 
   it('repeats accusation nudges even after they were shown', () => {
     const g = newGame(cf, book, 'detective');
-    const clues = pendingClues(g, { kind: 'accuse', person: 'mara' });
+    const clues = pendingClues(g, { kind: 'accuse', person: 'kavya' });
     markCluesShown(g, clues);
-    expect(ids(pendingClues(g, { kind: 'accuse', person: 'mara' }))).toContain('X-2');
+    expect(ids(pendingClues(g, { kind: 'accuse', person: 'kavya' }))).toContain('X-2');
   });
 });
 
@@ -158,14 +158,14 @@ describe('clue conditions', () => {
   it('skips statements of witnesses who left, and reports a doubted true statement as marked true', () => {
     const g = newGame(cf, book, 'inspector');
     const lp = g.s.leads.L2;
-    lp.missingSpeakers = ['juno'];
+    lp.missingSpeakers = ['nevethitha'];
     const events = markMistakes(g, 'L2');
-    expect(events.some((e) => e.kind === 'unmarked' && e.speaker === 'juno')).toBe(false);
+    expect(events.some((e) => e.kind === 'unmarked' && e.speaker === 'nevethitha')).toBe(false);
     fillLead(g, 'L2', wrongIndexes(g, 'L2', 'vex'));
     const flipped = markMistakes(g, 'L2');
     expect(flipped.find((e) => e.kind === 'wrong-mark' && e.speaker === 'vex')).toMatchObject({ marked: 'true' });
-    fillLead(g, 'L1', wrongIndexes(g, 'L1', 'rosa'));
-    expect(markMistakes(g, 'L1').find((e) => e.kind === 'wrong-mark' && e.speaker === 'rosa')).toMatchObject({ marked: 'lie' });
+    fillLead(g, 'L1', wrongIndexes(g, 'L1', 'meena'));
+    expect(markMistakes(g, 'L1').find((e) => e.kind === 'wrong-mark' && e.speaker === 'meena')).toMatchObject({ marked: 'lie' });
   });
 
   it('matches event clues with and without a flag', () => {
@@ -179,13 +179,13 @@ describe('clue conditions', () => {
   });
 
   it('matches unmarked and wrong-mark clues only for the right lead and speaker', () => {
-    const g = withClues({ kind: 'unmarked', lead: 'L1', speaker: 'rosa' });
-    expect(pendingClues(g, { kind: 'unmarked', lead: 'L1', speaker: 'rosa' })).toHaveLength(1);
+    const g = withClues({ kind: 'unmarked', lead: 'L1', speaker: 'meena' });
+    expect(pendingClues(g, { kind: 'unmarked', lead: 'L1', speaker: 'meena' })).toHaveLength(1);
     expect(pendingClues(g, { kind: 'unmarked', lead: 'L1', speaker: 'kane' })).toHaveLength(0);
     expect(pendingClues(g, { kind: 'event', event: 'x' })).toHaveLength(0);
-    const w = withClues({ kind: 'wrong-mark', lead: 'L1', speaker: 'rosa', marked: 'lie' });
-    expect(pendingClues(w, { kind: 'wrong-mark', lead: 'L1', speaker: 'rosa', marked: 'lie' })).toHaveLength(1);
-    expect(pendingClues(w, { kind: 'wrong-mark', lead: 'L1', speaker: 'rosa', marked: 'true' })).toHaveLength(0);
+    const w = withClues({ kind: 'wrong-mark', lead: 'L1', speaker: 'meena', marked: 'lie' });
+    expect(pendingClues(w, { kind: 'wrong-mark', lead: 'L1', speaker: 'meena', marked: 'lie' })).toHaveLength(1);
+    expect(pendingClues(w, { kind: 'wrong-mark', lead: 'L1', speaker: 'meena', marked: 'true' })).toHaveLength(0);
   });
 
   it('matches accusation clues by person, solved leads, flags and checked statements', () => {
@@ -211,9 +211,9 @@ describe('clue conditions', () => {
     expect(pendingClues(missing, { kind: 'accuse', person: 'vex' })).toHaveLength(0);
 
     const unchecked = withClues({ kind: 'accuse', unchecked: true });
-    expect(pendingClues(unchecked, { kind: 'accuse', person: 'rosa' })).toHaveLength(1);
+    expect(pendingClues(unchecked, { kind: 'accuse', person: 'meena' })).toHaveLength(1);
     unchecked.s.leads.L1.solved = true;
-    expect(pendingClues(unchecked, { kind: 'accuse', person: 'rosa' })).toHaveLength(0);
+    expect(pendingClues(unchecked, { kind: 'accuse', person: 'meena' })).toHaveLength(0);
   });
 
   it('shows a clue once, except accusation nudges, and has none when the case lists none', () => {
@@ -225,7 +225,7 @@ describe('clue conditions', () => {
     delete bare.missedClues;
     expect(pendingClues(newGame(bare, book, 'inspector'), { kind: 'event', event: 'x' })).toEqual([]);
     const nudge = withClues({ kind: 'accuse' });
-    markCluesShown(nudge, pendingClues(nudge, { kind: 'accuse', person: 'rosa' }));
-    expect(pendingClues(nudge, { kind: 'accuse', person: 'rosa' })).toHaveLength(1);
+    markCluesShown(nudge, pendingClues(nudge, { kind: 'accuse', person: 'meena' }));
+    expect(pendingClues(nudge, { kind: 'accuse', person: 'meena' })).toHaveLength(1);
   });
 });

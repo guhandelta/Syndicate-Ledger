@@ -41,12 +41,12 @@ describe('case 1', () => {
     expect(accuse(g, 'crane').id).toBe('full-bust');
   });
 
-  it('makes Juno leave if the dock log is not done by Day 2', () => {
+  it('makes Nevethitha leave if the dock log is not done by Day 2', () => {
     const g = newGame(cf, book, 'inspector');
     startLead(g, 'L1');
     solve(g, 'L1');
     startLead(g, 'L3');
-    expect(g.s.leads.L2.missingSpeakers).toEqual(['juno']);
+    expect(g.s.leads.L2.missingSpeakers).toEqual(['nevethitha']);
   });
 
   it('burns the warehouse if Tip was trusted', () => {
@@ -92,7 +92,7 @@ describe('accusation rules', () => {
   });
 
   it('caps the people who can be accused, more at bigger grids', () => {
-    const cases = [['detective', ['vex', 'tip', 'kane']], ['inspector', ['vex', 'tip', 'kane', 'rosa']], ['chief', ['vex', 'tip', 'kane', 'rosa', 'juno']]] as const;
+    const cases = [['detective', ['vex', 'tip', 'kane']], ['inspector', ['vex', 'tip', 'kane', 'meena']], ['chief', ['vex', 'tip', 'kane', 'meena', 'nevethitha']]] as const;
     for (const [preset, people] of cases) {
       const g = play(preset);
       for (const p of people.slice(0, -1)) submitAccusation(g, p, []);
@@ -118,14 +118,14 @@ describe('accusation rules', () => {
 
 describe('witness leaves', () => {
   for (const preset of PRESETS) {
-    it(`keeps L2 solvable with one answer at ${preset} after Juno leaves`, () => {
+    it(`keeps L2 solvable with one answer at ${preset} after Nevethitha leaves`, () => {
       const g = newGame(cf, book, preset);
       g.s.hoursUsed = 4;
       const fired = fireEvents(g);
-      expect(fired.map((e) => e.id)).toContain('juno-leaves');
+      expect(fired.map((e) => e.id)).toContain('nevethitha-leaves');
       const p = puzzleOf(g, 'L2');
       const lp = g.s.leads.L2;
-      const said = p.statements.filter((s) => s.speaker !== 'juno');
+      const said = p.statements.filter((s) => s.speaker !== 'nevethitha');
       const grids = enumerate({ size: p.size, zones: p.zones, givens: [...p.givens, ...lp.revealed.map(([r, c]) => ({ cell: [r, c] as [number, number], value: p.solution[r][c] }))] }, 10_000);
       const fits = grids.filter((x) => p.liarCounts.includes(said.filter((s) => !evalClaim(s.claim, x)).length));
       expect(fits).toHaveLength(1);
