@@ -8,7 +8,7 @@
   import type { CameraKind, Door, Shot } from '../../town/townTypes';
   import { abilityLabel } from '../puzzleHelpers';
   import type { Session } from '../session.svelte';
-  import { expressionFor, voiceFor } from '../voices';
+  import { VOICE_STYLE, expressionFor, voiceFor } from '../voices';
   import Dialogue from './Dialogue.svelte';
   import Spoken from './Spoken.svelte';
   import StatusBar from './StatusBar.svelte';
@@ -197,6 +197,19 @@
       made.dispose();
       scene = null;
     };
+  });
+
+  // The person you are talking to shows the face of their latest line, in 3D as well as in the bubble.
+  const talkFace = $derived.by(() => {
+    if (!talking) return null;
+    const trust = talking.role === 'ally' ? undefined : trustOf(g, talking.id);
+    const line = asked ?? greetingFor(g, talking);
+    if (!line) return expressionFor(trust);
+    return faceFor(line, trust) ?? VOICE_STYLE[voiceFor(line.voice, trust)].expression ?? 'neutral';
+  });
+
+  $effect(() => {
+    scene?.setMood(talkFace);
   });
 
   // Door colours and who is in town follow the game state.

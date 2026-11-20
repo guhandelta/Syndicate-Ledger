@@ -29,3 +29,13 @@ The role column is a guess from each character's look; the case file uses the na
 | Captain Karunakaran Velu | Harbor pilot (Chief story only) | ✓ | ✓ | ✓ | ✓ |
 
 The player detective has no character sheet yet; see `assets/portraits/set-4/`.
+
+## 3D figures
+
+The town builds each person in 3D from these four views. After adding or changing a character's views, run
+`python3 scripts/make-figures.py` (needs Pillow and numpy; add a new character to `CAST` in that script first).
+It writes `src/town/cast3d/<cast id>.webp` and `.json` and the expression faces in `src/town/cast3d/faces/`.
+`--sheet check.png` saves a sheet of the outlines and face boxes it found, to check a new character.
+To look at the figures on their own: `npx vite scripts/figure-viewer --config scripts/figure-viewer/vite.config.ts`.
+
+Views work best as now: the whole body on a plain backdrop, arms held a little away from the body, facing straight on.

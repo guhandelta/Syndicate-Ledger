@@ -114,6 +114,9 @@ export interface CameraPose {
   target: [number, number, number];
 }
 
+/** How far right of the person the talk camera aims (metres), leaving room for the conversation panel. */
+export const TALK_AIM = 0.55;
+
 /** Where the camera sits and looks for each kind of shot. `focus` is the person being talked to. */
 export function cameraPose(kind: CameraKind, c: CameraSettings, player: Pose, focus?: Vec2): CameraPose {
   if (kind === 'wide') return { position: c.wide.position, target: c.wide.target };
@@ -126,7 +129,8 @@ export function cameraPose(kind: CameraKind, c: CameraSettings, player: Pose, fo
     dz /= d;
     return {
       position: [focus[0] + dx * (d + c.talk.distance) - dz * c.talk.side, c.talk.height, focus[1] + dz * (d + c.talk.distance) + dx * c.talk.side],
-      target: [focus[0], 1.15, focus[1]],
+      // aim a little to the person's right on screen, so they stand left of the conversation panel, face in view
+      target: [focus[0] + dz * TALK_AIM, 1.35, focus[1] - dx * TALK_AIM],
     };
   }
   if (kind === 'behind') {

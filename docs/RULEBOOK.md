@@ -299,6 +299,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-20 | The town's people are 3D now: each is built from Guha's four body views (scripts/make-figures.py), walks with swinging arms and legs, sways and breathes while standing, turns their head toward the detective, and in a conversation turns to face you, wears the expression portrait of their latest line on their face and shows it in their body (leaning in when angry, looking down and away when caught lying, and so on). The conversation panel moved to the right so their face stays in view. |
 | 2026-11-20 | Renamed Juno Park, Rosa Diaz and Mara Quill to Nevethitha Rajan, Meena Selvi and Kavya Narayanan everywhere (ids `nevethitha`, `meena`, `kavya`) and swapped in their new art: all seven faces, the Junior faces, and the 3D town figures. |
 | 2026-11-16 | Rank handovers: a rank story may have a `handover` (a short scene shown after its part is uncovered, plus one carried object that appears in the next rank's case notes) and an `opening` scene on the next rank's briefing. Lines can be conditioned on `rank`. Case 1: the CS-9 lock plate carries Junior into Detective. The carried object is shown, not yet usable as proof |
 | 2026-11-16 | Case 1 Junior plays its own story ("The friendly face"): five leads (cash book, timeline, network, map, then a code lock as a two-step finale: closing the map lead offers to go straight on to the code lead via `then`). Town doors may name a lead per rank (`leadFor`). Junior culprit is Tip. |

@@ -83,7 +83,8 @@ describe('cameras', () => {
   });
   it('looks at the person being talked to', () => {
     const p = cameraPose('talk', town.cameras, player, [2, 0]);
-    expect(p.target).toEqual([2, 1.15, 0]);
+    // aimed a little to the person's right, so they stand left of the conversation panel
+    expect(p.target).toEqual([2.55, 1.35, 0]);
     expect(p.position[2]).toBeGreaterThan(0);
   });
 });

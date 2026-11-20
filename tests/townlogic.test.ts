@@ -133,9 +133,9 @@ describe('cameras', () => {
     expect(cameraPose('wide', cameras, player)).toEqual({ position: [1, 2, 3], target: [4, 5, 6] });
     expect(cameraPose('angled', cameras, player).position).toEqual([0, 10, 6]);
     expect(cameraPose('behind', cameras, player).position[2]).toBeCloseTo(5);
-    expect(cameraPose('talk', cameras, player, [0, -3]).target).toEqual([0, 1.15, -3]);
+    expect(cameraPose('talk', cameras, player, [0, -3]).target).toEqual([0.55, 1.35, -3]);
     // talking while standing exactly on the other person must not divide by zero
-    expect(cameraPose('talk', cameras, player, [0, 0]).target).toEqual([0, 1.15, 0]);
+    expect(cameraPose('talk', cameras, player, [0, 0]).target).toEqual([0, 1.35, 0]);
     // asking for a talk view with nobody to look at falls back to the angled view
     expect(cameraPose('talk', cameras, player)).toEqual(cameraPose('angled', cameras, player));
   });

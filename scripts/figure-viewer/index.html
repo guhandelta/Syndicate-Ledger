@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cast in 3D</title>
+<style>
+  :root { --bg: #0d1420; --panel: #172133; --ink: #e8edf6; --muted: #9aa8bf; --accent: #f0c050; }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #0d1420; } }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; }
+  canvas { display: block; width: 100%; height: 100%; }
+  .bar { position: fixed; left: 16px; right: 16px; bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+         background: color-mix(in srgb, var(--panel) 88%, transparent); padding: 10px 12px; border-radius: 10px; }
+  .bar b { margin-right: 4px; color: var(--muted); font-weight: 600; }
+  button { background: #24314a; color: var(--ink); border: 1px solid #34456a; border-radius: 6px; padding: 5px 10px; cursor: pointer; font: inherit; }
+  button.on { background: var(--accent); color: #1a1408; border-color: var(--accent); }
+  .title { position: fixed; top: 14px; left: 16px; right: 16px; }
+  .title h1 { margin: 0; font-size: 18px; }
+  .title p { margin: 2px 0 0; color: var(--muted); }
+  .sep { width: 1px; height: 22px; background: #34456a; margin: 0 6px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="title"><h1>Syndicate Ledger: cast in 3D</h1><p>Drag to turn the camera, scroll to zoom. Built from Guha's four body views and expression portraits.</p></div>
+<div class="bar" id="bar"></div>
+<script type="module" src="./viewer.ts"></script>
+</body>
+</html>
