@@ -44,7 +44,7 @@ const SIDES = 12;
  * A closed tube through the rings, with caps, in model coordinates moved so `origin` is at (0, 0, 0).
  * The `rest` attribute keeps the model position, which the paint is looked up by, however the part moves.
  */
-export function partGeometry(rings: Ring[], origin: [number, number, number] = [0, 0, 0]): THREE.BufferGeometry {
+export function partGeometry(rings: Ring[], origin: [number, number, number] = [0, 0, 0], sideViews = true): THREE.BufferGeometry {
   const pos: number[] = [];
   const index: number[] = [];
   for (const [y, cx, cz, rx, rz] of rings) {
@@ -87,6 +87,7 @@ export function partGeometry(rings: Ring[], origin: [number, number, number] = [
   }
   geo.setAttribute('position', new THREE.BufferAttribute(moved, 3));
   geo.setAttribute('rest', new THREE.BufferAttribute(rest, 3));
+  geo.setAttribute('sides', new THREE.BufferAttribute(new Float32Array(pos.length / 3).fill(sideViews ? 1 : 0), 1));
   geo.setIndex(index);
   geo.computeVertexNormals();
   return geo;
@@ -109,6 +110,8 @@ export function splitAt(rings: Ring[], y: number): [upper: Ring[], lower: Ring[]
 
 const VERTEX_HEAD = /* glsl */ `
 attribute vec3 rest;
+attribute float sides;
+varying float vSides;
 varying vec3 vRest;
 varying vec3 vRestN;
 `;
@@ -124,7 +127,7 @@ uniform vec4 uFaceBox;
 uniform float uFaceOn;
 uniform float uHeight;
 uniform float uGlow;
-uniform float uNeck;
+varying float vSides;
 varying vec3 vRest;
 varying vec3 vRestN;
 vec3 view(vec4 s, float across, float v) {
@@ -137,8 +140,12 @@ const PAINT = /* glsl */ `
 {
   vec3 n = normalize(vRestN);
   vec4 w = pow(max(vec4(n.z, -n.z, n.x, -n.x), 0.0), vec4(8.0)) + 0.0005;
-  // the head is rounder than its outline: favour the front and back pictures there, so a profile face never lands on a cheek
-  w.zw *= mix(1.0, 0.08, smoothstep(uNeck - 0.02, uNeck + 0.04, vRest.y));
+  // the side pictures show the arms over the body and the face in profile, so the head and body never use them:
+  // there the front and back pictures wrap round to meet at the sides
+  if (vSides < 0.5) {
+    vec2 fb = max(vec2(n.z, -n.z), 0.0);
+    w = vec4(fb * fb + 0.001, 0.0, 0.0);
+  }
   w /= w.x + w.y + w.z + w.w;
   float v = clamp(vRest.y / uHeight, 0.002, 0.998);
   vec3 c = w.x * view(uFront, vRest.x, v) + w.y * view(uBack, vRest.x, v)
@@ -164,7 +171,6 @@ export interface FigureUniforms {
   uFaceOn: { value: number };
   uHeight: { value: number };
   uGlow: { value: number };
-  uNeck: { value: number };
 }
 
 const span = (s: ViewSpan) => new THREE.Vector4(s.u0, s.u1, s.from, s.to);
@@ -182,12 +188,11 @@ export function figureMaterial(rig: Rig, atlas: THREE.Texture | null, glow: numb
     uFaceOn: { value: 0 },
     uHeight: { value: rig.height },
     uGlow: { value: glow },
-    uNeck: { value: rig.joints.neck?.[1] ?? rig.height * 0.82 },
   };
   const material = new THREE.MeshLambertMaterial({ flatShading: true });
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
-    shader.vertexShader = VERTEX_HEAD + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRest = rest;\nvRestN = normal;');
+    shader.vertexShader = VERTEX_HEAD + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvRest = rest;\nvRestN = normal;\nvSides = sides;');
     shader.fragmentShader =
       FRAGMENT_HEAD +
       shader.fragmentShader
@@ -344,9 +349,9 @@ export class Figure3D {
     const hip = at(rig.joints.hip, [0, H * 0.5, 0]);
     const neck = at(rig.joints.neck, [0, H * 0.82, 0]);
 
-    const mesh = (rings: Ring[] | undefined, origin: [number, number, number]) => {
+    const mesh = (rings: Ring[] | undefined, origin: [number, number, number], sideViews = true) => {
       if (!rings || rings.length < 2) return null;
-      return new THREE.Mesh(partGeometry(rings, origin), material);
+      return new THREE.Mesh(partGeometry(rings, origin, sideViews), material);
     };
     const place = (g: THREE.Object3D, j: [number, number, number], parent: [number, number, number]) => {
       g.position.set(j[0] - parent[0], j[1] - parent[1], j[2] - parent[2]);
@@ -355,11 +360,11 @@ export class Figure3D {
     // hips carry the body; the body carries head and arms
     place(this.spine, hip, [0, 0, 0]);
     this.root.add(this.spine);
-    const body = mesh(rig.parts.body, hip);
+    const body = mesh(rig.parts.body, hip, false);
     if (body) this.spine.add(body);
     place(this.neck, neck, hip);
     this.spine.add(this.neck);
-    const head = mesh(rig.parts.head, neck);
+    const head = mesh(rig.parts.head, neck, false);
     if (head) this.neck.add(head);
 
     for (const side of ['armL', 'armR'] as const) {
