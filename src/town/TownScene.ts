@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import type { Expression } from '../ui/voices';
+import { CAST3D, faceOf } from './cast3d';
+import { Figure3D } from './figure3d';
 import { cameraPose, forward, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, type Nearby, type Pose } from './townLogic';
 import type { Building, CameraKind, Door, Npc, Prop, Shot, Town, Vec2 } from './townTypes';
 
@@ -61,10 +64,22 @@ interface Person {
   group: THREE.Group;
   /** Turns and tilts the flat figure toward the camera, about its feet. */
   pivot: THREE.Group;
-  figure: THREE.Mesh;
+  /** A flat picture, for someone with no 3D figure yet. */
+  figure?: THREE.Mesh;
+  /** The 3D figure, when there is one. */
+  body?: Figure3D;
+  /** Which way a 3D figure faces (radians; 0 faces south, toward the usual camera). */
+  heading: number;
+  stride: number;
+  walk: number;
+  /** Each person's own clock offset, so nobody sways in step. */
+  seed: number;
   at: Vec2;
   present: boolean;
 }
+
+/** How close the player must be before people look at them. */
+const NOTICE = 6;
 
 /** The 3D harbor. It draws what the town file describes and reports who or what the player is next to. */
 export class TownScene {
@@ -89,6 +104,10 @@ export class TownScene {
   private readonly buildings: { b: Building; mats: THREE.Material[]; opacity: number }[] = [];
   private rain: THREE.Points | null = null;
   private focus: Vec2 | undefined;
+  /** Who the player is talking to, and how they feel about it. */
+  private talking: Person | undefined;
+  private mood: Expression | null = null;
+  private readonly faces = new Map<string, THREE.Texture>();
   private explore: CameraKind;
   private time = 0;
   private stride = 0;
@@ -176,12 +195,36 @@ export class TownScene {
   talkTo(castId?: string) {
     const person = castId ? this.people.find((p) => p.npc.cast === castId) : undefined;
     this.focus = person?.at;
+    if (this.talking !== person) this.talking?.body?.setFace(null);
+    this.talking = person;
+    if (!person) this.mood = null;
+    else this.applyMood();
     this.introLeft = 0;
     this.cameraKind = person ? this.town.moments.talk : this.explore;
     if (person) {
       // turn to face them
       this.pose.heading = Math.atan2(person.at[0] - this.pose.x, -(person.at[1] - this.pose.z));
     }
+  }
+
+  /** How the person being talked to feels: their face and body language follow it. */
+  setMood(mood: Expression | null) {
+    this.mood = mood;
+    this.applyMood();
+  }
+
+  private applyMood() {
+    const body = this.talking?.body;
+    if (!body) return;
+    const url = this.mood ? faceOf(this.talking!.npc.cast, this.mood, this.opts.friendly) : undefined;
+    if (!url) return body.setFace(null);
+    let tex = this.faces.get(url);
+    if (!tex) {
+      tex = new THREE.TextureLoader().load(url);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      this.faces.set(url, tex);
+    }
+    body.setFace(tex);
   }
 
   /** Plays a story shot until it is ended with no argument. The caller pauses the walk and times it. */
@@ -221,6 +264,8 @@ export class TownScene {
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
+    for (const p of this.people) p.body?.dispose();
+    for (const t of this.faces.values()) t.dispose();
     this.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
       mesh.geometry?.dispose?.();
@@ -253,9 +298,13 @@ export class TownScene {
     // people first, so the player collides with where they are now
     for (const p of this.people) {
       const { at, moving } = npcPosition(p.npc, this.time);
+      if (p.body) {
+        this.moveBody(p, at, moving, dt);
+        continue;
+      }
       p.at = at;
       p.group.position.set(at[0], 0, at[1]);
-      p.figure.position.y = FIGURE_HEIGHT / 2 + (moving ? Math.abs(Math.sin(this.time * 7)) * 0.07 : 0);
+      p.figure!.position.y = FIGURE_HEIGHT / 2 + (moving ? Math.abs(Math.sin(this.time * 7)) * 0.07 : 0);
       // a flat figure always turns to face the camera, and leans back when seen from above
       const cx = this.camera.position.x - at[0];
       const cz = this.camera.position.z - at[1];
@@ -371,6 +420,35 @@ export class TownScene {
       this.lastNearby = key;
       this.opts.onNearby(near);
     }
+  }
+
+  /** Walks, turns and animates a 3D person. */
+  private moveBody(p: Person, at: Vec2, moving: boolean, dt: number) {
+    const dx = at[0] - p.at[0];
+    const dz = at[1] - p.at[1];
+    const step = Math.hypot(dx, dz);
+    p.at = at;
+    p.group.position.set(at[0], 0, at[1]);
+    const talking = this.talking === p;
+    // in a conversation they speak toward the camera, which stands at the detective's shoulder
+    const lookAt: Vec2 = talking ? [this.camera.position.x, this.camera.position.z] : [this.pose.x, this.pose.z];
+    const toPlayer = Math.atan2(lookAt[0] - at[0], lookAt[1] - at[1]);
+    const near = Math.hypot(this.pose.x - at[0], this.pose.z - at[1]) < NOTICE;
+    // face where they walk; turn to face you when you talk to them
+    let want = p.heading;
+    if (moving && step > 1e-5 && !talking) want = Math.atan2(dx, dz);
+    else if (talking) want = toPlayer;
+    const turn = Math.atan2(Math.sin(want - p.heading), Math.cos(want - p.heading));
+    p.heading += turn * Math.min(1, dt * (talking ? 5 : 7));
+    p.pivot.rotation.set(0, p.heading, 0);
+    if (!talking) p.stride += step;
+    p.walk += ((moving && !talking ? 1 : 0) - p.walk) * Math.min(1, dt * 6);
+    let look: number | null = null;
+    if (talking || near) {
+      const rel = Math.atan2(Math.sin(toPlayer - p.heading), Math.cos(toPlayer - p.heading));
+      look = Math.abs(rel) < 1.9 ? Math.max(-1.1, Math.min(1.1, rel)) : null;
+    }
+    p.body!.update(dt, { t: this.time + p.seed, walk: p.walk, stride: p.stride, mood: talking ? this.mood : null, look });
   }
 
   // ---------- building the scene ----------
@@ -557,6 +635,26 @@ export class TownScene {
 
   private addPerson(npc: Npc) {
     const group = new THREE.Group();
+    const seed = this.people.length * 7.3;
+    const made = CAST3D[npc.cast];
+    if (made) {
+      const body = new Figure3D(made.rig, null, { seed, glow: this.opts.friendly ? 0.05 : 0.22 });
+      body.root.visible = false;
+      new THREE.TextureLoader().load(made.atlas, (tex) => {
+        if (this.disposed) return tex.dispose();
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 4;
+        body.setAtlas(tex);
+        body.root.visible = true;
+      });
+      const pivot = new THREE.Group();
+      pivot.add(body.root);
+      group.add(this.groundMarks(npc), pivot);
+      group.position.set(npc.at[0], 0, npc.at[1]);
+      this.scene.add(group);
+      this.people.push({ npc, group, pivot, body, heading: 0, stride: 0, walk: 0, seed, at: npc.at, present: true });
+      return;
+    }
     const mat = new THREE.MeshBasicMaterial({ color: this.pal.figureTint, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
     const figure = new THREE.Mesh(new THREE.PlaneGeometry(1, FIGURE_HEIGHT), mat);
     figure.position.y = FIGURE_HEIGHT / 2;
@@ -573,26 +671,32 @@ export class TownScene {
       mat.color.set(this.opts.colors[npc.cast] ?? '#888888');
       figure.scale.x = 0.6;
     }
+    const pivot = new THREE.Group();
+    pivot.rotation.order = 'YXZ';
+    pivot.add(figure);
+    group.add(this.groundMarks(npc), pivot);
+    group.position.set(npc.at[0], 0, npc.at[1]);
+    this.scene.add(group);
+    this.people.push({ npc, group, pivot, figure, heading: 0, stride: 0, walk: 0, seed, at: npc.at, present: true });
+  }
+
+  /** The shadow under a person and the ring in their own colour, the same one their grid column uses. */
+  private groundMarks(npc: Npc): THREE.Group {
+    const marks = new THREE.Group();
     const shadow = new THREE.Mesh(
       new THREE.CircleGeometry(0.5, 20),
       new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false }),
     );
     shadow.rotation.x = -Math.PI / 2;
     shadow.position.y = 0.02;
-    // ring in the person's own colour, the same one their grid column uses
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.5, 0.6, 24),
       new THREE.MeshBasicMaterial({ color: this.opts.colors[npc.cast] ?? '#ffffff', side: THREE.DoubleSide, depthWrite: false }),
     );
     ring.rotation.x = -Math.PI / 2;
     ring.position.y = 0.03;
-    const pivot = new THREE.Group();
-    pivot.rotation.order = 'YXZ';
-    pivot.add(figure);
-    group.add(shadow, ring, pivot);
-    group.position.set(npc.at[0], 0, npc.at[1]);
-    this.scene.add(group);
-    this.people.push({ npc, group, pivot, figure, at: npc.at, present: true });
+    marks.add(shadow, ring);
+    return marks;
   }
 
   /** The detective: a simple low-poly figure built from boxes, so it reads from every camera. */

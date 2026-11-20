@@ -246,7 +246,8 @@ kbd {
 .town-prompt.locked { border-color: var(--danger); color: #ffc2b8; }
 .town-help { position: absolute; left: 12px; bottom: 6px; margin: 0; font-size: 0.82rem; color: var(--ink); text-shadow: 0 1px 3px #000; }
 .town-talk {
-  position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); width: min(94%, 700px); display: grid; gap: 14px;
+  /* on the right, so the person you talk to (and their face) stays in view on the left */
+  position: absolute; right: 18px; bottom: 44px; width: min(52%, 560px); max-height: calc(100% - 110px); overflow-y: auto; display: grid; gap: 14px;
   background: rgba(27, 33, 48, 0.96); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 22px 16px;
 }
 .talk-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
