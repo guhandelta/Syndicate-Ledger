@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { addExpressions, BASIS, FEATURES, FEELINGS, glbMaterial, GlbFigure, HUMAN, layoutFor, meshOf, skinTo } from '../src/town/glbFigure';
+import { addExpressions, BASIS, FEATURES, FEELINGS, glbMaterial, GlbFigure, HAIR, hairiness, hairTo, HUMAN, isHairColour, layoutFor, meshOf, skinTo } from '../src/town/glbFigure';
 import type { Activity } from '../src/town/figure3d';
 
 const still: Activity = { t: 1, walk: 0, stride: 0, mood: null, look: null };
@@ -137,6 +137,99 @@ describe('3D model person', () => {
     expect(f.influences.browDown).toBe(0);
     f.setExpression(null);
     f.update(0.05, still);
+    f.dispose();
+  });
+});
+
+describe('3D model hair', () => {
+  const dark = (): [number, number, number] => [34, 26, 26];
+  const skirt = (): [number, number, number] => [52, 34, 48];
+  /** A block in metres, 1.7 tall, with its points skinned to the skeleton. */
+  function skinned() {
+    const geo = new THREE.BoxGeometry(0.6, 1.7, 0.3, 6, 40, 3);
+    geo.translate(0, 0.85, 0);
+    const layout = layoutFor(1.7);
+    skinTo(geo, layout);
+    return { geo, layout };
+  }
+
+  it('tells hair from a dark skirt, a boot or a scarf by its colour', () => {
+    expect(isHairColour([34, 26, 26])).toBe(true);
+    expect(isHairColour([52, 34, 48])).toBe(false);
+    expect(isHairColour([180, 40, 80])).toBe(false);
+  });
+
+  it('finds the hair below the neck, not the front of the waist, and fades its edge', () => {
+    const { geo, layout } = skinned();
+    const h = hairiness(geo, layout, dark);
+    const pos = geo.getAttribute('position');
+    let back = 0;
+    let frontWaist = 0;
+    let above = 0;
+    for (let i = 0; i < pos.count; i++) {
+      if (pos.getY(i) > 1.5) above += h[i];
+      else if (pos.getZ(i) > 0.1 && pos.getY(i) < 0.7) frontWaist = Math.max(frontWaist, h[i]);
+      else if (pos.getZ(i) < -0.1 && pos.getY(i) > 0.9 && pos.getY(i) < 1.2) back = Math.max(back, h[i]);
+    }
+    expect(back).toBeGreaterThan(0.9);
+    expect(frontWaist).toBeLessThan(0.5);
+    expect(above).toBe(0);
+    expect(Math.max(...hairiness(geo, layout, skirt))).toBe(0);
+  });
+
+  it('hands hair to the soft bones, more the lower it hangs, and leaves other points as they were', () => {
+    const { geo, layout } = skinned();
+    const before = Array.from(geo.getAttribute('skinIndex').array);
+    hairTo(geo, layout, dark, 1.7);
+    const idx = geo.getAttribute('skinIndex');
+    const wt = geo.getAttribute('skinWeight');
+    const pos = geo.getAttribute('position');
+    const first = 12;
+    let used = 0;
+    let tail = 0;
+    for (let i = 0; i < pos.count; i++) {
+      let sum = 0;
+      let onChain = 0;
+      for (let k = 0; k < 4; k++) {
+        sum += wt.getComponent(i, k);
+        if (idx.getComponent(i, k) >= first && idx.getComponent(i, k) < first + HAIR.length) onChain += wt.getComponent(i, k);
+      }
+      expect(sum).toBeCloseTo(1);
+      if (onChain > 0) used++;
+      if (pos.getY(i) < 0.9 && pos.getZ(i) < -0.1 && onChain > 0.5) tail++;
+      // above the neck is the head's
+      if (pos.getY(i) > 1.5) expect(onChain).toBe(0);
+    }
+    expect(used).toBeGreaterThan(0);
+    expect(tail).toBeGreaterThan(0);
+    // none of it is hair here, so nothing changes
+    const plain = skinned();
+    hairTo(plain.geo, plain.layout, skirt, 1.7);
+    expect(Array.from(plain.geo.getAttribute('skinIndex').array)).toEqual(before);
+  });
+
+  it('swings with the head: the hair lags when she walks off, sways with her steps, and settles', () => {
+    const f = new GlbFigure(block(), { height: 1.68, skirt: false, face, hair: dark });
+    f.update(0.016, still);
+    // nothing moves while she stands
+    for (let i = 0; i < 20; i++) f.update(0.016, still);
+    expect(Math.abs(f.bones.hair1.rotation.x)).toBeLessThan(0.01);
+    // a time with no time passing leaves it alone
+    f.update(0, still);
+    // she walks forward: the hair is left behind (it tips back), then sways with each step
+    for (let i = 0; i < 30; i++) {
+      f.root.position.z += 0.04;
+      f.update(0.016, { ...still, walk: 1, stride: i * 0.04 });
+    }
+    expect(f.bones.hair4.rotation.x).toBeGreaterThan(0.02);
+    expect(Math.abs(f.bones.hair4.rotation.z)).toBeGreaterThan(0.005);
+    // sideways pushes it the other way; a big frame time is taken in small steps
+    f.root.position.x += 0.5;
+    f.update(0.1, still);
+    expect(f.bones.hair2.rotation.z).toBeLessThan(0);
+    // and it settles when she stops
+    for (let i = 0; i < 300; i++) f.update(0.016, still);
+    expect(Math.abs(f.bones.hair4.rotation.x)).toBeLessThan(0.01);
     f.dispose();
   });
 });

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Expression } from '../ui/voices';
-import { poseAt, type Activity, type Pose } from './figure3d';
+import { poseAt, STEP_LENGTH, type Activity, type Pose } from './figure3d';
 
 /**
  * A person made as a finished 3D model (a .glb from an image-to-3D tool, prepared by scripts/make-glb.py).
@@ -41,7 +41,8 @@ export interface FaceBox {
   y1: number;
 }
 
-export type BoneName = 'hips' | 'spine' | 'neck' | 'head' | 'armL' | 'foreL' | 'armR' | 'foreR' | 'legL' | 'shinL' | 'legR' | 'shinR';
+type HairBone = 'hair1' | 'hair2' | 'hair3' | 'hair4';
+export type BoneName = 'hips' | 'spine' | 'neck' | 'head' | 'armL' | 'foreL' | 'armR' | 'foreR' | 'legL' | 'shinL' | 'legR' | 'shinR' | 'hair1' | 'hair2' | 'hair3' | 'hair4';
 
 interface Segment {
   bone: BoneName;
@@ -58,7 +59,13 @@ interface Layout {
   segments: Segment[];
 }
 
-const ORDER: BoneName[] = ['hips', 'spine', 'neck', 'head', 'armL', 'foreL', 'armR', 'foreR', 'legL', 'shinL', 'legR', 'shinR'];
+const ORDER: BoneName[] = ['hips', 'spine', 'neck', 'head', 'armL', 'foreL', 'armR', 'foreR', 'legL', 'shinL', 'legR', 'shinR', 'hair1', 'hair2', 'hair3', 'hair4'];
+
+/** The soft bones down the back, from the neck to where the hair ends. */
+export const HAIR: HairBone[] = ['hair1', 'hair2', 'hair3', 'hair4'];
+
+/** Where the hair ends, as a share of the person's height. */
+const HAIR_END = 0.4;
 
 /** The skeleton for a person of this height: the bone joints and the lines each bone owns. */
 export function layoutFor(height: number, j: Joints = HUMAN): Layout {
@@ -81,6 +88,7 @@ export function layoutFor(height: number, j: Joints = HUMAN): Layout {
   const neck = p(0, j.neck);
   const top = p(0, j.top);
   const floor = (v: V3): V3 => [v[0], 0, v[2]];
+  const hairJoints = Object.fromEntries(HAIR.map((b, k) => [b, p(0, j.neck - (j.neck - HAIR_END) * (k / HAIR.length))])) as Record<HairBone, V3>;
   const joint: Record<BoneName, V3> = {
     hips: hip,
     spine: waist,
@@ -94,6 +102,7 @@ export function layoutFor(height: number, j: Joints = HUMAN): Layout {
     shinL: L.knee,
     legR: R.hipJ,
     shinR: R.knee,
+    ...hairJoints,
   };
   const parent: Record<BoneName, BoneName | null> = {
     hips: null,
@@ -108,6 +117,10 @@ export function layoutFor(height: number, j: Joints = HUMAN): Layout {
     shinL: 'legL',
     legR: 'hips',
     shinR: 'legR',
+    hair1: 'neck',
+    hair2: 'hair1',
+    hair3: 'hair2',
+    hair4: 'hair3',
   };
   const seg = (bone: BoneName, a: V3, b: V3, radius: number): Segment => ({ bone, a, b, radius: radius * H });
   const segments = [
@@ -176,6 +189,83 @@ export function skinTo(geo: THREE.BufferGeometry, layout: Layout): void {
   }
   geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(index, 4));
   geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(weight, 4));
+}
+
+/** Reads a colour from the model's picture at a spot on it (u across, v down, each 0 to 1), as red, green and blue from 0 to 255. */
+export type Sampler = (u: number, v: number) => [number, number, number];
+
+/** Hair is nearly black and nearly grey; the skirt, boots and scarf are lighter or have a colour. */
+export function isHairColour([r, g, b]: [number, number, number]): boolean {
+  const hi = Math.max(r, g, b);
+  return hi < 64 && r - g < 22 && b - g < 4;
+}
+
+/**
+ * How much each point is hair, 0 to 1: dark and grey in the picture, below the neck, and not the belt tie at the front of the waist.
+ * The colours of hair and a dark skirt are close, so the answer is smoothed across neighbouring points: an edge fades instead of tearing.
+ */
+export function hairiness(geo: THREE.BufferGeometry, layout: Layout, sample: Sampler): Float32Array {
+  const pos = geo.getAttribute('position');
+  const uv = geo.getAttribute('uv');
+  const n = pos.count;
+  const top = layout.joint.hair1[1];
+  const waist = layout.joint.spine[1];
+  let h = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const frontOfWaist = pos.getZ(i) > 0 && pos.getY(i) < waist * 1.15;
+    // from the neck to just below where the hair ends: the boots and the hem of the skirt are dark too
+    h[i] = pos.getY(i) < top && pos.getY(i) > layout.joint.hair4[1] * 0.85 && !frontOfWaist && isHairColour(sample(uv.getX(i), uv.getY(i))) ? 1 : 0;
+  }
+  const next: number[][] = Array.from({ length: n }, () => []);
+  const tri = geo.getIndex()!;
+  for (let t = 0; t < tri.count; t += 3) {
+    const [a, b, c] = [tri.getX(t), tri.getX(t + 1), tri.getX(t + 2)];
+    next[a].push(b, c);
+    next[b].push(a, c);
+    next[c].push(a, b);
+  }
+  for (let pass = 0; pass < 4; pass++) {
+    const out = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const around = next[i];
+      const mean = around.reduce((sum, j) => sum + h[j], 0) / around.length;
+      out[i] = h[i] * 0.5 + mean * 0.5;
+    }
+    h = out;
+  }
+  return h;
+}
+
+/**
+ * Hands the hair below the neck to the soft bones down the back: the higher a point is on the hair, the more it stays with the head,
+ * the lower it hangs, the more it follows the chain. Points that are not hair keep their weights.
+ */
+export function hairTo(geo: THREE.BufferGeometry, layout: Layout, sample: Sampler, height: number): void {
+  const pos = geo.getAttribute('position');
+  const index = geo.getAttribute('skinIndex');
+  const weight = geo.getAttribute('skinWeight');
+  const first = ORDER.indexOf(HAIR[0]);
+  const top = layout.joint.hair1[1];
+  const span = top - HAIR_END * height;
+  const hair = hairiness(geo, layout, sample);
+  for (let i = 0; i < pos.count; i++) {
+    const t = (top - pos.getY(i)) / span;
+    if (t <= 0 || hair[i] < 0.05) continue;
+    const ramp = THREE.MathUtils.smoothstep(t, 0, 0.15) * hair[i];
+    const u = Math.min(t * HAIR.length, HAIR.length - 1);
+    const lo = Math.floor(u);
+    const mix = new Map<number, number>();
+    for (let k = 0; k < 4; k++) mix.set(index.getComponent(i, k), (mix.get(index.getComponent(i, k)) ?? 0) + weight.getComponent(i, k) * (1 - ramp));
+    mix.set(first + lo, (mix.get(first + lo) ?? 0) + ramp * (1 - (u - lo)));
+    const rest = lo + 1 < HAIR.length ? lo + 1 : lo;
+    mix.set(first + rest, (mix.get(first + rest) ?? 0) + ramp * (u - lo));
+    const top4 = [...mix.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const total = top4.reduce((sum, [, w]) => sum + w, 0);
+    for (let k = 0; k < 4; k++) {
+      index.setComponent(i, k, top4[k]?.[0] ?? 0);
+      weight.setComponent(i, k, (top4[k]?.[1] ?? 0) / total);
+    }
+  }
 }
 
 /** The first mesh found in a loaded model. */
@@ -307,6 +397,8 @@ export interface GlbOptions {
   face: FaceBox;
   joints?: Joints;
   features?: Features;
+  /** Reads the model's colour picture; with it the hair is found and swings. */
+  hair?: Sampler;
   seed?: number;
   glow?: number;
 }
@@ -323,6 +415,10 @@ export class GlbFigure {
   private now: Pose | null = null;
   private feeling: Partial<Record<Basis, number>> = {};
   private mesh: THREE.SkinnedMesh;
+  private readonly swing = HAIR.map(() => ({ x: 0, z: 0, vx: 0, vz: 0 }));
+  private anchor: THREE.Vector3 | null = null;
+  private readonly here = new THREE.Vector3();
+  private readonly quat = new THREE.Quaternion();
 
   constructor(source: THREE.Mesh, opts: GlbOptions) {
     this.skirt = opts.skirt;
@@ -337,6 +433,7 @@ export class GlbFigure {
     geo.applyMatrix4(new THREE.Matrix4().makeScale(k, k, k).multiply(new THREE.Matrix4().makeTranslation(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2)));
     const layout = layoutFor(opts.height, opts.joints);
     skinTo(geo, layout);
+    if (opts.hair) hairTo(geo, layout, opts.hair, opts.height);
     addExpressions(geo, opts.face, opts.features);
     this.geometry = geo;
 
@@ -397,12 +494,52 @@ export class GlbFigure {
     b.legR.rotation.set(p.legR, 0, 0);
     b.shinL.rotation.set(p.kneeL, 0, 0);
     b.shinR.rotation.set(p.kneeR, 0, 0);
+    this.moveHair(dt, a);
     const ease = Math.min(1, dt * 6);
     BASIS.forEach((name, i) => {
       const goal = this.feeling[name] ?? 0;
       const v = this.influences[name] + (goal - this.influences[name]) * ease;
       this.influences[name] = Math.abs(v - goal) < 0.01 ? goal : v;
       this.mesh.morphTargetInfluences![i] = this.influences[name];
+    });
+  }
+
+  /**
+   * Swings the hair the way hair behind a moving head swings: the soft bones lag behind it. A spot in front of the head is followed,
+   * so turning the head, walking and the bob of the steps all push the hair, and each bone springs back a little later than the one above.
+   */
+  private moveHair(dt: number, a: Activity) {
+    if (dt <= 0) return;
+    this.root.updateMatrixWorld(true);
+    // a spot well out in front, so turning the head moves it a long way even though the head itself barely moves
+    this.here.set(0, 0, 0.5);
+    this.bones.head.localToWorld(this.here);
+    const before = this.anchor;
+    this.anchor = this.here.clone();
+    if (!before) return;
+    // how the head is moving, seen from the person: x to their left, z forward
+    const v = this.here.clone().sub(before).divideScalar(dt);
+    v.clampLength(0, 4).applyQuaternion(this.root.getWorldQuaternion(this.quat).invert());
+    const steps = Math.min(4, Math.ceil(dt * 60));
+    const h = dt / steps;
+    this.swing.forEach((s, k) => {
+      const stiff = 150 - k * 30;
+      const damp = 2 * 0.35 * Math.sqrt(stiff);
+      const gain = 0.03 + k * 0.005;
+      const side = 0.2 + k * 0.02;
+      // each step sways the hair from side to side and bounces it a little, lower pieces later than the ones above (the spring does that)
+      const phase = (a.stride / STEP_LENGTH) * Math.PI * 2;
+      const sway = a.walk * (0.022 + k * 0.006) * Math.sin(phase);
+      const bounce = a.walk * (0.02 + k * 0.005) * Math.abs(Math.cos(phase));
+      for (let n = 0; n < steps; n++) {
+        s.vx += (-stiff * (s.x - gain * v.z - bounce) - damp * s.vx) * h;
+        s.vz += (-stiff * (s.z + side * v.x - sway) - damp * s.vz) * h;
+        s.x += s.vx * h;
+        s.z += s.vz * h;
+      }
+      s.x = THREE.MathUtils.clamp(s.x, -0.3, 0.3);
+      s.z = THREE.MathUtils.clamp(s.z, -0.3, 0.3);
+      this.bones[HAIR[k]].rotation.set(s.x, 0, s.z);
     });
   }
 

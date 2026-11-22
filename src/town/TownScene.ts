@@ -4,6 +4,7 @@ import { CAST3D, faceOf } from './cast3d';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Figure3D } from './figure3d';
 import { GlbFigure, meshOf } from './glbFigure';
+import { samplerOf } from './glbPixels';
 import { cameraPose, forward, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, type Nearby, type Pose } from './townLogic';
 import type { Building, CameraKind, Door, Npc, Prop, Shot, Town, Vec2 } from './townTypes';
 
@@ -666,7 +667,7 @@ export class TownScene {
         new GLTFLoader().load(made.glb, (gltf) => {
           const mesh = meshOf(gltf.scene);
           if (this.disposed || !mesh) return;
-          const fresh = new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, seed, glow: this.opts.friendly ? 0.05 : 0.22 });
+          const fresh = new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, hair: samplerOf((mesh.material as THREE.MeshStandardMaterial).map), seed, glow: this.opts.friendly ? 0.05 : 0.22 });
           pivot.remove(body.root);
           body.dispose();
           pivot.add(fresh.root);

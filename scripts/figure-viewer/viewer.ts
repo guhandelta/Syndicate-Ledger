@@ -3,6 +3,7 @@ import { CAST3D, faceOf } from '../../src/town/cast3d';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Figure3D } from '../../src/town/figure3d';
 import { GlbFigure, meshOf } from '../../src/town/glbFigure';
+import { samplerOf } from '../../src/town/glbPixels';
 import type { Expression } from '../../src/ui/voices';
 
 const NAMES: Record<string, string> = {
@@ -55,7 +56,7 @@ ids.forEach((id, i) => {
     // a finished 3D model: it gets its skeleton here
     new GLTFLoader().load(made.glb, (gltf) => {
       const mesh = meshOf(gltf.scene)!;
-      place(id, i, new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, seed: i * 1.7, glow: 0.1 }));
+      place(id, i, new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, hair: samplerOf((mesh.material as THREE.MeshStandardMaterial).map), seed: i * 1.7, glow: 0.1 }));
     });
     return;
   }
