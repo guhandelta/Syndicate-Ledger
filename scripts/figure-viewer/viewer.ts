@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { CAST3D, faceOf } from '../../src/town/cast3d';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Figure3D } from '../../src/town/figure3d';
+import { GlbFigure, meshOf } from '../../src/town/glbFigure';
 import type { Expression } from '../../src/ui/voices';
 
 const NAMES: Record<string, string> = {
@@ -27,18 +29,12 @@ ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
 const FIRST = ['meena', 'nevethitha', 'kavya', 'lin', 'karunakaran', 'thenmozhi'];
-const ids = Object.keys(CAST3D).sort((a, b) => (FIRST.indexOf(a) + 1 || 99) - (FIRST.indexOf(b) + 1 || 99));
-const people: { id: string; fig: Figure3D; home: THREE.Vector3; heading: number; stride: number; walk: number }[] = [];
+const only = new URLSearchParams(location.search).get('only');
+const ids = Object.keys(CAST3D).filter((id) => !only || only.split(',').includes(id)).sort((a, b) => (FIRST.indexOf(a) + 1 || 99) - (FIRST.indexOf(b) + 1 || 99));
+const people: { id: string; fig: Figure3D | GlbFigure; home: THREE.Vector3; heading: number; stride: number; walk: number }[] = [];
 const loader = new THREE.TextureLoader();
 const gap = 1.3;
-ids.forEach((id, i) => {
-  const fig = new Figure3D(CAST3D[id].rig, null, { seed: i * 1.7, glow: 0.12 });
-  fig.root.visible = false;
-  loader.load(CAST3D[id].atlas, (t) => {
-    t.colorSpace = THREE.SRGBColorSpace;
-    fig.setAtlas(t);
-    fig.root.visible = true;
-  });
+function place(id: string, i: number, fig: Figure3D | GlbFigure) {
   const holder = new THREE.Group();
   const perRow = Math.ceil(ids.length / 2);
   const row = Math.floor(i / perRow);
@@ -51,7 +47,26 @@ ids.forEach((id, i) => {
   holder.add(shadow);
   scene.add(holder);
   people.push({ id, fig, home, heading: 0, stride: 0, walk: 0 });
-  (fig.root.parent as THREE.Group).userData.holder = true;
+  applyMood();
+}
+ids.forEach((id, i) => {
+  const made = CAST3D[id];
+  if (made.glb) {
+    // a finished 3D model: it gets its skeleton here
+    new GLTFLoader().load(made.glb, (gltf) => {
+      const mesh = meshOf(gltf.scene)!;
+      place(id, i, new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, seed: i * 1.7, glow: 0.1 }));
+    });
+    return;
+  }
+  const fig = new Figure3D(made.rig, null, { seed: i * 1.7, glow: 0.12 });
+  fig.root.visible = false;
+  loader.load(made.atlas, (t) => {
+    t.colorSpace = THREE.SRGBColorSpace;
+    fig.setAtlas(t);
+    fig.root.visible = true;
+  });
+  place(id, i, fig);
 });
 
 let mode: 'idle' | 'walk' | 'look' = 'idle';
@@ -59,6 +74,10 @@ let mood: Expression | null = null;
 const faceCache = new Map<string, THREE.Texture>();
 function applyMood() {
   for (const p of people) {
+    if (p.fig instanceof GlbFigure) {
+      p.fig.setExpression(mood);
+      continue;
+    }
     if (!mood) {
       p.fig.setFace(null);
       continue;

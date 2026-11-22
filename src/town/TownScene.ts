@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import type { Expression } from '../ui/voices';
 import { CAST3D, faceOf } from './cast3d';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Figure3D } from './figure3d';
+import { GlbFigure, meshOf } from './glbFigure';
 import { cameraPose, forward, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, type Nearby, type Pose } from './townLogic';
 import type { Building, CameraKind, Door, Npc, Prop, Shot, Town, Vec2 } from './townTypes';
 
@@ -67,7 +69,7 @@ interface Person {
   /** A flat picture, for someone with no 3D figure yet. */
   figure?: THREE.Mesh;
   /** The 3D figure, when there is one. */
-  body?: Figure3D;
+  body?: Figure3D | GlbFigure;
   /** Which way a 3D figure faces (radians; 0 faces south, toward the usual camera). */
   heading: number;
   stride: number;
@@ -195,7 +197,7 @@ export class TownScene {
   talkTo(castId?: string) {
     const person = castId ? this.people.find((p) => p.npc.cast === castId) : undefined;
     this.focus = person?.at;
-    if (this.talking !== person) this.talking?.body?.setFace(null);
+    if (this.talking !== person) this.talking?.body && this.showMood(this.talking.body, null);
     this.talking = person;
     if (!person) this.mood = null;
     else this.applyMood();
@@ -215,8 +217,13 @@ export class TownScene {
 
   private applyMood() {
     const body = this.talking?.body;
-    if (!body) return;
-    const url = this.mood ? faceOf(this.talking!.npc.cast, this.mood, this.opts.friendly) : undefined;
+    if (body) this.showMood(body, this.mood);
+  }
+
+  /** Puts a feeling on a person's face: a finished 3D model moves its own face, a figure from pictures gets the expression picture. */
+  private showMood(body: Figure3D | GlbFigure, mood: Expression | null) {
+    if (body instanceof GlbFigure) return body.setExpression(mood);
+    const url = mood ? faceOf(this.talking!.npc.cast, mood, this.opts.friendly) : undefined;
     if (!url) return body.setFace(null);
     let tex = this.faces.get(url);
     if (!tex) {
@@ -652,7 +659,21 @@ export class TownScene {
       group.add(this.groundMarks(npc), pivot);
       group.position.set(npc.at[0], 0, npc.at[1]);
       this.scene.add(group);
-      this.people.push({ npc, group, pivot, body, heading: 0, stride: 0, walk: 0, seed, at: npc.at, present: true });
+      const person: Person = { npc, group, pivot, body, heading: 0, stride: 0, walk: 0, seed, at: npc.at, present: true };
+      this.people.push(person);
+      // a finished 3D model takes over from the figure made from pictures once it has loaded
+      if (made.glb) {
+        new GLTFLoader().load(made.glb, (gltf) => {
+          const mesh = meshOf(gltf.scene);
+          if (this.disposed || !mesh) return;
+          const fresh = new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, seed, glow: this.opts.friendly ? 0.05 : 0.22 });
+          pivot.remove(body.root);
+          body.dispose();
+          pivot.add(fresh.root);
+          person.body = fresh;
+          if (this.talking === person) this.applyMood();
+        });
+      }
       return;
     }
     const mat = new THREE.MeshBasicMaterial({ color: this.pal.figureTint, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
