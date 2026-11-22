@@ -39,3 +39,13 @@ It writes `src/town/cast3d/<cast id>.webp` and `.json` and the expression faces 
 To look at the figures on their own: `npx vite scripts/figure-viewer --config scripts/figure-viewer/vite.config.ts`.
 
 Views work best as now: the whole body on a plain backdrop, arms held a little away from the body, facing straight on.
+
+### A finished 3D model
+
+A person can also have a finished 3D model made from these views in an image-to-3D tool (Tripo, Meshy and so on):
+a `.glb` with its colour picture, facing forward in an easy A-pose. It does not need a skeleton or any shape keys.
+Run `python3 scripts/make-glb.py <model.glb> <cast id>` (needs Pillow; npx fetches gltfpack). It cuts the model to about
+20 thousand triangles, shrinks the pictures to 1024 px and writes `src/town/cast3d/<cast id>.glb`.
+The town then uses that model instead of the figure built from pictures. The skeleton is added when the game loads it
+(`src/town/glbFigure.ts`) and the feelings are made by moving the model's own brows, lids and mouth corners.
+Everyone else keeps the picture-built figure until their model is added.

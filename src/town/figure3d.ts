@@ -235,7 +235,7 @@ export interface Pose {
   drop: number;
 }
 
-const STEP_LENGTH = 1.25;
+export const STEP_LENGTH = 1.25;
 
 /** A smooth, repeatable wobble in -1..1, so idle glances differ per person and over time. */
 export function wobble(t: number, seed: number): number {
