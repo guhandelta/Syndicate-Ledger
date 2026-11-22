@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { addExpressions, BASIS, FEATURES, FEELINGS, glbMaterial, GlbFigure, HAIR, hairiness, hairTo, HUMAN, isHairColour, layoutFor, meshOf, skinTo } from '../src/town/glbFigure';
+import { addExpressions, HAIR_BUNCHES, HAIR_LINKS, BASIS, FEATURES, FEELINGS, glbMaterial, GlbFigure, HAIR, hairiness, hairTo, HUMAN, isHairColour, layoutFor, meshOf, skinTo } from '../src/town/glbFigure';
 import type { Activity } from '../src/town/figure3d';
 
 const still: Activity = { t: 1, walk: 0, stride: 0, mood: null, look: null };
@@ -201,6 +201,11 @@ describe('3D model hair', () => {
       if (pos.getY(i) > 1.5) expect(onChain).toBe(0);
     }
     expect(used).toBeGreaterThan(0);
+    expect(HAIR.length).toBe(HAIR_BUNCHES * HAIR_LINKS);
+    // points at the left and right of the back go to different bunches
+    const bunches = new Set<number>();
+    for (let i = 0; i < pos.count; i++) for (let k = 0; k < 4; k++) if (wt.getComponent(i, k) > 0.3 && idx.getComponent(i, k) >= first) bunches.add(Math.floor((idx.getComponent(i, k) - first) / HAIR_LINKS));
+    expect(bunches.size).toBeGreaterThan(2);
     expect(tail).toBeGreaterThan(0);
     // none of it is hair here, so nothing changes
     const plain = skinned();
@@ -213,7 +218,7 @@ describe('3D model hair', () => {
     f.update(0.016, still);
     // nothing moves while she stands
     for (let i = 0; i < 20; i++) f.update(0.016, still);
-    expect(Math.abs(f.bones.hair1.rotation.x)).toBeLessThan(0.01);
+    expect(Math.abs(f.bones['hair2_0'].rotation.x)).toBeLessThan(0.01);
     // a time with no time passing leaves it alone
     f.update(0, still);
     // she walks forward: the hair is left behind (it tips back), then sways with each step
@@ -221,15 +226,17 @@ describe('3D model hair', () => {
       f.root.position.z += 0.04;
       f.update(0.016, { ...still, walk: 1, stride: i * 0.04 });
     }
-    expect(f.bones.hair4.rotation.x).toBeGreaterThan(0.02);
-    expect(Math.abs(f.bones.hair4.rotation.z)).toBeGreaterThan(0.005);
+    expect(f.bones['hair2_3'].rotation.x).toBeGreaterThan(0.02);
+    expect(Math.abs(f.bones['hair2_3'].rotation.z)).toBeGreaterThan(0.005);
+    // the bunches across the back do not move alike
+    expect(Math.abs(f.bones['hair0_3'].rotation.z - f.bones['hair4_3'].rotation.z)).toBeGreaterThan(0.003);
     // sideways pushes it the other way; a big frame time is taken in small steps
     f.root.position.x += 0.5;
     f.update(0.1, still);
-    expect(f.bones.hair2.rotation.z).toBeLessThan(0);
+    expect(f.bones['hair2_1'].rotation.z).toBeLessThan(0);
     // and it settles when she stops
     for (let i = 0; i < 300; i++) f.update(0.016, still);
-    expect(Math.abs(f.bones.hair4.rotation.x)).toBeLessThan(0.01);
+    expect(Math.abs(f.bones['hair2_3'].rotation.x)).toBeLessThan(0.01);
     f.dispose();
   });
 });
