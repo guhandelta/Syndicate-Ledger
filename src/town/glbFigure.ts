@@ -41,8 +41,10 @@ export interface FaceBox {
   y1: number;
 }
 
-type HairBone = 'hair1' | 'hair2' | 'hair3' | 'hair4';
-export type BoneName = 'hips' | 'spine' | 'neck' | 'head' | 'armL' | 'foreL' | 'armR' | 'foreR' | 'legL' | 'shinL' | 'legR' | 'shinR' | 'hair1' | 'hair2' | 'hair3' | 'hair4';
+/** A soft bone in a bunch of hair: `hair<bunch>_<link>`, the bunch counted from the person's right to left and the link from the neck down. */
+export type HairBone = `hair${number}_${number}`;
+type BodyBone = 'hips' | 'spine' | 'neck' | 'head' | 'armL' | 'foreL' | 'armR' | 'foreR' | 'legL' | 'shinL' | 'legR' | 'shinR';
+export type BoneName = BodyBone | HairBone;
 
 interface Segment {
   bone: BoneName;
@@ -59,10 +61,20 @@ interface Layout {
   segments: Segment[];
 }
 
-const ORDER: BoneName[] = ['hips', 'spine', 'neck', 'head', 'armL', 'foreL', 'armR', 'foreR', 'legL', 'shinL', 'legR', 'shinR', 'hair1', 'hair2', 'hair3', 'hair4'];
+/** How many bunches of hair swing on their own across the back, and how many bones each has from the neck down. */
+export const HAIR_BUNCHES = 5;
+export const HAIR_LINKS = 4;
+/** Half the width the bunches cover, as a share of the person's height. */
+const HAIR_SPREAD = 0.12;
 
-/** The soft bones down the back, from the neck to where the hair ends. */
-export const HAIR: HairBone[] = ['hair1', 'hair2', 'hair3', 'hair4'];
+const hairBone = (bunch: number, link: number): HairBone => `hair${bunch}_${link}`;
+export const HAIR: HairBone[] = Array.from({ length: HAIR_BUNCHES * HAIR_LINKS }, (_, n) => hairBone(Math.floor(n / HAIR_LINKS), n % HAIR_LINKS));
+
+const BODY: BodyBone[] = ['hips', 'spine', 'neck', 'head', 'armL', 'foreL', 'armR', 'foreR', 'legL', 'shinL', 'legR', 'shinR'];
+const ORDER: BoneName[] = [...BODY, ...HAIR];
+
+/** How stiff each bunch of hair is, compared with the others, so they do not all move alike. */
+const LOCKS = [1, 0.8, 1.15, 0.9, 1.05];
 
 /** Where the hair ends, as a share of the person's height. */
 const HAIR_END = 0.4;
@@ -88,7 +100,10 @@ export function layoutFor(height: number, j: Joints = HUMAN): Layout {
   const neck = p(0, j.neck);
   const top = p(0, j.top);
   const floor = (v: V3): V3 => [v[0], 0, v[2]];
-  const hairJoints = Object.fromEntries(HAIR.map((b, k) => [b, p(0, j.neck - (j.neck - HAIR_END) * (k / HAIR.length))])) as Record<HairBone, V3>;
+  // a bunch hangs at its own place across the back; `across` is -1 on the person's right to 1 on their left
+  const hairJoints = Object.fromEntries(
+    HAIR.map((b, n) => [b, p(((Math.floor(n / HAIR_LINKS) / (HAIR_BUNCHES - 1)) * 2 - 1) * HAIR_SPREAD, j.neck - (j.neck - HAIR_END) * ((n % HAIR_LINKS) / HAIR_LINKS))]),
+  ) as Record<HairBone, V3>;
   const joint: Record<BoneName, V3> = {
     hips: hip,
     spine: waist,
@@ -104,6 +119,7 @@ export function layoutFor(height: number, j: Joints = HUMAN): Layout {
     shinR: R.knee,
     ...hairJoints,
   };
+  const hairParents = Object.fromEntries(HAIR.map((b, n) => [b, n % HAIR_LINKS === 0 ? 'neck' : HAIR[n - 1]])) as Record<HairBone, BoneName>;
   const parent: Record<BoneName, BoneName | null> = {
     hips: null,
     spine: 'hips',
@@ -117,10 +133,7 @@ export function layoutFor(height: number, j: Joints = HUMAN): Layout {
     shinL: 'legL',
     legR: 'hips',
     shinR: 'legR',
-    hair1: 'neck',
-    hair2: 'hair1',
-    hair3: 'hair2',
-    hair4: 'hair3',
+    ...hairParents,
   };
   const seg = (bone: BoneName, a: V3, b: V3, radius: number): Segment => ({ bone, a, b, radius: radius * H });
   const segments = [
@@ -208,13 +221,13 @@ export function hairiness(geo: THREE.BufferGeometry, layout: Layout, sample: Sam
   const pos = geo.getAttribute('position');
   const uv = geo.getAttribute('uv');
   const n = pos.count;
-  const top = layout.joint.hair1[1];
+  const top = layout.joint[HAIR[0]][1];
   const waist = layout.joint.spine[1];
   let h = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const frontOfWaist = pos.getZ(i) > 0 && pos.getY(i) < waist * 1.15;
     // from the neck to just below where the hair ends: the boots and the hem of the skirt are dark too
-    h[i] = pos.getY(i) < top && pos.getY(i) > layout.joint.hair4[1] * 0.85 && !frontOfWaist && isHairColour(sample(uv.getX(i), uv.getY(i))) ? 1 : 0;
+    h[i] = pos.getY(i) < top && pos.getY(i) > layout.joint[HAIR[HAIR_LINKS - 1]][1] * 0.85 && !frontOfWaist && isHairColour(sample(uv.getX(i), uv.getY(i))) ? 1 : 0;
   }
   const next: number[][] = Array.from({ length: n }, () => []);
   const tri = geo.getIndex()!;
@@ -237,29 +250,38 @@ export function hairiness(geo: THREE.BufferGeometry, layout: Layout, sample: Sam
 }
 
 /**
- * Hands the hair below the neck to the soft bones down the back: the higher a point is on the hair, the more it stays with the head,
- * the lower it hangs, the more it follows the chain. Points that are not hair keep their weights.
+ * Hands the hair below the neck to the soft bones: each point goes to the bunches nearest across the back and, down each bunch,
+ * to the bones nearest its height. The higher a point is on the hair, the more it stays with the head. Points that are not hair keep their weights.
  */
 export function hairTo(geo: THREE.BufferGeometry, layout: Layout, sample: Sampler, height: number): void {
   const pos = geo.getAttribute('position');
   const index = geo.getAttribute('skinIndex');
   const weight = geo.getAttribute('skinWeight');
   const first = ORDER.indexOf(HAIR[0]);
-  const top = layout.joint.hair1[1];
+  const top = layout.joint[HAIR[0]][1];
   const span = top - HAIR_END * height;
   const hair = hairiness(geo, layout, sample);
   for (let i = 0; i < pos.count; i++) {
     const t = (top - pos.getY(i)) / span;
     if (t <= 0 || hair[i] < 0.05) continue;
     const ramp = THREE.MathUtils.smoothstep(t, 0, 0.15) * hair[i];
-    const u = Math.min(t * HAIR.length, HAIR.length - 1);
+    // down the bunch: the two links either side of this height
+    const u = Math.min(t * HAIR_LINKS, HAIR_LINKS - 1);
     const lo = Math.floor(u);
+    const links: [number, number][] = [[lo, 1 - (u - lo)]];
+    links.push([lo + 1 < HAIR_LINKS ? lo + 1 : lo, u - lo]);
+    // across the back: the two bunches either side of this place
+    const across = THREE.MathUtils.clamp((pos.getX(i) / height + HAIR_SPREAD) / (2 * HAIR_SPREAD), 0, 1) * (HAIR_BUNCHES - 1);
+    const left = Math.min(Math.floor(across), HAIR_BUNCHES - 2);
+    const bunches: [number, number][] = [
+      [left, 1 - (across - left)],
+      [left + 1, across - left],
+    ];
     const mix = new Map<number, number>();
-    for (let k = 0; k < 4; k++) mix.set(index.getComponent(i, k), (mix.get(index.getComponent(i, k)) ?? 0) + weight.getComponent(i, k) * (1 - ramp));
-    mix.set(first + lo, (mix.get(first + lo) ?? 0) + ramp * (1 - (u - lo)));
-    const rest = lo + 1 < HAIR.length ? lo + 1 : lo;
-    mix.set(first + rest, (mix.get(first + rest) ?? 0) + ramp * (u - lo));
-    const top4 = [...mix.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const add = (bone: number, w: number) => mix.set(bone, (mix.get(bone) ?? 0) + w);
+    for (let k = 0; k < 4; k++) add(index.getComponent(i, k), weight.getComponent(i, k) * (1 - ramp));
+    for (const [bunch, wb] of bunches) for (const [link, wl] of links) add(first + bunch * HAIR_LINKS + link, ramp * wb * wl);
+    const top4 = [...mix.entries()].filter(([, w]) => w > 1e-6).sort((a, b) => b[1] - a[1]).slice(0, 4);
     const total = top4.reduce((sum, [, w]) => sum + w, 0);
     for (let k = 0; k < 4; k++) {
       index.setComponent(i, k, top4[k]?.[0] ?? 0);
@@ -522,16 +544,20 @@ export class GlbFigure {
     v.clampLength(0, 4).applyQuaternion(this.root.getWorldQuaternion(this.quat).invert());
     const steps = Math.min(4, Math.ceil(dt * 60));
     const h = dt / steps;
-    this.swing.forEach((s, k) => {
-      const stiff = 150 - k * 30;
+    this.swing.forEach((s, n) => {
+      const bunch = Math.floor(n / HAIR_LINKS);
+      const k = n % HAIR_LINKS;
+      // every bunch has its own stiffness and rhythm, so neighbours swing out of step
+      const own = LOCKS[bunch % LOCKS.length];
+      const stiff = (150 - k * 30) * own;
       const damp = 2 * 0.35 * Math.sqrt(stiff);
       const gain = 0.03 + k * 0.005;
-      const side = 0.2 + k * 0.02;
+      const side = (0.2 + k * 0.02) * own;
       // each step sways the hair from side to side and bounces it a little, lower pieces later than the ones above (the spring does that)
-      const phase = (a.stride / STEP_LENGTH) * Math.PI * 2;
+      const phase = (a.stride / STEP_LENGTH) * Math.PI * 2 + bunch * 0.9;
       const sway = a.walk * (0.022 + k * 0.006) * Math.sin(phase);
       const bounce = a.walk * (0.02 + k * 0.005) * Math.abs(Math.cos(phase));
-      for (let n = 0; n < steps; n++) {
+      for (let m = 0; m < steps; m++) {
         s.vx += (-stiff * (s.x - gain * v.z - bounce) - damp * s.vx) * h;
         s.vz += (-stiff * (s.z + side * v.x - sway) - damp * s.vz) * h;
         s.x += s.vx * h;
@@ -539,7 +565,7 @@ export class GlbFigure {
       }
       s.x = THREE.MathUtils.clamp(s.x, -0.3, 0.3);
       s.z = THREE.MathUtils.clamp(s.z, -0.3, 0.3);
-      this.bones[HAIR[k]].rotation.set(s.x, 0, s.z);
+      this.bones[HAIR[n]].rotation.set(s.x, 0, s.z);
     });
   }
 
