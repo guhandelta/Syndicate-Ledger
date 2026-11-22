@@ -37,6 +37,9 @@ describe('3D figure shape', () => {
     // the first point of a ring is straight in front (+z), at the ring's depth
     expect(rest.getZ(12)).toBeCloseTo(0.1);
     expect(geo.getAttribute('normal').count).toBe(pos.count);
+    // arms and legs take paint from the side pictures too; the head and body only from front and back
+    expect(geo.getAttribute('sides').getX(0)).toBe(1);
+    expect(partGeometry(rings, [0, 0, 0], false).getAttribute('sides').getX(5)).toBe(0);
     // with no joint given it stays where it is
     expect(partGeometry(rings).getAttribute('position').getY(0)).toBe(1);
   });
@@ -57,7 +60,6 @@ describe('3D figure paint', () => {
     const atlas = new THREE.Texture();
     const { material, uniforms } = figureMaterial(tiny, atlas, 0.2);
     expect(uniforms.uAtlas.value).toBe(atlas);
-    expect(uniforms.uNeck.value).toBeCloseTo(1.7 * 0.82);
     expect(uniforms.uFront.value.toArray()).toEqual([0, 0.25, -0.3, 0.3]);
     const shader = {
       uniforms: {} as Record<string, unknown>,
@@ -66,12 +68,11 @@ describe('3D figure paint', () => {
     };
     material.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
     expect(shader.uniforms.uFaceOn).toBe(uniforms.uFaceOn);
-    expect(shader.vertexShader).toContain('vRest = rest;');
+    expect(shader.vertexShader).toContain('vSides = sides;');
     expect(shader.fragmentShader).toContain('uFaceMap');
     expect(shader.fragmentShader).not.toContain('#include <map_fragment>');
     expect(shader.fragmentShader).toContain('totalEmissiveRadiance += diffuseColor.rgb * uGlow;');
     expect(material.customProgramCacheKey()).toBe('figure3d');
-    expect(figureMaterial({ ...tiny, joints: { neck: [0, 1.4, 0] } }, null, 0).uniforms.uNeck.value).toBe(1.4);
   });
 });
 
