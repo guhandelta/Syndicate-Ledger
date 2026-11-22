@@ -7,3 +7,7 @@ playwright-report
 site/
 coverage
 __pycache__/
+.env
+.env.local
+workers/save-api/node_modules/
+workers/save-api/.wrangler/

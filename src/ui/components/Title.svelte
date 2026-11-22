@@ -5,6 +5,7 @@
   import { clockOn, hoursLeft } from '../../game/state';
   import { t } from '../../game/text';
   import type { Session } from '../session.svelte';
+  import Account from './Account.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -36,6 +37,7 @@
   <div class="title-card">
     <p class="eyebrow">Case file 01</p>
     <h1>Syndicate Ledger</h1>
+    <Account />
     <p class="lede">Crack the syndicate's books. Catch the liars. Close the case before the ship sails.</p>
     {#if showPicker}
       <h2 class="small-h">Choose your rank</h2>

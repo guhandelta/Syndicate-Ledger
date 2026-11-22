@@ -1,0 +1,14 @@
+name = "syndicate-ledger-save"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[vars]
+# Fill these in (see docs/CLOUD-SAVE.md). None of them is a secret.
+AUTH0_DOMAIN = "YOUR-TENANT.eu.auth0.com"
+AUTH0_AUDIENCE = "https://syndicate-ledger-api"
+ALLOWED_ORIGINS = "https://guhandelta.github.io,http://localhost:5173"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "syndicate-ledger"
+database_id = "PASTE-THE-ID-FROM-wrangler-d1-create"
