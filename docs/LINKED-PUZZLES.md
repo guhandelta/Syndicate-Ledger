@@ -1,6 +1,6 @@
 # Linked puzzles: one connected investigation per rank
 
-Status: **proposal, waiting for Guha to pick an option.** No game code changes until then.
+Status: **proposal, waiting for Guha to pick an option.** No game code changes until then. Section 7 covers running all three options together.
 
 ## 1. The problem
 
@@ -185,3 +185,67 @@ Chief. Each as its own PR, merged before the next starts.
 later puzzles, and every puzzle in a rank tied to the case. It keeps the "one answer, found by logic" guarantee
 with the checks we already have, and it fits fresh in-browser generation because each answer exists before the
 next puzzle is built. Option 2 can follow later for the Chief rank, once Option 1 is played and liked.
+
+## 7. Running all three together, by configuration
+
+Yes. The three options aren't rivals. They're three layers of one system, and each lead or rank picks how deep
+it goes with one setting. They all end up as ordinary claims that the existing solver, grader and checks already
+understand, so a deeper layer can never produce a puzzle the game can't check.
+
+| Layer | What it adds | Where the linked numbers come from |
+| --- | --- | --- |
+| `clues` (Option 3) | Story-worded, indirect clues and a rank lock | This puzzle's own answer |
+| `chain` (Option 1) | Clues that quote earlier answers in the same rank | Earlier puzzles' answers (keystones) |
+| `shared-night` (Option 2) | Every puzzle is a view of one hidden night | The hidden night itself |
+
+Each layer includes the ones above it: a `chain` lead can still have story clues, and a `shared-night` rank still
+links its puzzles in a chain.
+
+**How it's set.** In the case file, `linking` defaults to the rank and can be overridden per lead:
+
+```json
+"rankStories": {
+  "junior":    { "linking": "chain" },
+  "detective": { "linking": "chain" },
+  "chief":     { "linking": "shared-night", "leads": [{ "id": "L1", "linking": "clues" }] }
+}
+```
+
+`none` keeps today's independent puzzles, so every existing case keeps playing exactly as now until it opts in.
+
+**What can and can't be mixed**
+
+- Different ranks can use different layers freely. Each rank's puzzles are generated on their own, and ranks
+  only share the fixed handover text and carried object.
+- Inside one rank, `clues` and `chain` mix lead by lead. A `clues` lead just hands on no keystones, and a later
+  lead can't link to it.
+- `shared-night` is all or nothing for a rank, because one hidden night has to fit every puzzle in it. A lead set
+  to `clues` inside a shared-night rank is fine (it simply doesn't quote anything). A lead set to `none` is fine
+  too. The validator refuses only one combination: a lead that quotes a keystone from a lead that doesn't produce
+  one.
+
+**How nothing breaks: a fallback ladder.** When a rank opens, the worker tries the configured layer first. If it
+can't build the rank within its time budget, it drops one layer (`shared-night`, then `chain`, then `clues`,
+then `none`), and as a last resort it uses a checked-in chain for that rank. Every step still passes the same
+"exactly one answer, by logic, within the rank's grade" checks, so the worst case is a less connected rank, never a
+broken or unsolvable one. The validator (`npm run validate`) runs every rank at its configured layer over many
+seeds and fails the build if the fallback is needed too often.
+
+**Other parts it touches**
+
+| Part | What changes | Risk |
+| --- | --- | --- |
+| Puzzle generation (on demand) | The worker builds a rank's leads in order, or the hidden night first. The spinner stays as the fallback | Chief `shared-night` may be slow; the ladder covers it |
+| Save and cloud save | Each running rank saves its **seed and layer** (a few bytes). Reloading rebuilds exactly the same puzzles from the seed, so a half-played chain survives a reload or a device switch | Without the seed, a reload would make new puzzles that no longer match notes already written. It must be saved |
+| Notebook | New *Evidence* page with solved grids and pinned keystones | Old saves without it just show an empty page |
+| Case board | No change. It shows parts and questions, not puzzle numbers | None |
+| Rank handovers | Fixed text, unchanged. Optional: one fixed number carried into the next rank's first lead | None, because it's fixed by the story |
+| Replay with other characters | A new seed, so a new chain and a new night. Linking works the same for every character | None |
+| Hints (Forensic Partner) and mistakes | Can name *which* earlier puzzle a clue needs, never the number | None |
+| Accusations and proof | Unchanged. Facts still come from solved leads | None |
+| Timeline, network and cipher engines | Need anchors (grids already have them) | The main engine work |
+| Tests | New tests per layer: link needed, link not enough alone, seed rebuilds the same rank, fallback ladder | None |
+
+**Switching between options** is a one-line config change per rank or lead, with no code change, and it takes
+effect the next time that rank is started. A rank already in progress keeps the layer saved with it until it's
+finished or restarted.
