@@ -5,10 +5,11 @@
  */
 import type { CipherPuzzle } from './cipher';
 import type { NetworkPuzzle } from './network';
+import { whereOf, type StakeoutPuzzle } from './stakeout';
 import type { TimelinePuzzle } from './timeline';
 import type { GeneratedPuzzle } from './types';
 
-export type AnyAnswered = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle;
+export type AnyAnswered = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle;
 
 /** Something in an earlier answer: a number, or a person. */
 export type LinkRef =
@@ -20,6 +21,8 @@ export type LinkRef =
   | { kind: 'degree'; p: number }
   /** Cipher: the digit in a place. */
   | { kind: 'digit'; p: number }
+  /** Stakeout: the row or column (numbered from 1) a district's watcher stood in. */
+  | { kind: 'spot'; z: number; axis: 'row' | 'col' }
   /** Grid, a person: whoever has value v in row r. */
   | { kind: 'holder'; r: number; v: number };
 
@@ -44,6 +47,10 @@ export function refNumber(p: AnyAnswered, ref: LinkRef): number {
       return (p as NetworkPuzzle).degrees[ref.p];
     case 'digit':
       return (p as CipherPuzzle).code[ref.p];
+    case 'spot': {
+      const w = whereOf((p as StakeoutPuzzle).regions, (p as StakeoutPuzzle).cols)[ref.z];
+      return w[ref.axis === 'row' ? 0 : 1] + 1;
+    }
     case 'holder':
       throw new Error('a holder is a person, not a number');
   }

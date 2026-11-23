@@ -2,9 +2,10 @@
   import { linkedIn } from '../../engine/network';
   import type { CipherPuzzle } from '../../engine/cipher';
   import type { NetworkPuzzle } from '../../engine/network';
+  import { whereOf, type StakeoutPuzzle } from '../../engine/stakeout';
   import type { TimelinePuzzle } from '../../engine/timeline';
   import type { GeneratedPuzzle } from '../../engine/types';
-  import { gridLabels, networkPeople, timelineLabels } from '../../game/text';
+  import { gridLabels, networkPeople, stakeoutLabels, timelineLabels } from '../../game/text';
   import type { Session } from '../session.svelte';
 
   let { session }: { session: Session } = $props();
@@ -48,6 +49,14 @@
             <ul>
               {#each people as who, a}
                 <li><strong>{who}</strong>: {people.filter((_, b) => b !== a && linkedIn(np.size, np.links, a, b)).join(', ') || 'nobody'}</li>
+              {/each}
+            </ul>
+          {:else if p.type === 'stakeout'}
+            {@const sp = p as StakeoutPuzzle}
+            {@const L = stakeoutLabels(lead, sp.size, session.tone)}
+            <ul>
+              {#each whereOf(sp.regions, sp.cols) as [r, c], z}
+                <li><strong>{L.districts[z]}</strong>: row {r + 1}, column {c + 1}</li>
               {/each}
             </ul>
           {:else if p.type === 'cipher'}

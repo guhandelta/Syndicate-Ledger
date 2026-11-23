@@ -2,8 +2,9 @@ import { nextStep } from '../engine/logic';
 import type { Lead } from '../game/caseTypes';
 import { wrongDigit } from '../engine/cipher';
 import { wrongPair } from '../engine/network';
+import { wrongSpot } from '../engine/stakeout';
 import { wrongMoment } from '../engine/timeline';
-import { checkLead, clockOn, gridOf, hoursLeft, leadCost, leadOpen, cipherOf, networkOf, puzzleOf, timelineOf, type Game } from '../game/state';
+import { checkLead, clockOn, gridOf, hoursLeft, leadCost, leadOpen, cipherOf, stakeoutOf, networkOf, puzzleOf, timelineOf, type Game } from '../game/state';
 import { at as when, gridLabels, t, type Tone } from '../game/text';
 import type { Town } from '../town/townTypes';
 import { findWrong } from './puzzleHelpers';
@@ -102,6 +103,14 @@ function whatToDo(ctx: IdleContext): Omit<IdleHint, 'can'> {
     const where = `Working ${leadName(lead)}`;
     if (lp.solved) return { where, todo: 'This lead is solved. Go back to pick the next one.' };
     const state = checkLead(g, lead.id);
+    if (puzzleOf(g, lead.id).type === 'stakeout' && (state === 'grid-incomplete' || state === 'grid-wrong')) {
+      if (wrongSpot(stakeoutOf(g, lead.id), lp.spots!) >= 0)
+        return { where, todo: 'One of your watchers is on the wrong square. Test each against what the witnesses say, or call your partner for a pointer.' };
+      return { where, todo: 'Put one watcher in every district, never in the same row or column, never on touching squares. Start with the smallest district, then use what the witnesses say about rows and columns.' };
+    }
+    if (state === 'marks-incomplete' && puzzleOf(g, lead.id).type === 'stakeout') {
+      return { where, todo: 'Your map is complete. Now test each statement against it and mark it True or Lie.' };
+    }
     if (puzzleOf(g, lead.id).type === 'cipher' && (state === 'grid-incomplete' || state === 'grid-wrong')) {
       if (wrongDigit(cipherOf(g, lead.id), lp.digits!) >= 0)
         return { where, todo: 'One of your digits is wrong. Test each against what the witnesses say, or call your partner for a pointer.' };

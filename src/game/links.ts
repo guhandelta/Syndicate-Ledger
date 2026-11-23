@@ -8,6 +8,8 @@ import { verifyCipher } from '../engine/cipher';
 import type { NetClaim } from '../engine/network';
 import { verifyNetwork } from '../engine/network';
 import type { Rng } from '../engine/rng';
+import type { StakeClaim } from '../engine/stakeout';
+import { verifyStakeout } from '../engine/stakeout';
 import type { TimeClaim } from '../engine/timeline';
 import { verifyTimeline } from '../engine/timeline';
 import type { Claim, GeneratedPuzzle } from '../engine/types';
@@ -15,7 +17,7 @@ import { verifyUnique } from '../engine/generator';
 import { refHolder, refNumber, type AnyAnswered, type LinkRef, type Via } from '../engine/via';
 import type { CaseFile, Lead, LinkSpec, Preset } from './caseTypes';
 import { LINK_RULES } from './presets';
-import { at, describeStatement, gridLabels, networkPeople, t, timelineLabels, the, type Tone } from './text';
+import { at, describeStatement, gridLabels, networkPeople, stakeoutLabels, t, timelineLabels, the, type Tone } from './text';
 
 export interface Planted<C> {
   speaker: string;
@@ -47,6 +49,7 @@ function pickNumber(src: AnyAnswered, rng: Rng, lo: number, hi: number, indirect
     if (src.type === 'timeline') ref = { kind: 'slot', m: rng.int(0, src.size - 1) };
     else if (src.type === 'network') ref = { kind: 'degree', p: rng.int(0, src.size - 1) };
     else if (src.type === 'cipher') ref = { kind: 'digit', p: rng.int(0, src.size - 1) };
+    else if (src.type === 'stakeout') ref = { kind: 'spot', z: rng.int(0, src.size - 1), axis: rng.pick(['row', 'col'] as const) };
     else {
       const r = rng.int(0, src.size - 1);
       const c = rng.int(0, src.size - 1);
@@ -133,6 +136,18 @@ export function planLinks(cf: CaseFile, preset: Preset, lead: Lead, size: number
         if (!n) throw new Error(`${lead.id}: ${spec.from} has no number for a digit`);
         done({ kind: 'is', p: a, d: n.value } satisfies CipherClaim, n.ref);
       }
+    } else if (lead.type === 'stakeout') {
+      const axis = rng.pick(['row', 'col'] as const);
+      if (spec.use === 'apart') {
+        const n = pickNumber(src, rng, 1, size - 1, indirect);
+        if (!n) throw new Error(`${lead.id}: ${spec.from} has no number for a gap`);
+        const [a, b] = two(size);
+        done({ kind: 'gap', axis, a, b, gap: n.value } satisfies StakeClaim, n.ref);
+      } else if (spec.use === 'is') {
+        const n = pickNumber(src, rng, 1, size, indirect);
+        if (!n) throw new Error(`${lead.id}: ${spec.from} has no number for a row or column`);
+        done({ kind: axis, z: rng.int(0, size - 1), value: n.value } satisfies StakeClaim, n.ref);
+      } else throw new Error(`${lead.id}: a stakeout lead uses a number as "is" or "apart"`);
     } else {
       throw new Error(`${lead.id}: a number link cannot be used in a ${lead.type} lead`);
     }
@@ -152,6 +167,10 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
   }
   if (ref.kind === 'degree') return `how many people ${networkPeople(cf, lead, src.size)[ref.p]} was in contact with in ${title}`;
   if (ref.kind === 'digit') return `the ${ORDINALS[ref.p]} digit of the code in ${title}`;
+  if (ref.kind === 'spot') {
+    const L = stakeoutLabels(lead, src.size, tone);
+    return `the ${ref.axis === 'row' ? 'row' : 'column'} number of ${L.districts[ref.z]}’s ${L.one} in ${title}`;
+  }
   const L = gridLabels(cf, lead, src.size, tone);
   const ledger = lead.type === 'ledger';
   if (ref.kind === 'holder')
@@ -194,6 +213,18 @@ export function describeLinked(cf: CaseFile, lead: Lead, p: AnyAnswered, st: { c
     if (c.kind === 'is') return `${cap(D(c.p))} is ${q}.`;
     if (c.kind === 'apart') return `${cap(D(c.a))} and ${D(c.b)} are ${q} apart.`;
   }
+  if (p.type === 'stakeout') {
+    const c = st.claim as StakeClaim;
+    const L = stakeoutLabels(lead, p.size, tone);
+    const W = (z: number) => `${L.districts[z]}’s ${L.one}`;
+    if (story && c.kind === 'gap') return told({ a: W(c.a), b: W(c.b), when: c.axis === 'row' ? 'rows' : 'columns' });
+    if (story && (c.kind === 'row' || c.kind === 'col')) return told({ a: W(c.z), when: c.kind === 'row' ? 'row' : 'column' });
+    if (c.kind === 'row') return `${W(c.z)} stood in the row whose number is ${q} (the top row is 1).`;
+    if (c.kind === 'col') return `${W(c.z)} stood in the column whose number is ${q} (the left column is 1).`;
+    // the only other link clue is a gap
+    const g = c as StakeClaim & { kind: 'gap' };
+    return `${W(g.a)} and ${W(g.b)} stood as many ${g.axis === 'row' ? 'rows' : 'columns'} apart as ${q}.`;
+  }
   if (p.type === 'network') {
     const c = st.claim as NetClaim & { kind: 'linked' };
     const people = networkPeople(cf, lead, p.size);
@@ -227,7 +258,7 @@ function trimmed(p: AnyAnswered, keep: (i: number) => boolean, liarCounts?: numb
 }
 
 const unique = (p: AnyAnswered): boolean =>
-  (p.type === 'timeline' ? verifyTimeline(p) : p.type === 'cipher' ? verifyCipher(p) : p.type === 'network' ? verifyNetwork(p) : verifyUnique(p as GeneratedPuzzle)).ok;
+  (p.type === 'timeline' ? verifyTimeline(p) : p.type === 'cipher' ? verifyCipher(p) : p.type === 'stakeout' ? verifyStakeout(p) : p.type === 'network' ? verifyNetwork(p) : verifyUnique(p as GeneratedPuzzle)).ok;
 
 /**
  * The two proofs that make a link real:

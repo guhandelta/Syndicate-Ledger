@@ -64,6 +64,7 @@
     }
     if (session.screen !== 'puzzle' || !session.game || !session.leadId) return;
     const k = e.key;
+    if (session.isStakeout) return networkKey(e);
     if (session.isCipher) return cipherKey(e);
     if (session.isNetwork) return networkKey(e);
     if (session.isTimeline) return timelineKey(e);
@@ -110,7 +111,7 @@
     }
   }
 
-  /** Network keys: Ctrl+Z undoes a decision. Pairs are decided with the buttons next to them. */
+  /** Network and stakeout keys: Ctrl+Z undoes a decision. Pairs and squares are decided with the buttons themselves. */
   function networkKey(e: KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       if (e.shiftKey) session.redo();

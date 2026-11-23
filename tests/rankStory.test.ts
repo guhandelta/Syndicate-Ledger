@@ -33,9 +33,9 @@ describe('rank stories', () => {
 
   it("Junior's own story has its own leads, ending and finale link, and keeps the case file's cast", () => {
     const junior = caseForRank(cf, 'junior');
-    expect(junior.leads.map((l) => l.id)).toEqual(['J1', 'J2', 'J3', 'J4', 'J5']);
-    expect(junior.leads.find((l) => l.id === 'J4')!.then).toBe('J5');
-    expect(junior.endings[0].requires).toEqual(['J4', 'J5']);
+    expect(junior.leads.map((l) => l.id)).toEqual(['J1', 'J2', 'J3', 'J4', 'J5', 'J6']);
+    expect(junior.leads.find((l) => l.id === 'J5')!.then).toBe('J6');
+    expect(junior.endings[0].requires).toEqual(['J5', 'J6']);
     expect(junior.cast).toBe(cf.cast);
   });
 

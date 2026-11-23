@@ -1007,12 +1007,47 @@
         },
         {
           "id": "J4",
+          "links": [
+            { "from": "J1", "take": "number", "use": "is", "story": { "crime": "A scrap of the watch captain’s rota said {a} stood in the {when} numbered {q}." } },
+            { "from": "J3", "take": "number", "use": "apart", "story": { "crime": "The baker saw them from her stall: {a} and {b} stood as many {when} apart as {q}." } }
+          ],
+          "type": "stakeout",
+          "cost": 2,
+          "opensAfter": ["J3"],
+          "title": { "crime": "The harbor watch", "friendly": "Who stood watch?" },
+          "intro": {
+            "crime": "The harbor is cut into districts, and the night watch posted one watchman in each. The rota was torn up after the theft. The map shows the districts, and no two watchmen ever stood in the same row or column, or on touching squares. Work out where each one stood.",
+            "friendly": "The harbor is cut into districts, and the night watch put one watchman in each. The rota got torn up! No two watchmen shared a row or a column, and none stood next to another, even corner to corner. Work out where each one stood!"
+          },
+          "columns": [],
+          "rows": [],
+          "districts": [
+            { "crime": "Fish hall", "friendly": "Fish hall" },
+            { "crime": "Net loft", "friendly": "Net loft" },
+            { "crime": "Warehouse 9", "friendly": "Warehouse 9" },
+            { "crime": "Ice house", "friendly": "Ice house" },
+            { "crime": "Boathouse", "friendly": "Boathouse" },
+            { "crime": "Pier end", "friendly": "Pier end" },
+            { "crime": "Market square", "friendly": "Market square" },
+            { "crime": "Harbor office", "friendly": "Harbor office" }
+          ],
+          "watchers": { "one": "watchman", "many": "watchmen" },
+          "speakers": ["nevethitha", "meena", "vex"],
+          "liars": { "junior": ["vex"], "detective": [], "inspector": [], "chief": [] },
+          "fact": {
+            "crime": "Every district had its watchman, and every one of them waved Tip’s cart through. Tip knew the rota by heart.",
+            "friendly": "Every district had a watchman, and every one of them waved Tip’s cart through. Tip knew the rota by heart!"
+          },
+          "pointsTo": ["tip"]
+        },
+        {
+          "id": "J5",
           "links": [{ "from": "J3", "take": "number", "use": "is", "story": {"crime": "The cart driver counted it on his fingers: {a} was stop number {q}."} }],
           "type": "timeline",
           "map": true,
           "cost": 2,
-          "opensAfter": ["J3"],
-          "then": "J5",
+          "opensAfter": ["J4"],
+          "then": "J6",
           "title": {
             "crime": "Where the chest went",
             "friendly": "Where did the chest go?"
@@ -1070,12 +1105,12 @@
           ]
         },
         {
-          "id": "J5",
-          "links": [{ "from": "J4", "take": "number", "use": "is", "story": {"crime": "The lock’s brass plate was scratched: {a} is {q}."} }, { "from": "J1", "take": "number", "use": "apart", "story": {"crime": "A note under the lock said {a} and {b} are {q} apart."} }],
+          "id": "J6",
+          "links": [{ "from": "J5", "take": "number", "use": "is", "story": {"crime": "The lock’s brass plate was scratched: {a} is {q}."} }, { "from": "J1", "take": "number", "use": "apart", "story": {"crime": "A note under the lock said {a} and {b} are {q} apart."} }],
           "type": "cipher",
           "cost": 2,
           "opensAfter": [
-            "J4"
+            "J5"
           ],
           "title": {
             "crime": "The Ice house lock",
@@ -1116,8 +1151,8 @@
             "tip"
           ],
           "requires": [
-            "J4",
-            "J5"
+            "J5",
+            "J6"
           ],
           "title": {
             "crime": "Full bust",
@@ -1163,8 +1198,8 @@
       "proof": {
         "tip": {
           "needs": [
-            "J4",
-            "J5"
+            "J5",
+            "J6"
           ]
         },
         "vex": {

@@ -61,3 +61,14 @@ export const LINK_RULES: Record<Preset, { indirect: boolean }> = {
   inspector: { indirect: true },
   chief: { indirect: true },
 };
+
+/**
+ * A stakeout lead by rank. The map is bigger than the preset's grid: only a few layouts obey the rules on a small map
+ * (two on 4x4), so size is what makes it harder. `minBase`/`maxBase` bound how many layouts the map alone allows.
+ */
+export const STAKEOUT_RULES: Record<Preset, { size: number; minGrade: number; maxStatements: number; minBase: number; maxBase: number; givens: number }> = {
+  junior: { size: 5, minGrade: 1, maxStatements: 6, minBase: 3, maxBase: 8, givens: 0 },
+  detective: { size: 6, minGrade: 2, maxStatements: 8, minBase: 5, maxBase: 20, givens: 0 },
+  inspector: { size: 7, minGrade: 3, maxStatements: 9, minBase: 12, maxBase: 60, givens: 0 },
+  chief: { size: 8, minGrade: 3, maxStatements: 11, minBase: 25, maxBase: 120, givens: 0 },
+};

@@ -5,13 +5,14 @@ import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type Preset } from '../src/game/caseTypes';
 import type { CipherPuzzle } from '../src/engine/cipher';
 import type { NetworkPuzzle } from '../src/engine/network';
+import type { StakeoutPuzzle } from '../src/engine/stakeout';
 import type { TimelinePuzzle } from '../src/engine/timeline';
 import type { GeneratedPuzzle } from '../src/engine/types';
 import { caseForRank } from '../src/game/rankStory';
 
 const readJson = (file: string) => JSON.parse(readFileSync(path.resolve(file), 'utf8'));
 export const cf = readJson('cases/case-01-harbor-ledger.json') as CaseFile;
-export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle>;
+export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle>;
 /** The case as one rank plays it: its own story's leads, proof and endings. */
 export const caseFor = (preset: Preset) => caseForRank(cf, preset);
 // the e2e plays the shipped puzzles (seed 0), because its solver reads them from puzzles.json; a test of fresh puzzles opens GAME_URL without it
@@ -63,6 +64,8 @@ export async function solveLead(page: Page, preset: Preset, leadId: string) {
   } else if (p.type === 'network') {
     const rows = page.locator('ul.pairs > li.pair');
     for (let k = 0; k < p.links.length; k++) await rows.nth(k).getByRole('button', { name: p.links[k] ? 'In contact' : 'Never', exact: true }).click();
+  } else if (p.type === 'stakeout') {
+    for (let r = 0; r < p.size; r++) if (!p.givens.some((g) => g.r === r)) await page.locator(`[data-stake="${r}-${p.cols[r]}"]`).click();
   } else if (p.type === 'cipher') {
     const slots = page.locator('ol.code > li.code-slot');
     for (let k = 0; k < p.size; k++) await slots.nth(k).locator('select').selectOption(String(p.code[k]));

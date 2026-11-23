@@ -17,8 +17,9 @@
     { "id": "fish-hall", "at": [4.5, -2.9], "label": "Fish hall", "lead": "L1", "leadFor": { "junior": "J1" } },
     { "id": "camera-post", "at": [9, 0.8], "label": "Dock camera post", "lead": "L2", "leadFor": { "junior": "J2" } },
     { "id": "net-loft", "at": [13.5, -2.9], "label": "Tip's lock-up in the Net loft", "lead": "L3", "leadFor": { "junior": "J3" } },
-    { "id": "warehouse-9", "at": [-4.5, -2.9], "label": "Warehouse 9", "lead": "L4", "leadFor": { "junior": "J4" } },
-    { "id": "ice-house", "at": [-13.5, -2.9], "label": "The Ice house", "leadFor": { "junior": "J5" } },
+    { "id": "warehouse-9", "at": [-4.5, -2.9], "label": "Warehouse 9", "lead": "L4", "leadFor": { "junior": "J5" } },
+    { "id": "ice-house", "at": [-13.5, -2.9], "label": "The Ice house", "leadFor": { "junior": "J6" } },
+    { "id": "boathouse", "at": [22.5, -2.9], "label": "The Boathouse watch post", "leadFor": { "junior": "J4" } },
     { "id": "office", "at": [14, 7.9], "label": "Your office", "goto": "board" },
     { "id": "police", "at": [-22.5, -2.9], "label": "Harbor police desk", "goto": "accuse" }
   ],

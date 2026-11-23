@@ -24,7 +24,7 @@ describe('building a rank', () => {
       const book = buildRank(cf, preset, { onBuilt: (key) => order.push(key) });
       for (const [key, p] of Object.entries(book)) expect(p, key).toEqual(shipped[key]);
     }
-    expect(order).toEqual(['J1:junior', 'J2:junior', 'J3:junior', 'J4:junior', 'J5:junior', 'L1:detective', 'L2:detective', 'L3:detective', 'L4:detective']);
+    expect(order).toEqual(['J1:junior', 'J2:junior', 'J3:junior', 'J4:junior', 'J5:junior', 'J6:junior', 'L1:detective', 'L2:detective', 'L3:detective', 'L4:detective']);
   });
 
   it('gives a fresh seed its own puzzles, the same every time', () => {
@@ -44,7 +44,7 @@ describe('building a rank', () => {
     // seed 222 is a Junior seed whose network clues cannot be linked
     const r = buildRankFresh(cf, 'junior', 222);
     expect(r.seed).not.toBe(222);
-    expect(Object.keys(r.book)).toHaveLength(5);
+    expect(Object.keys(r.book)).toHaveLength(6);
     expect(buildRankFresh(cf, 'junior', 11).seed).toBe(11);
     expect(() => buildRankFresh(cf, 'junior', 222, 1)).toThrow(/no seed built junior/);
   });
