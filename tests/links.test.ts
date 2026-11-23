@@ -64,8 +64,8 @@ describe('Case 1 links', () => {
           expect(linkResolves(story, lead, p, st as never, answers), `${lead.id}:${preset}`).toBeNull();
           seen++;
         }
-        // the 7x7 proofs are slow; `npm run validate` runs them for Chief
-        if (preset !== 'chief') expect(checkLinks(p), `${lead.id}:${preset}`).toEqual({ ok: true });
+        // the 6x6 and 7x7 proofs are slow enough to stall the test worker; `npm run validate` runs them for every rank
+        if (preset === 'junior' || preset === 'detective') expect(checkLinks(p), `${lead.id}:${preset}`).toEqual({ ok: true });
       }
     }
     expect(seen).toBeGreaterThan(15);
