@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import type { TimelinePuzzle } from '../src/engine/timeline';
 import { clearDialogs } from './helpers';
 
-const URL = 'http://localhost:5199/fixtures/timeline.html';
+const URL = 'http://localhost:5199/fixtures/timeline.html?seed=0';
 type AxePage = ConstructorParameters<typeof AxeBuilder>[0]['page'];
 
 /** The puzzle the page was built with, so the test can fill in the right answer. */

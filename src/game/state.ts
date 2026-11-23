@@ -65,6 +65,10 @@ export interface GameState {
   character?: string;
   /** Opinions the player has heard, as "<speaker>:<about>". */
   heard?: string[];
+  /** The seed this game's puzzles were built from. Absent: the shipped puzzles. */
+  seed?: number;
+  /** This game's own puzzles, kept in the save so a reload (or an update of the game) can't change them under the player's notes. */
+  puzzles?: PuzzleBook;
 }
 
 export interface Game {
