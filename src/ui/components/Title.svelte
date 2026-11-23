@@ -52,8 +52,9 @@
       </div>
       {#if !pickOpen}<p class="lede locked-note">{PRESET_RULES[session.titlePreset].label} opens once you solve the {below(session.titlePreset)} part of the case.</p>{/if}
       {#if hasSave}<p class="lede">Starting a new case replaces your saved {PRESET_RULES[session.s!.preset].label} case.</p>{/if}
+      {#if session.building}<p class="lede" role="status">Setting out this case’s clues. This takes a few seconds.</p>{/if}
       <div class="title-actions">
-        <button class="btn primary" disabled={!pickOpen} onclick={() => session.newCase()}>Open the case</button>
+        <button class="btn primary" disabled={!pickOpen || session.building} onclick={() => session.newCase()}>{session.building ? 'Building your case…' : 'Open the case'}</button>
         {#if hasSave}<button class="btn" onclick={() => (picking = false)}>Back to my case</button>{/if}
       </div>
     {:else}

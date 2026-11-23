@@ -4,7 +4,7 @@ import { pairs, type NetworkPuzzle } from '../src/engine/network';
 import { clearDialogs } from './helpers';
 
 // the network lead lives in the same demo case as the timeline (fixtures/timeline.html)
-const URL = 'http://localhost:5199/fixtures/timeline.html';
+const URL = 'http://localhost:5199/fixtures/timeline.html?seed=0';
 type AxePage = ConstructorParameters<typeof AxeBuilder>[0]['page'];
 
 const puzzleOf = (page: Page, rank: string) => page.evaluate((r) => (window as unknown as { __book: Record<string, unknown> }).__book[`N1:${r}`], rank) as Promise<NetworkPuzzle>;

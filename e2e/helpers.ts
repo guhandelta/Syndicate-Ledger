@@ -14,7 +14,9 @@ export const cf = readJson('cases/case-01-harbor-ledger.json') as CaseFile;
 export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle>;
 /** The case as one rank plays it: its own story's leads, proof and endings. */
 export const caseFor = (preset: Preset) => caseForRank(cf, preset);
-export const GAME_URL = pathToFileURL(path.resolve('dist/syndicate-ledger.html')).href;
+// the e2e plays the shipped puzzles (seed 0), because its solver reads them from puzzles.json; a test of fresh puzzles opens GAME_URL without it
+export const GAME_URL = `${pathToFileURL(path.resolve('dist/syndicate-ledger.html')).href}?seed=0`;
+export const FRESH_URL = pathToFileURL(path.resolve('dist/syndicate-ledger.html')).href;
 
 export const PRESET_LABEL: Record<Preset, string> = { junior: 'Junior', detective: 'Detective', inspector: 'Inspector', chief: 'Chief' };
 

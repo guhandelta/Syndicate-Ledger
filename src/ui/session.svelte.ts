@@ -15,6 +15,8 @@ import {
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
 import { describeStatement, gridLabels, networkPeople, t, timelineLabels, type Tone } from '../game/text';
 import { wordStatement, type Answers } from '../game/links';
+import { buildInWorker, FRESH_RANKS, type WorkerLike } from '../game/rankClient';
+import RankWorker from '../game/rankWorker?worker&inline';
 import { townForRank, type Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
 import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
@@ -67,6 +69,19 @@ export interface PuzzleUi {
   pos: number | null;
 }
 
+/** A worker that builds a rank's puzzles, or none where workers don't exist. */
+const makeWorker = (): WorkerLike | null => (typeof Worker === 'undefined' ? null : (new RankWorker() as unknown as WorkerLike));
+
+/**
+ * The seed for a new game: a fresh one each time. The address can pin it for testing: `?seed=0` plays the shipped puzzles,
+ * `?seed=N` replays one build.
+ */
+function pickSeed(): number {
+  const q = new URLSearchParams(location.search).get('seed');
+  if (q !== null && /^\d+$/.test(q)) return Number(q);
+  return 1 + Math.floor(Math.random() * 2_000_000_000);
+}
+
 export const SAVE_KEY = 'syndicate-ledger:save:v1';
 
 const freshPui = (): PuzzleUi => ({
@@ -102,7 +117,12 @@ export function loadProgress(cf: CaseFile): CaseProgress {
 export class Session {
   /** The case file as written. Play uses `cf`, the rank's own story over it. */
   readonly base: CaseFile;
-  readonly book: PuzzleBook;
+  /** The puzzles shipped with the case (seed 0): the fallback whenever fresh ones can't be built. */
+  readonly shipped: PuzzleBook;
+  /** The puzzles in play: the shipped ones, with this game's own rank over them. */
+  book: PuzzleBook;
+  /** Fresh puzzles are being built for a new game. */
+  building = $state(false);
   /** The walkable place for this case, if it has one. */
   private readonly baseTown: Town | null;
   private townCache = new Map<Preset, Town>();
@@ -136,9 +156,12 @@ export class Session {
 
   constructor(cf: CaseFile, book: PuzzleBook, town: Town | null = null) {
     this.base = cf;
-    this.book = book;
+    this.shipped = book;
+    this.book = { ...book };
     this.baseTown = town;
     this.s = loadSave(cf);
+    // a saved game plays the puzzles it was built with
+    if (this.s?.puzzles) Object.assign(this.book, this.s.puzzles);
     this.progress = loadProgress(cf);
     this.titlePreset = this.s ? this.s.preset : nextRank(cf, this.progress);
     this.titleCharacter = this.s?.character ?? cf.characters?.find((c) => c.ready)?.id ?? 'detective';
@@ -323,9 +346,24 @@ export class Session {
 
   // ---------- title and board ----------
 
-  newCase() {
-    if (!this.unlocked(this.titlePreset)) return;
-    this.s = newGame(this.cf, this.book, this.titlePreset, this.titleCharacter).s;
+  async newCase() {
+    if (!this.unlocked(this.titlePreset) || this.building) return;
+    const preset = this.titlePreset;
+    const seed = pickSeed();
+    // fresh puzzles from a worker; when they can't be had in time the shipped ones play, so starting never fails
+    let fresh = null;
+    if (seed && FRESH_RANKS.includes(preset)) {
+      this.building = true;
+      fresh = await buildInWorker({ cf: this.base, preset, seed }, makeWorker);
+      this.building = false;
+    }
+    this.book = { ...this.shipped, ...(fresh?.book ?? {}) };
+    const game = newGame(this.cf, this.book, preset, this.titleCharacter);
+    if (fresh) {
+      game.s.seed = fresh.seed;
+      game.s.puzzles = fresh.book;
+    }
+    this.s = game.s;
     this.townPose = null;
     this.hub = 'board';
     this.show('intro');
