@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { describe, expect, it } from 'vitest';
-import { addExpressions, HAIR_BUNCHES, HAIR_LINKS, BASIS, FEATURES, FEELINGS, glbMaterial, GlbFigure, HAIR, hairiness, hairTo, HUMAN, isHairColour, layoutFor, meshOf, skinTo } from '../src/town/glbFigure';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { addExpressions, HAIR_BUNCHES, HAIR_LINKS, BASIS, FEATURES, FEELINGS, glbMaterial, GlbFigure, HAIR, MIP_LEVELS, shortMips, hairiness, hairTo, HUMAN, isHairColour, layoutFor, meshOf, skinTo } from '../src/town/glbFigure';
 import type { Activity } from '../src/town/figure3d';
 
 const still: Activity = { t: 1, walk: 0, stride: 0, mood: null, look: null };
@@ -101,6 +101,52 @@ describe('3D model material', () => {
     expect(m.customProgramCacheKey()).toBe('glbfigure');
     // a model with no pictures is plain
     expect(glbMaterial(null, 0).map).toBeNull();
+  });
+});
+
+describe('3D model picture sizes', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const fakeCanvases = (context: object | null) => {
+    const made: { width: number; height: number }[] = [];
+    vi.stubGlobal('document', {
+      createElement: () => {
+        const c = { width: 0, height: 0, getContext: () => context };
+        made.push(c);
+        return c;
+      },
+    });
+    return made;
+  };
+
+  it('keeps only the full picture and a few halvings, so far-off patches do not bleed into each other', () => {
+    const made = fakeCanvases({ drawImage: vi.fn() });
+    const tex = new THREE.Texture({ width: 2048, height: 1024 } as unknown as HTMLImageElement);
+    shortMips(tex);
+    expect(tex.mipmaps).toHaveLength(MIP_LEVELS);
+    expect(made.map((c) => [c.width, c.height])).toEqual(Array.from({ length: MIP_LEVELS - 1 }, (_, i) => [2048 >> (i + 1), 1024 >> (i + 1)]));
+    expect(tex.generateMipmaps).toBe(false);
+    expect(tex.minFilter).toBe(THREE.LinearMipmapLinearFilter);
+  });
+
+  it('stops at one pixel for a tiny picture', () => {
+    fakeCanvases({ drawImage: vi.fn() });
+    const tex = new THREE.Texture({ width: 2, height: 1 } as unknown as HTMLImageElement);
+    shortMips(tex);
+    expect(tex.mipmaps).toHaveLength(1);
+  });
+
+  it('leaves the picture alone with nothing to draw on, no picture yet, or no page', () => {
+    fakeCanvases(null);
+    const tex = new THREE.Texture({ width: 64, height: 64 } as unknown as HTMLImageElement);
+    shortMips(tex);
+    expect(tex.generateMipmaps).toBe(true);
+    const empty = new THREE.Texture();
+    shortMips(empty);
+    expect(empty.generateMipmaps).toBe(true);
+    shortMips(null);
+    vi.unstubAllGlobals();
+    shortMips(tex);
+    expect(tex.generateMipmaps).toBe(true);
   });
 });
 
