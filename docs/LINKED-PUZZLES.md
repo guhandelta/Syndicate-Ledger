@@ -1,6 +1,6 @@
 # Linked puzzles: one connected investigation per rank
 
-Status: **approved 2026-11-23. Option 1 (chain) is built for Case 1: Junior J2 to J5 and Detective, Inspector and Chief L2 to L4 (docs/RULEBOOK.md section 2c). Still to come, each as its own PR: shared night for Chief, per-rank seeds with in-browser generation, the clues layer.**
+Status: **approved 2026-11-23. Option 1 (chain) is built for Case 1: Junior J2 to J5 and Detective, Inspector and Chief L2 to L4 (docs/RULEBOOK.md section 2c). The clues layer is built as story-worded links. Still to come: per-rank seeds with in-browser generation. The Chief shared night is on hold: it mostly repeats the links and lets a grid be copied across books.**
 
 ## 1. The problem
 
