@@ -73,7 +73,7 @@ export function planLinks(cf: CaseFile, preset: Preset, lead: Lead, size: number
     const speaker = speakerFor(cf, lead, preset, spec);
     const herring = spec.herring ? { herring: true as const } : {};
     const cellOf = (): [number, number] => [rng.int(0, size - 1), rng.int(0, size - 1)];
-    const done = (claim: unknown, ref: LinkRef) => out.push({ speaker, claim, via: { lead: spec.from, ref, ...herring } } as Planted<never>);
+    const done = (claim: unknown, ref: LinkRef) => out.push({ speaker, claim, via: { lead: spec.from, ref, ...herring, ...(spec.story ? { story: spec.story } : {}) } } as Planted<never>);
     const two = (n: number): [number, number] => {
       const a = rng.int(0, n - 1);
       return [a, (a + 1 + rng.int(0, n - 2)) % n];
@@ -174,9 +174,14 @@ const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 /** A link clue in plain words, quoting where the number or person comes from. */
 export function describeLinked(cf: CaseFile, lead: Lead, p: AnyAnswered, st: { claim: unknown; via: Via }, answers: Answers, tone: Tone): string {
   const q = phrase(cf, st.via, answers, tone);
+  const story = st.via.story;
+  const told = (fill: { a?: string; b?: string; when?: string }) =>
+    (tone === 'friendly' ? story!.friendly ?? story!.crime : story!.crime).replace(/\{(a|b|when|q)\}/g, (_, k: string) => (k === 'q' ? q : fill[k as 'a' | 'b' | 'when'] ?? ''));
   if (p.type === 'timeline') {
     const c = st.claim as TimeClaim;
     const L = timelineLabels(lead, p.size, tone);
+    if (story && c.kind === 'at') return told({ a: `“${L.moments[c.m]}”` });
+    if (story && c.kind === 'apart') return told({ a: `“${L.moments[c.a]}”`, b: `“${L.moments[c.b]}”` });
     if (c.kind === 'at') return `“${L.moments[c.m]}” happened at the time numbered ${q} (the first time is 1).`;
     if (c.kind !== 'apart') return describeStatement(cf, lead, p as never, c, tone);
     return `“${L.moments[c.a]}” and “${L.moments[c.b]}” were as many ${L.step}s apart as ${q}.`;
@@ -184,16 +189,21 @@ export function describeLinked(cf: CaseFile, lead: Lead, p: AnyAnswered, st: { c
   if (p.type === 'cipher') {
     const c = st.claim as CipherClaim;
     const D = (k: number) => `the ${ORDINALS[k]} digit`;
+    if (story && c.kind === 'is') return told({ a: D(c.p) });
+    if (story && c.kind === 'apart') return told({ a: D(c.a), b: D(c.b) });
     if (c.kind === 'is') return `${cap(D(c.p))} is ${q}.`;
     if (c.kind === 'apart') return `${cap(D(c.a))} and ${D(c.b)} are ${q} apart.`;
   }
   if (p.type === 'network') {
     const c = st.claim as NetClaim & { kind: 'linked' };
     const people = networkPeople(cf, lead, p.size);
+    if (story) return told({ a: people[c.b] });
     return `${people[c.b]} was in contact with ${q}.`;
   }
   const L = gridLabels(cf, lead, p.size, tone);
   const c = st.claim as Claim;
+  if (story && c.kind === 'is') return told({ a: L.people[c.cell[1]], when: at(L.times[c.cell[0]]) });
+  if (story && c.kind === 'sum') return told({ a: L.people[c.cells[0][1]], b: L.people[c.cells[1][1]], when: at(L.times[c.cells[0][0]]) });
   if (c.kind === 'is') return p.type === 'ledger' ? `${L.people[c.cell[1]]}’s ${L.times[c.cell[0]]} figure equals ${q}.` : `${L.people[c.cell[1]]}’s room number ${at(L.times[c.cell[0]])} equals ${q}.`;
   if (c.kind === 'sum') return `${cap(at(L.times[c.cells[0][0]]))}, ${L.people[c.cells[0][1]]}’s and ${L.people[c.cells[1][1]]}’s figures add up to ${q}.`;
   return describeStatement(cf, lead, p, c, tone);

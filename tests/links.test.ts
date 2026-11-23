@@ -236,6 +236,29 @@ describe('every kind of link', () => {
     expect(word(leads[4], cip, { claim: { kind: 'odd', p: 0 }, via: viaL })).toBe(word(leads[4], cip, { claim: { kind: 'odd', p: 0 }, via: viaL }));
   });
 
+  it('words a link through the story when the case gives it, in either tone', () => {
+    const tell = (lead: Lead, p: AnyAnswered, spec: object, tone: 'crime' | 'friendly', seed = 1) => {
+      const [pl] = plan(lead, spec, seed);
+      return describeLinked(S, lead, p, pl, answers, tone);
+    };
+    const both = { crime: 'CR {a}|{b}|{when}|{q}', friendly: 'FR {a}|{when}|{q}' };
+    const specs: [Lead, AnyAnswered, object][] = [
+      [leads[0], ledger, { from: 'L', take: 'number', use: 'is', story: both }],
+      [leads[0], ledger, { from: 'L', take: 'number', use: 'sum', story: both }],
+      [leads[2], tline, { from: 'L', take: 'number', use: 'is', story: both }],
+      [leads[2], tline, { from: 'L', take: 'number', use: 'apart', story: both }],
+      [leads[4], cip, { from: 'L', take: 'number', use: 'is', story: both }],
+      [leads[4], cip, { from: 'L', take: 'number', use: 'apart', story: both }],
+      [leads[3], net, { from: 'L', take: 'person', use: 'linked', story: both }],
+    ];
+    for (const [lead, p, spec] of specs) {
+      expect(tell(lead, p, spec, 'crime', 3), JSON.stringify(spec)).toMatch(/^CR .*in “Lead L”/);
+      expect(tell(lead, p, spec, 'friendly', 3)).toMatch(/^FR /);
+    }
+    // a story with no friendly wording uses the other one
+    expect(tell(leads[0], ledger, { from: 'L', take: 'number', use: 'is', story: { crime: 'Only {q}' } }, 'friendly')).toMatch(/^Only what/);
+  });
+
   it('checks that a link says what it quotes', () => {
     const [pl] = plan(leads[0], { from: 'L', take: 'number', use: 'is' });
     expect(linkResolves(S, leads[0], ledger, pl, answers)).toBeNull();

@@ -132,6 +132,11 @@ export interface LinkSpec {
   speaker?: string;
   /** A true clue the puzzle does not need. It costs time, never correctness. */
   herring?: boolean;
+  /**
+   * The clue worded through the story (a margin note, a whisper). {q} is where the earlier answer is quoted; {a}, {b} and
+   * {when} are the people, moments, digits or hour the clue is about. Only the wording changes, never what the clue says.
+   */
+  story?: { crime: string; friendly?: string };
 }
 
 export interface Lead {
