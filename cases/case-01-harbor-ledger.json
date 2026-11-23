@@ -371,7 +371,7 @@
     },
     {
       "id": "L3", "type": "ledger", "cost": 2, "opensAfter": ["L2"],
-      "links": [{ "from": "L2", "take": "number", "use": "is", "story": {"crime": "A torn payment slip carried only this: {a}’s figure {when} equals {q}."} }, { "from": "L1", "take": "number", "use": "sum", "ranks": ["inspector", "chief"], "story": {"crime": "The bookkeeper’s margin note said {when}, {a} and {b} together made {q}."} }],
+      "links": [{ "from": "L2", "take": "number", "use": "is", "story": {"crime": "A torn payment slip carried only this: {a}’s figure {when} equals {q}."} }, { "from": "L1", "take": "number", "use": "is", "ranks": ["detective"], "herring": true, "story": {"crime": "An old receipt in the same envelope said {a}’s figure {when} equals {q}."} }, { "from": "L1", "take": "number", "use": "sum", "ranks": ["inspector", "chief"], "story": {"crime": "The bookkeeper’s margin note said {when}, {a} and {b} together made {q}."} }],
       "title": { "crime": "Tip's payment records", "friendly": "Tip's secret notes" },
       "intro": { "crime": "Tip hands over his payment records, a little too eagerly. Work out the payments and check what Tip says about them.", "friendly": "Tip gives you his notes. He seems very keen to help. Check if what he says matches the numbers." },
       "columns": ["tip", "vex", "meena", "kane", "crane", "nevethitha", "karunakaran"],
@@ -383,7 +383,7 @@
     },
     {
       "id": "L4", "type": "ledger", "cost": 2, "opensAfter": ["L3"], "hard": true,
-      "links": [{ "from": "L3", "take": "number", "use": "is", "story": {"crime": "Pinned inside the harbormaster’s drawer: {a}’s figure {when} equals {q}."} }],
+      "links": [{ "from": "L3", "take": "number", "use": "is", "story": {"crime": "Pinned inside the harbormaster’s drawer: {a}’s figure {when} equals {q}."} }, { "from": "L2", "take": "number", "use": "is", "ranks": ["detective", "inspector"], "story": {"crime": "A camera still was clipped to the page: {a}’s figure {when} equals {q}."} }],
       "title": { "crime": "The harbormaster's private ledger", "friendly": "The secret ledger" },
       "intro": { "crime": "Hidden in Warehouse 9: a private ledger in Crane's handwriting. Crack it and the whole trail is exposed.", "friendly": "Hidden in Warehouse 9: a secret book in Mr. Crane's handwriting! Crack it to solve the case." },
       "columns": ["crane", "vex", "meena", "kane", "tip", "nevethitha", "karunakaran"],
