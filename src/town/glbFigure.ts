@@ -396,9 +396,43 @@ export function addExpressions(geo: THREE.BufferGeometry, box: FaceBox, at: Feat
   });
 }
 
+/** How many sizes of each picture the GPU may use when the person is far away: the full size and one halving. */
+export const MIP_LEVELS = 2;
+
+/**
+ * Image-to-3D tools pack the model's picture as patches that touch with no gap: the hair's black patch sits right
+ * next to the coat's white one. The GPU's smallest copies of the picture blend neighbouring patches, which shows as
+ * white flecks on dark hair and trousers once the person is a few steps away. Stopping at half the
+ * size keeps the blend to a pixel or two of the full picture.
+ */
+export function shortMips(tex: THREE.Texture | null | undefined): void {
+  const image = tex?.image as (CanvasImageSource & { width: number; height: number }) | undefined;
+  if (!tex || !image?.width || typeof document === 'undefined') return;
+  const levels: CanvasImageSource[] = [image];
+  let from: CanvasImageSource = image;
+  for (let i = 1, w = image.width, h = image.height; i < MIP_LEVELS && w > 1 && h > 1; i++) {
+    w = Math.max(1, w >> 1);
+    h = Math.max(1, h >> 1);
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const g = c.getContext('2d');
+    if (!g) return;
+    g.drawImage(from, 0, 0, w, h);
+    levels.push(c);
+    from = c;
+  }
+  tex.mipmaps = levels as unknown as THREE.Texture['mipmaps'];
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.needsUpdate = true;
+}
+
 /** The model's own pictures, lit like the rest of the town. */
 export function glbMaterial(source: THREE.Material | null, glow: number): THREE.MeshLambertMaterial {
   const from = source as THREE.MeshStandardMaterial | null;
+  shortMips(from?.map);
+  shortMips(from?.normalMap);
   const material = new THREE.MeshLambertMaterial({ map: from?.map ?? null, normalMap: from?.normalMap ?? null });
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uGlow = { value: glow };
