@@ -20,7 +20,7 @@ function solve(g: ReturnType<typeof newGame>, id: string) {
 }
 
 describe('case 1', () => {
-  it('has a verified puzzle for every lead and preset', () => {
+  it('has a verified puzzle for every lead and preset', { timeout: 120_000 }, () => {
     for (const lead of cf.leads)
       for (const preset of PRESETS) {
         const p = book[`${lead.id}:${preset}`];

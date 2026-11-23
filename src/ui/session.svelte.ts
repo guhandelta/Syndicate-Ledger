@@ -14,6 +14,7 @@ import {
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
 import { describeStatement, gridLabels, networkPeople, t, timelineLabels, type Tone } from '../game/text';
+import { wordStatement, type Answers } from '../game/links';
 import { townForRank, type Pose } from '../town/townLogic';
 import type { Town } from '../town/townTypes';
 import { idleHint, IDLE_MS, type IdleHint } from './idleHint';
@@ -122,6 +123,8 @@ export class Session {
   accuseTarget = $state<CastMember | null>(null);
   evidence = $state<string[]>([]);
   helpOpen = $state(false);
+  /** The evidence panel: every solved lead's answer, to look back at while reading a linked clue. */
+  evidenceOpen = $state(false);
   helpTab = $state<'play' | 'rank' | 'case' | 'controls'>('play');
   /** The corner tip shown after the player has been still for a while (src/ui/idleHint.ts). */
   idleTip = $state<IdleHint | null>(null);
@@ -433,6 +436,19 @@ export class Session {
 
   get timeLabels() {
     return timelineLabels(this.lead, this.anyPuzzle.size, this.tone);
+  }
+
+  /** This rank's answers so far, by lead id: what a linked clue quotes. */
+  get answers(): Answers {
+    const out: Answers = {};
+    if (!this.s) return out;
+    for (const l of this.cf.leads) out[l.id] = this.book[`${l.id}:${this.s.preset}`];
+    return out;
+  }
+
+  /** A statement in plain words; a linked clue quotes the earlier puzzle it comes from. */
+  say(st: { claim: AnyClaim; via?: import('../engine/via').Via }): string {
+    return wordStatement(this.cf, this.lead, this.anyPuzzle, st, this.answers, this.tone);
   }
 
   /** A statement in plain words, for either kind of puzzle. */

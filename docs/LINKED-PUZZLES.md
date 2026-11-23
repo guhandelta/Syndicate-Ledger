@@ -1,6 +1,6 @@
 # Linked puzzles: one connected investigation per rank
 
-Status: **proposal, waiting for Guha to pick an option.** No game code changes until then. Section 7 covers running all three options together.
+Status: **approved 2026-11-23. Option 1 (chain) is built for Case 1: Junior J2 to J5 and Detective, Inspector and Chief L2 to L4 (docs/RULEBOOK.md section 2c). Still to come, each as its own PR: shared night for Chief, per-rank seeds with in-browser generation, the clues layer.**
 
 ## 1. The problem
 

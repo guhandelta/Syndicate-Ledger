@@ -22,6 +22,8 @@
   }
 
   const friendly = $derived(session.tone === 'friendly');
+  /** Junior and Detective are told where a link clue points; higher ranks work it out. */
+  const notesMark = $derived(session.g.s.preset === 'junior' || session.g.s.preset === 'detective');
 
   /** Before the lead is solved a line sounds the way the person talks (or shifty, once the player calls it a lie). */
   function voiceOf(i: number): Voice {
@@ -53,9 +55,9 @@
       {@const m = lp.marks[i]}
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
       <li class="stmt said mark-{m}" class:pickable={picking} onclick={picking ? (e) => pick(e, i) : undefined}>
-        <div class="stmt-who">{who.name} {#if unverified(i)}<span class="tag">Unverified</span>{/if}</div>
+        <div class="stmt-who">{who.name} {#if unverified(i)}<span class="tag">Unverified</span>{/if} {#if s.via && notesMark}<span class="tag link-tag" title="This clue points back to a puzzle you solved. Open Evidence to look it up.">From your notes</span>{/if}</div>
         <Dialogue person={who} voice={voiceOf(i)} {friendly} size={48}>
-          <p>{session.describe(s.claim)}</p>
+          <p>{session.say(s)}</p>
         </Dialogue>
         {#if lp.solved}
           <div class="verdict-tag {p.truth[i] ? 'ok' : 'bad'}">{p.truth[i] ? 'True' : 'Lie'}</div>

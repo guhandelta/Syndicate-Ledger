@@ -417,3 +417,20 @@ kbd {
 .scene { margin: 18px 0; display: grid; gap: 10px; }
 .scene .narration { font-style: italic; color: var(--muted); margin: 4px 0; }
 .clippings { display: flex; flex-wrap: wrap; gap: 1.1rem; margin: 1rem 0 1.4rem; align-items: flex-start; }
+
+/* ---------- evidence: solved answers to look back at ---------- */
+.evidence-btn {
+  position: fixed; left: 16px; bottom: 16px; z-index: 15; height: 48px; padding: 0 16px; border-radius: 24px;
+  border: 2px solid var(--accent); background: var(--panel); color: var(--accent); font: 600 0.95rem system-ui, sans-serif; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.evidence-btn:hover { background: var(--panel-2); }
+.evidence-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.evidence-sheet { margin: 0 0 18px; }
+.evidence-sheet h3 { margin: 12px 0 6px; }
+.evidence-table { border-collapse: collapse; font-size: 0.9rem; }
+.evidence-table th, .evidence-table td { border: 1px solid var(--line); padding: 4px 8px; text-align: center; }
+.evidence-table th { color: var(--muted); font-weight: 600; }
+.evidence-code { display: flex; gap: 6px; }
+.evidence-code span { border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font-weight: 700; }
+.link-tag { background: var(--panel-2); color: var(--accent); }

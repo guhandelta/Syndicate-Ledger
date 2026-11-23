@@ -27,6 +27,7 @@
  */
 import { makeRng, type Rng } from './rng';
 import type { SpeakerSpec } from './generator';
+import type { Via } from './via';
 
 export type CipherClaim =
   /** The digit at position p is d. */
@@ -52,6 +53,8 @@ export interface CipherGiven {
 export interface CipherStatement {
   speaker: string;
   claim: CipherClaim;
+  /** Set when the clue quotes an earlier puzzle's answer (src/engine/via.ts). */
+  via?: Via;
 }
 
 export interface CipherPuzzle {
@@ -159,6 +162,8 @@ export interface CipherOptions {
   maxStatements?: number;
   /** Digits shown in place at the start. */
   givens?: number;
+  /** Link clues quoting earlier answers: true on the answer, said first, and needed to settle it. The answer is redrawn until they hold. */
+  planted?: { speaker: string; claim: CipherClaim; via: Via }[];
   seed: number;
 }
 
@@ -168,6 +173,7 @@ function tryCipher(opts: CipherOptions, rng: Rng): CipherPuzzle | null {
   const n = opts.size;
   const maxStatements = opts.maxStatements ?? n + 4;
   const code = rng.shuffle(Array.from({ length: maxDigit(n) }, (_, i) => i + 1)).slice(0, n);
+  if (opts.planted && !opts.planted.every((p) => evalCipher(p.claim, code))) return null;
   const givens: CipherGiven[] = rng
     .shuffle(Array.from({ length: n }, (_, p) => p))
     .slice(0, opts.givens ?? 0)
@@ -193,8 +199,8 @@ function tryCipher(opts: CipherOptions, rng: Rng): CipherPuzzle | null {
   const statements: CipherStatement[] = [];
   const truth: boolean[] = [];
   const used = new Set<string>();
-  const add = (speaker: string, claim: CipherClaim, t: boolean) => {
-    statements.push({ speaker, claim });
+  const add = (speaker: string, claim: CipherClaim, t: boolean, via?: Via) => {
+    statements.push(via ? { speaker, claim, via } : { speaker, claim });
     truth.push(t);
     used.add(key(claim));
     falseCount = falseCount.map((f, i) => f + (evalCipher(claim, alive[i]) ? 0 : 1));
@@ -203,6 +209,11 @@ function tryCipher(opts: CipherOptions, rng: Rng): CipherPuzzle | null {
     alive = alive.filter((_, i) => keep[i]);
     falseCount = falseCount.filter((_, i) => keep[i]);
   };
+
+  const wrong = alive.slice();
+  for (const p of opts.planted ?? []) add(p.speaker, p.claim, true, p.via);
+  // a link that rules out no wrong code is not needed: try another answer
+  if ((opts.planted ?? []).some((p) => wrong.every((o) => evalCipher(p.claim, o)))) return null;
 
   // lies that hold on many wrong codes, so they sound right
   for (const sp of opts.speakers)

@@ -30,7 +30,7 @@ export function gridLabels(cf: CaseFile, lead: Lead, size: number, tone: Tone): 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export const at = (time: string) => (DAYS.includes(time) ? `on ${time}` : /^[A-Z][a-z]{2}$/.test(time) ? `in ${time}` : `at ${time}`);
 /** "the Ice house", but "Warehouse 9" (a numbered place is already a name). */
-const the = (room: string) => (/\d$/.test(room) ? room : `the ${room}`);
+export const the = (room: string) => (/\d$/.test(room) ? room : `the ${room}`);
 
 /** Plain-language wording of a claim (rule book: statements must be checkable). */
 export function describeClaim(c: Claim, L: GridLabels, type: 'ledger' | 'surveillance'): string {

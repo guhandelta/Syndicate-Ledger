@@ -2,7 +2,7 @@
   import { PRESET_RULES } from '../../game/presets';
   import { clockOn, puzzleOf, stars, totalHours } from '../../game/state';
   import { caseClosed, partOf, rankAbove } from '../../game/rankStory';
-  import { describeStatement } from '../../game/text';
+  import { wordStatement } from '../../game/links';
   import type { Session } from '../session.svelte';
   import Scene from './Scene.svelte';
 
@@ -33,7 +33,7 @@
             : who.protects
               ? `${who.name} was covering for ${session.person(who.protects).name}.`
               : '';
-        return [{ key: `${lead.id}-${i}`, caught, who, said: describeStatement(cf, lead, p, s.claim, session.tone), motive }];
+        return [{ key: `${lead.id}-${i}`, caught, who, said: wordStatement(cf, lead, p, s, session.answers, session.tone), motive }];
       });
     }),
   );

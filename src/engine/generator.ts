@@ -3,6 +3,7 @@ import { gradePuzzle } from './logic';
 import { randomLatin } from './latin';
 import { makeRng, type Rng } from './rng';
 import { enumerate } from './solver';
+import type { Via } from './via';
 import type { Cell, Claim, GeneratedPuzzle, Given, Grid, GridType, Statement, Zone } from './types';
 
 export interface SpeakerSpec {
@@ -28,6 +29,8 @@ export interface GenerateOptions {
   ledgerGivens?: number;
   /** Cells the answer must have. Planted before any clue is built; not shown to the player. */
   anchors?: { cell: Cell; value: number }[];
+  /** Link clues quoting earlier answers: true on the answer, said first, and needed to settle it. The answer is redrawn until they hold. */
+  planted?: { speaker: string; claim: Claim; via: Via }[];
   seed: number;
 }
 
@@ -142,12 +145,34 @@ export function randomClaim(sol: Grid, type: GridType, rng: Rng): Claim {
   return { kind: 'isNot', cell: a, value: v };
 }
 
+/**
+ * Renames the numbers of a Latin square (still a Latin square, still random) so that "is" link clues hold, instead of
+ * redrawing until they do. A clue that can't be fitted this way is left for the caller to reject.
+ */
+function fitPlanted(sol: Grid, claims: Claim[]) {
+  const done: Cell[] = [];
+  for (const c of claims) {
+    if (c.kind !== 'is') continue;
+    const [r, col] = c.cell;
+    const have = sol[r][col];
+    if (have !== c.value) {
+      // swapping two numbers must not break a cell already fitted
+      if (done.some(([dr, dc]) => sol[dr][dc] === have || sol[dr][dc] === c.value)) continue;
+      for (const row of sol) for (let k = 0; k < row.length; k++) row[k] = row[k] === have ? c.value : row[k] === c.value ? have : row[k];
+    }
+    done.push(c.cell);
+  }
+}
+
 function tryGenerate(opts: GenerateOptions, rng: Rng): GeneratedPuzzle | null {
   const n = opts.size;
   const maxBase = opts.maxBase ?? 40;
   const maxStatements = opts.maxStatements ?? 8;
   const sol = randomLatin(n, rng);
+  if (opts.planted?.length)
+    fitPlanted(sol, [...(opts.anchors ?? []).map((a) => ({ kind: 'is', cell: a.cell, value: a.value }) as Claim), ...opts.planted.map((p) => p.claim)]);
   if (opts.anchors && !opts.anchors.every((a) => sol[a.cell[0]][a.cell[1]] === a.value)) return null;
+  if (opts.planted && !opts.planted.every((p) => evalClaim(p.claim, sol))) return null;
   const base = baseClues(sol, opts.type, rng, maxBase, opts.ledgerGivens);
   if (!base) return null;
   const others = base.all.filter((g) => g.some((row, r) => row.some((v, c) => v !== sol[r][c])));
@@ -163,11 +188,15 @@ function tryGenerate(opts: GenerateOptions, rng: Rng): GeneratedPuzzle | null {
   const statements: Statement[] = [];
   const truth: boolean[] = [];
   const falseCount = new Map<Grid, number>(others.map((g) => [g, 0]));
-  const add = (speaker: string, claim: Claim, t: boolean) => {
-    statements.push({ speaker, claim });
+  const add = (speaker: string, claim: Claim, t: boolean, via?: Via) => {
+    statements.push(via ? { speaker, claim, via } : { speaker, claim });
     truth.push(t);
     for (const g of others) if (!evalClaim(claim, g)) falseCount.set(g, falseCount.get(g)! + 1);
   };
+
+  for (const p of opts.planted ?? []) add(p.speaker, p.claim, true, p.via);
+  // a link that rules out no other grid is not needed: try another answer
+  if ((opts.planted ?? []).some((p) => others.every((g) => evalClaim(p.claim, g)))) return null;
 
   // lies: prefer ones that are true on many alternative grids, so they look plausible
   for (const sp of opts.speakers)
