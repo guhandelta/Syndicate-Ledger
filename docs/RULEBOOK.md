@@ -73,7 +73,8 @@ Puzzles within a rank are one investigation, not separate puzzles. A lead may ha
 - Wording by rank: Junior names the cell itself. Detective and above describe it through another person's figure in the same hour, so the player looks twice.
 - To the solver a link is an ordinary claim with the earlier number filled in, so the one-answer rule, lie counts and technique grades apply unchanged.
 - Two checks make each link real: the puzzle is **not** solved without its link clues (needed), and the link clues with the base clues **do not** settle it (not enough alone). A `herring` link is a true clue that is left out of the first check; it costs time, never correctness.
-- Case file: `links: [{ from, take: "number" | "person", use: "is" | "sum" | "apart" | "linked", ranks?, speaker?, herring? }]` on a lead. `npm run generate` builds each rank's leads in order and plants the clues; `npm run validate` checks that every link quotes its source exactly and passes both proofs.
+- Case file: `links: [{ from, take: "number" | "person", use: "is" | "sum" | "apart" | "linked", ranks?, speaker?, herring?, story? }]` on a lead. `npm run generate` builds each rank's leads in order and plants the clues; `npm run validate` checks that every link quotes its source exactly and passes both proofs.
+- A link may carry a `story`: the clue worded through the story (a torn slip, a whisper, a margin note) instead of the plain pointer, with `{q}` where the earlier answer is quoted and `{a}`, `{b}`, `{when}` for the people, moments, digits or hour. The story only changes the wording, never what the clue says, so every check above is unchanged.
 
 ## 3. Investigation layer
 
@@ -310,6 +311,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 | Date | Change |
 | --- | --- |
 | 2026-11-23 | Linked clues (section 2c): puzzles within a rank quote each other's answers. Case 1 Junior (J2 to J5), Detective, Inspector and Chief (L2 to L4) have link clues, with an Evidence panel to look back at solved answers. Proposal and options: docs/LINKED-PUZZLES.md |
+| 2026-11-23 | Story-worded link clues (the "clues" layer): a link's `story` words it through the case, in both tones. Case 1's links have one |
 | 2026-11-22 | Meena is now a finished 3D model from an image-to-3D tool (scripts/make-glb.py, src/town/glbFigure.ts), with a skeleton added at load. She walks, idles, turns her head and shows each feeling on her own face (brows, lids, mouth) in a conversation. Others keep the picture-built figures until their models arrive. |
 | 2026-11-20 | The town's people are 3D now: each is built from Guha's four body views (scripts/make-figures.py), walks with swinging arms and legs, sways and breathes while standing, turns their head toward the detective, and in a conversation turns to face you, wears the expression portrait of their latest line on their face and shows it in their body (leaning in when angry, looking down and away when caught lying, and so on). The conversation panel moved to the right so their face stays in view. |
 | 2026-11-20 | Renamed Juno Park, Rosa Diaz and Mara Quill to Nevethitha Rajan, Meena Selvi and Kavya Narayanan everywhere (ids `nevethitha`, `meena`, `kavya`) and swapped in their new art: all seven faces, the Junior faces, and the 3D town figures. |

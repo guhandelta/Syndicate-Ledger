@@ -29,6 +29,8 @@ export interface Via {
   ref: LinkRef;
   /** A true clue the puzzle does not need: it costs the player time, never correctness. */
   herring?: boolean;
+  /** The clue worded through the story, with {a} {b} {when} {q} filled in when it is shown. Never changes what the clue says. */
+  story?: { crime: string; friendly?: string };
 }
 
 /** The number a ref points at (not for 'holder'). */
