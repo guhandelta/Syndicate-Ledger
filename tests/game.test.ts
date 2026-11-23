@@ -20,14 +20,15 @@ function solve(g: ReturnType<typeof newGame>, id: string) {
 }
 
 describe('case 1', () => {
-  it('has a verified puzzle for every lead and preset', { timeout: 120_000 }, () => {
-    for (const lead of cf.leads)
-      for (const preset of PRESETS) {
+  // one test per puzzle, so no single test holds the worker for long. The 7x7 Chief puzzles take many seconds each
+  // to check (a CI run with coverage stalled the test worker), so `npm run validate` checks those.
+  for (const lead of cf.leads)
+    for (const preset of PRESETS.filter((r) => r !== 'chief'))
+      it(`has a verified puzzle for ${lead.id} at ${preset}`, { timeout: 120_000 }, () => {
         const p = book[`${lead.id}:${preset}`];
         expect(p, `${lead.id}:${preset}`).toBeTruthy();
         expect(verifyUnique(p)).toEqual({ ok: true });
-      }
-  });
+      });
 
   it('reaches the full bust on the default clock without informants', () => {
     const g = newGame(cf, book, 'inspector');
