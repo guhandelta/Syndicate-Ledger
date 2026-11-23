@@ -102,10 +102,8 @@ describe('events', () => {
     const g = fresh('junior');
     g.s.leads.L2.missingSpeakers = ['nevethitha'];
     expect(gapCells(g, 'L2').length).toBeGreaterThan(0);
-    // at Chief the statements alone still settle the grid without Nevethitha
-    const c = fresh('chief');
-    c.s.leads.L2.missingSpeakers = ['nevethitha'];
-    expect(gapCells(c, 'L2')).toEqual([]);
+    // with everyone still there the statements alone settle the grid, so nothing needs showing
+    expect(gapCells(fresh('chief'), 'L2')).toEqual([]);
   });
 
   it('accounts for cells already shown when finding the gap', () => {

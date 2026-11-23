@@ -1,3 +1,5 @@
+import type { Via } from './via';
+
 /** [row, col]. Rows are time slots, columns are people. */
 export type Cell = [number, number];
 /** 0 = empty, otherwise 1..N. grid[row][col]. */
@@ -29,6 +31,8 @@ export interface Given {
 export interface Statement {
   speaker: string;
   claim: Claim;
+  /** Set when the clue quotes an earlier puzzle's answer (src/engine/via.ts). */
+  via?: Via;
 }
 
 /** What the player sees (minus truth and solution). */

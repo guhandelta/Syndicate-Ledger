@@ -50,3 +50,14 @@ export const CIPHER_RULES: Record<Preset, { minGrade: number; maxStatements: num
   inspector: { minGrade: 3, maxStatements: 10, givens: 0 },
   chief: { minGrade: 3, maxStatements: 13, givens: 1 },
 };
+
+/**
+ * How a link clue is worded by rank. Junior names the cell it quotes; higher ranks describe it through another
+ * person's figure in the same hour, so the player has to look twice in their notes.
+ */
+export const LINK_RULES: Record<Preset, { indirect: boolean }> = {
+  junior: { indirect: false },
+  detective: { indirect: true },
+  inspector: { indirect: true },
+  chief: { indirect: true },
+};

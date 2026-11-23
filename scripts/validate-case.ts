@@ -12,6 +12,7 @@ import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { CIPHER_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
 import { carriedEvidence, caseForRank, partOf } from '../src/game/rankStory';
+import { checkLinks, linkResolves, linksFor, type Answers } from '../src/game/links';
 import { t } from '../src/game/text';
 import { validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
@@ -65,6 +66,18 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
       }
     }
     for (const id of lead.opensAfter) if (!leadIds.has(id)) fail(`${lead.id}: opensAfter unknown lead ${id}`);
+    // a link quotes a lead the player has already solved: one that opens strictly before this one
+    const before = new Set<string>();
+    const walk = (id: string) => {
+      for (const o of cf.leads.find((l) => l.id === id)?.opensAfter ?? []) if (!before.has(o)) { before.add(o); walk(o); }
+    };
+    walk(lead.id);
+    for (const spec of lead.links ?? []) {
+      if (!before.has(spec.from)) fail(`${lead.id}: link quotes ${spec.from}, which does not open before it`);
+      if (spec.take === 'person' && (lead.type !== 'network' || spec.use !== 'linked')) fail(`${lead.id}: a person link belongs in a network lead as "linked"`);
+      if (spec.take === 'number' && lead.type === 'network') fail(`${lead.id}: a network lead links to a person, not a number`);
+      if (spec.take === 'number' && spec.use === 'linked') fail(`${lead.id}: "linked" is for people`);
+    }
     if (!LEAD_TYPES.includes(lead.type)) fail(`${lead.id}: unknown type "${lead.type}"`);
     for (const [k, c] of (lead.clippings ?? []).entries()) {
       for (const tone of ['crime', 'friendly'] as const)
@@ -174,6 +187,17 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
             const got = p.solution[lead.rows.indexOf(a.time)]?.[lead.columns.indexOf(a.person)];
             if (got !== a.value) fail(`${key}: the answer has ${a.person} at ${a.time} as ${got}, the anchor says ${a.value}`);
           }
+        // link clues: quote the earlier answer exactly, are needed, and are not enough alone
+        const answers: Answers = {};
+        for (const l of cf.leads) answers[l.id] = book[`${l.id}:${preset}`];
+        const linkStatements = p.statements.filter((s) => s.via);
+        if (linkStatements.length < linksFor(lead, preset).length) fail(`${key}: has ${linkStatements.length} link clues, the case wants ${linksFor(lead, preset).length}; run npm run generate`);
+        for (const st of linkStatements) {
+          const bad = linkResolves(cf, lead, p, st as never, answers);
+          if (bad) fail(`${key}: link clue ${bad}`);
+        }
+        const lc = checkLinks(p);
+        if (!lc.ok) fail(`${key}: ${lc.reason}`);
         const lies = p.statements.filter((s, i) => !p.truth[i]).map((s) => s.speaker).sort();
         const expected = [...(lead.liars[preset] ?? [])].sort();
         if (lies.join() !== expected.join()) fail(`${key}: liars are [${lies}] but the case says [${expected}]`);

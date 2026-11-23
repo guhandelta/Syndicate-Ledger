@@ -115,6 +115,25 @@ export interface Clipping {
   body: Text;
 }
 
+/** One link clue of a lead. */
+export interface LinkSpec {
+  /** The earlier lead whose answer is quoted. It must come before this lead in the chain. */
+  from: string;
+  /** What is quoted: a number from that answer, or a person. */
+  take: 'number' | 'person';
+  /**
+   * How it is used in this lead: "is" (a cell, digit or moment equals it), "sum" (two cells add up to it),
+   * "apart" (two moments or digits differ by it), "linked" (a person was in contact with the quoted person).
+   */
+  use: 'is' | 'sum' | 'apart' | 'linked';
+  /** Only these ranks get the clue. Default: every rank. */
+  ranks?: Preset[];
+  /** Who says it. Default: the first witness of the lead who tells no lie at that rank. */
+  speaker?: string;
+  /** A true clue the puzzle does not need. It costs time, never correctness. */
+  herring?: boolean;
+}
+
 export interface Lead {
   id: string;
   type: LeadType;
@@ -145,6 +164,11 @@ export interface Lead {
   anchors?: { time: string; person: string; value: number }[];
   /** Torn newspaper scraps shown above the puzzle. Words torn away are runs of ▒. Keep what they say true to the answer. */
   clippings?: Clipping[];
+  /**
+   * Link clues: statements in this lead that quote an earlier lead's answer (docs/LINKED-PUZZLES.md). Each is built from
+   * the earlier answer when this puzzle is generated, so the puzzle still has exactly one answer.
+   */
+  links?: LinkSpec[];
   /** The lead that follows this one at once: closing this lead offers to go straight on to it (a two-step finale). */
   then?: string;
 }

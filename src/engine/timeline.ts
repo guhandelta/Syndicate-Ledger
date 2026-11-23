@@ -5,6 +5,7 @@
  */
 import { makeRng, type Rng } from './rng';
 import type { SpeakerSpec } from './generator';
+import type { Via } from './via';
 
 export type TimeClaim =
   /** Moment m happened at slot s. */
@@ -25,6 +26,8 @@ export interface TimeGiven {
 export interface TimeStatement {
   speaker: string;
   claim: TimeClaim;
+  /** Set when the clue quotes an earlier puzzle's answer (src/engine/via.ts). */
+  via?: Via;
 }
 
 export interface TimelinePuzzle {
@@ -142,6 +145,8 @@ export interface TimelineOptions {
   extraCorridors?: number;
   /** Fewest orders (the answer included) that fit before the statements are heard, so it is never trivial. */
   minAlternatives?: number;
+  /** Link clues quoting earlier answers: true on the answer, said first, and needed to settle it. The answer is redrawn until they hold. */
+  planted?: { speaker: string; claim: TimeClaim; via: Via }[];
   seed: number;
 }
 
@@ -171,6 +176,7 @@ function tryTimeline(opts: TimelineOptions, rng: Rng): TimelinePuzzle | null {
   const n = opts.size;
   const maxStatements = opts.maxStatements ?? n + 3;
   const sol = rng.shuffle(Array.from({ length: n }, (_, i) => i + 1));
+  if (opts.planted && !opts.planted.every((p) => evalTime(p.claim, sol))) return null;
   const givens: TimeGiven[] = rng
     .shuffle(Array.from({ length: n }, (_, m) => m))
     .slice(0, opts.givens ?? 0)
@@ -196,14 +202,18 @@ function tryTimeline(opts: TimelineOptions, rng: Rng): TimelinePuzzle | null {
   const truth: boolean[] = [];
   const falseCount = others.map(() => 0);
   const used = new Set<string>();
-  const add = (speaker: string, claim: TimeClaim, t: boolean) => {
-    statements.push({ speaker, claim });
+  const add = (speaker: string, claim: TimeClaim, t: boolean, via?: Via) => {
+    statements.push(via ? { speaker, claim, via } : { speaker, claim });
     truth.push(t);
     used.add(key(claim));
     others.forEach((o, i) => {
       if (!evalTime(claim, o)) falseCount[i]++;
     });
   };
+
+  for (const p of opts.planted ?? []) add(p.speaker, p.claim, true, p.via);
+  // a link that rules out no other order is not needed: try another answer
+  if ((opts.planted ?? []).some((p) => others.every((o) => evalTime(p.claim, o)))) return null;
 
   // lies that hold on many other orders, so they sound right
   for (const sp of opts.speakers)

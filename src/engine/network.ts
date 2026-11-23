@@ -12,6 +12,7 @@
  */
 import { makeRng, type Rng } from './rng';
 import type { SpeakerSpec } from './generator';
+import type { Via } from './via';
 
 export type NetClaim =
   /** a and b were in contact. */
@@ -28,6 +29,8 @@ export type NetClaim =
 export interface NetStatement {
   speaker: string;
   claim: NetClaim;
+  /** Set when the clue quotes an earlier puzzle's answer (src/engine/via.ts). */
+  via?: Via;
 }
 
 export interface NetworkPuzzle {
@@ -162,6 +165,8 @@ export interface NetworkOptions {
   maxStatements?: number;
   /** How many networks the counts alone must allow: a bigger number means more for the statements to settle. */
   minBase?: number;
+  /** Link clues quoting earlier answers: true on the answer, said first, and needed to settle it. The answer is redrawn until they hold. */
+  planted?: { speaker: string; claim: NetClaim; via: Via }[];
   seed: number;
 }
 
@@ -172,6 +177,7 @@ function tryNetwork(opts: NetworkOptions, rng: Rng): NetworkPuzzle | null {
   const maxStatements = opts.maxStatements ?? n + 4;
   const ps = pairs(n);
   const sol = ps.map(() => (rng.next() < 0.5 ? 1 : 0));
+  if (opts.planted && !opts.planted.every((p) => evalNet(p.claim, n, sol))) return null;
   const degrees = degreesOf(n, sol);
   const base = networksWithDegrees(degrees);
   // the counts alone must leave a real choice, but not so many that the statements can't settle it
@@ -193,14 +199,18 @@ function tryNetwork(opts: NetworkOptions, rng: Rng): NetworkPuzzle | null {
   const truth: boolean[] = [];
   const falseCount = others.map(() => 0);
   const used = new Set<string>();
-  const add = (speaker: string, claim: NetClaim, t: boolean) => {
-    statements.push({ speaker, claim });
+  const add = (speaker: string, claim: NetClaim, t: boolean, via?: Via) => {
+    statements.push(via ? { speaker, claim, via } : { speaker, claim });
     truth.push(t);
     used.add(key(claim));
     others.forEach((o, i) => {
       if (!evalNet(claim, n, o)) falseCount[i]++;
     });
   };
+
+  for (const p of opts.planted ?? []) add(p.speaker, p.claim, true, p.via);
+  // a link that rules out no other network is not needed: try another answer
+  if ((opts.planted ?? []).some((p) => others.every((o) => evalNet(p.claim, n, o)))) return null;
 
   // lies that hold on many other networks, so they sound right
   for (const sp of opts.speakers)

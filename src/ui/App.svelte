@@ -11,6 +11,7 @@
   import ModalView from './components/Modal.svelte';
   import Help from './components/Help.svelte';
   import IdleTip from './components/IdleTip.svelte';
+  import Evidence from './components/Evidence.svelte';
 
   let { session }: { session: Session } = $props();
 
@@ -179,4 +180,12 @@
 
 {#if session.helpOpen}
   <Help {session} />
+{/if}
+
+{#if session.game && (session.screen === 'puzzle' || session.screen === 'board') && session.cf.leads.some((l) => session.g.s.leads[l.id]?.solved)}
+  <button class="evidence-btn" title="Look back at the leads you have solved" onclick={() => (session.evidenceOpen = true)}>Evidence</button>
+{/if}
+
+{#if session.evidenceOpen}
+  <Evidence {session} />
 {/if}
