@@ -30,7 +30,9 @@
   let live = $state(false);
   /** The story shot on screen, if any. */
   let shot = $state<Shot | null>(null);
-  let shotTimer: ReturnType<typeof setTimeout> | undefined;
+  let shotTimer: number | undefined;
+  /** Longest stretch one frame may take off a shot's time: a stall while a 3D model loads doesn't eat the shot. */
+  const SHOT_STEP = 0.1;
 
   function doorState(d: Door): DoorState {
     if (!d.lead) return 'plain';
@@ -115,12 +117,22 @@
     shot = next;
     scene.clearKeys();
     scene.playShot(next);
-    shotTimer = setTimeout(endShot, next.seconds * 1000);
+    // the shot's time counts frames the player saw, so a busy moment can't cut it short
+    let left = next.seconds;
+    let last = performance.now();
+    const tick = (now: number) => {
+      left -= Math.min(SHOT_STEP, Math.max(0, now - last) / 1000);
+      last = now;
+      if (left <= 0) endShot();
+      else shotTimer = requestAnimationFrame(tick);
+    };
+    shotTimer = requestAnimationFrame(tick);
   }
 
   /** Ends the shot (its time is up, or the player skipped it) and hands the camera back. */
   function endShot() {
-    clearTimeout(shotTimer);
+    if (shotTimer !== undefined) cancelAnimationFrame(shotTimer);
+    shotTimer = undefined;
     if (!shot) return;
     session.seeShot(shot.id);
     shot = null;
@@ -191,7 +203,7 @@
       session.townPose = { ...made.pose };
       window.removeEventListener('resize', onResize);
       window.removeEventListener('blur', onBlur);
-      clearTimeout(shotTimer);
+      if (shotTimer !== undefined) cancelAnimationFrame(shotTimer);
       shot = null;
       live = false;
       made.dispose();
