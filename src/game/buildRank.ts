@@ -148,8 +148,8 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
   return built;
 }
 
-/** How many seeds a fresh play tries before it gives up. A rare seed can't be built with its links; the next one usually can. */
-export const SEED_TRIES = 6;
+/** How many seeds a fresh play tries before it gives up. About 1 Junior seed in 3 cannot be built with its links, and a failed seed costs milliseconds, so 40 tries all but never run out (0 of 300 seeds did). */
+export const SEED_TRIES = 40;
 
 /**
  * Builds a rank from a fresh seed, moving to a neighbouring seed when one can't be built.
