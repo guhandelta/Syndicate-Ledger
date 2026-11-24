@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Figure3D } from './figure3d';
 import { GlbFigure, meshOf } from './glbFigure';
 import { samplerOf } from './glbPixels';
+import { DAY, DAY_HOUR, NIGHT, NIGHT_HOUR, easeHour, lookAt, type Look } from './looks';
 import { cameraPose, forward, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, type Nearby, type Pose } from './townLogic';
 import type { Building, CameraKind, Door, Npc, Prop, Shot, Town, Vec2 } from './townTypes';
 
@@ -14,6 +15,8 @@ export type DoorState = 'open' | 'started' | 'solved' | 'locked' | 'plain';
 export interface TownView {
   doorStates: Record<string, DoorState>;
   firedEvents: string[];
+  /** The hour the story has reached; the town's light eases toward it. */
+  hour?: number;
 }
 
 export interface TownSceneOptions {
@@ -24,36 +27,18 @@ export interface TownSceneOptions {
   colors: Record<string, string>;
   /** Junior mode: daylight and no rain. */
   friendly: boolean;
+  /** The hour of the day the story has reached (see storyHour); the town opens at it. */
+  hour?: number;
   pose?: Pose;
   onNearby: (n: Nearby | null) => void;
 }
 
-interface Palette {
-  sky: number;
-  fogNear: number;
-  fogFar: number;
-  hemiSky: number;
-  hemiGround: number;
-  hemi: number;
-  sun: number;
-  sunPower: number;
-  ground: string;
-  cobble: string;
-  water: number;
-  lamp: number;
-  window: number;
-  figureTint: number;
-  rain: boolean;
-}
+/** Night-time colour of the pier's wooden edge and its daytime colour. */
+const EDGE_NIGHT = 0x4a3a2a;
+const EDGE_DAY = 0x9a7a52;
 
-const NIGHT: Palette = {
-  sky: 0x0a111e, fogNear: 30, fogFar: 85, hemiSky: 0x7f95c4, hemiGround: 0x1b1d24, hemi: 1.5, sun: 0x9db3ff, sunPower: 1.1,
-  ground: '#2b303b', cobble: '#232730', water: 0x0c2a3f, lamp: 2.2, window: 0xffc86a, figureTint: 0xd4dcf0, rain: true,
-};
-const DAY: Palette = {
-  sky: 0x9fd3f0, fogNear: 60, fogFar: 140, hemiSky: 0xffffff, hemiGround: 0x8a8f7a, hemi: 2.4, sun: 0xfff2d0, sunPower: 2.2,
-  ground: '#b9b2a0', cobble: '#a59d8a', water: 0x3f9fc4, lamp: 0, window: 0xfff3c4, figureTint: 0xffffff, rain: false,
-};
+/** A colour as a CSS string. */
+const hex = (c: number) => `#${c.toString(16).padStart(6, '0')}`;
 
 const WALK = 4.6;
 const RUN = 7.5;
@@ -93,7 +78,20 @@ export class TownScene {
 
   private readonly town: Town;
   private readonly opts: TownSceneOptions;
-  private readonly pal: Palette;
+  /** The look of the day right now, and the hour it was made for. */
+  private look: Look;
+  private hourShown: number;
+  private hourTarget: number;
+  private readonly lamps: { bulb: THREE.MeshLambertMaterial; light?: THREE.PointLight; pool?: THREE.MeshBasicMaterial }[] = [];
+  private readonly windows: THREE.MeshLambertMaterial[] = [];
+  private readonly cabins: THREE.MeshLambertMaterial[] = [];
+  /** Flat pictures of people, tinted by the light. */
+  private readonly tints: THREE.MeshBasicMaterial[] = [];
+  private hemi!: THREE.HemisphereLight;
+  private sunLight!: THREE.DirectionalLight;
+  private streetMat!: THREE.MeshLambertMaterial;
+  private edgeMat!: THREE.MeshLambertMaterial;
+  private waterMat!: THREE.MeshPhongMaterial;
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(50, 1, 0.1, 300);
@@ -125,14 +123,16 @@ export class TownScene {
   constructor(canvas: HTMLCanvasElement, opts: TownSceneOptions) {
     this.opts = opts;
     this.town = opts.town;
-    this.pal = opts.friendly ? DAY : NIGHT;
+    // Junior's town stays in friendly daylight; the grown-up town follows the story's hour (the dark of night when it has none)
+    this.hourShown = this.hourTarget = opts.friendly ? DAY_HOUR : (opts.hour ?? NIGHT_HOUR);
+    this.look = lookAt(this.hourShown);
     this.explore = this.town.moments.explore;
     this.pose = opts.pose ? { ...opts.pose } : { x: this.town.start.at[0], z: this.town.start.at[1], heading: this.town.start.heading };
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.scene.background = new THREE.Color(this.pal.sky);
-    this.scene.fog = new THREE.Fog(this.pal.sky, this.pal.fogNear, this.pal.fogFar);
+    this.scene.background = new THREE.Color(this.look.sky);
+    this.scene.fog = new THREE.Fog(this.look.sky, this.look.fogNear, this.look.fogFar);
 
     this.buildLights();
     this.buildGround();
@@ -153,7 +153,8 @@ export class TownScene {
     for (const d of this.town.doors) this.addMarker(d);
     for (const n of this.town.npcs) this.addPerson(n);
     this.buildPlayer();
-    if (this.pal.rain) this.buildRain();
+    if (!opts.friendly && this.town.weather !== 'clear') this.buildRain();
+    this.applyLook();
 
     // First visit opens on the wide shot, then settles on the player.
     if (opts.pose) {
@@ -258,6 +259,52 @@ export class TownScene {
       p.present = npcPresent(p.npc, view.firedEvents);
       p.group.visible = p.present;
     }
+    // the light eases toward the story's hour (Junior's stays in daylight)
+    if (!this.opts.friendly && view.hour !== undefined) this.hourTarget = view.hour;
+  }
+
+  /** How much the figures glow in the light of now: more in the dark, so they stand out against the night. */
+  private glow(): number {
+    return 0.22 + (0.05 - 0.22) * this.look.daylight;
+  }
+
+  /** Paints the town in the light of the hour shown now. */
+  private applyLook() {
+    const k = (this.look = lookAt(this.hourShown));
+    (this.scene.background as THREE.Color).setHex(k.sky);
+    const fog = this.scene.fog as THREE.Fog;
+    fog.color.setHex(k.sky);
+    fog.near = k.fogNear;
+    fog.far = k.fogFar;
+    this.hemi.color.setHex(k.hemiSky);
+    this.hemi.groundColor.setHex(k.hemiGround);
+    this.hemi.intensity = k.hemi;
+    this.sunLight.color.setHex(k.sun);
+    this.sunLight.intensity = k.sunPower;
+    // the street is painted in daylight colours; the darker the hour, the more the ground is tinted down
+    this.streetMat.color.setRGB(...[16, 8, 0].map((shift) => ((k.ground >> shift) & 255) / ((DAY.ground >> shift) & 255)) as [number, number, number]);
+    const edge = new THREE.Color(EDGE_NIGHT).lerp(new THREE.Color(EDGE_DAY), k.daylight);
+    this.edgeMat.color.copy(edge);
+    this.waterMat.color.setHex(k.water);
+    for (const w of this.windows) {
+      w.emissive.setHex(k.window);
+      w.emissiveIntensity = 1 + (0.25 - 1) * k.daylight;
+    }
+    for (const c of this.cabins) {
+      c.emissive.setHex(k.window);
+      c.emissiveIntensity = 0.25 * (1 - k.daylight);
+    }
+    for (const l of this.lamps) {
+      l.bulb.emissiveIntensity = 2 + (0.2 - 2) * k.daylight;
+      if (l.light) l.light.intensity = k.lamp * 14;
+      if (l.pool) l.pool.opacity = 0.1 * Math.min(1, k.lamp / NIGHT.lamp);
+    }
+    for (const t of this.tints) t.color.setHex(k.figureTint);
+    const glow = this.glow();
+    for (const p of this.people) {
+      if (p.body instanceof GlbFigure) p.body.setGlow(glow);
+      else if (p.body) p.body.uniforms.uGlow.value = glow;
+    }
   }
 
   resize() {
@@ -293,6 +340,10 @@ export class TownScene {
     const dt = Math.min(0.05, this.last ? (now - this.last) / 1000 : 0.016);
     this.last = now;
     this.time += dt;
+    if (this.hourShown !== this.hourTarget) {
+      this.hourShown = easeHour(this.hourShown, this.hourTarget, dt);
+      this.applyLook();
+    }
     this.update(dt);
     this.renderer.render(this.scene, this.camera);
     this.raf = requestAnimationFrame(this.frame);
@@ -466,17 +517,17 @@ export class TownScene {
   }
 
   private buildLights() {
-    this.scene.add(new THREE.HemisphereLight(this.pal.hemiSky, this.pal.hemiGround, this.pal.hemi));
-    const sun = new THREE.DirectionalLight(this.pal.sun, this.pal.sunPower);
-    sun.position.set(-18, 30, 12);
-    this.scene.add(sun);
+    this.hemi = new THREE.HemisphereLight(this.look.hemiSky, this.look.hemiGround, this.look.hemi);
+    this.sunLight = new THREE.DirectionalLight(this.look.sun, this.look.sunPower);
+    this.sunLight.position.set(-18, 30, 12);
+    this.scene.add(this.hemi, this.sunLight);
   }
 
   private cobbleTexture(): THREE.Texture {
     const c = document.createElement('canvas');
     c.width = c.height = 256;
     const g = c.getContext('2d')!;
-    g.fillStyle = this.pal.cobble;
+    g.fillStyle = hex(DAY.cobble);
     g.fillRect(0, 0, 256, 256);
     // deterministic scatter of stones, so every player sees the same street
     let seed = 7;
@@ -484,7 +535,7 @@ export class TownScene {
     for (let y = 0; y < 8; y++)
       for (let x = 0; x < 8; x++) {
         const shade = 0.82 + rnd() * 0.36;
-        g.fillStyle = this.pal.ground;
+        g.fillStyle = hex(DAY.ground);
         g.globalAlpha = Math.min(1, shade * 0.9);
         const ox = (y % 2) * 16;
         g.beginPath();
@@ -505,17 +556,17 @@ export class TownScene {
     const depth = maxZ - wl + 20;
     const tex = this.cobbleTexture();
     tex.repeat.set(w / 4, depth / 4);
-    const street = new THREE.Mesh(new THREE.BoxGeometry(w, 1, depth), new THREE.MeshLambertMaterial({ map: tex }));
+    this.streetMat = new THREE.MeshLambertMaterial({ map: tex });
+    const street = new THREE.Mesh(new THREE.BoxGeometry(w, 1, depth), this.streetMat);
     street.position.set((minX + maxX) / 2, -0.5, wl + depth / 2);
     this.scene.add(street);
     // wooden edge of the pier
-    const edge = new THREE.Mesh(new THREE.BoxGeometry(w, 1.02, 1.6), this.lambert(this.opts.friendly ? 0x9a7a52 : 0x4a3a2a));
+    this.edgeMat = this.lambert(EDGE_DAY);
+    const edge = new THREE.Mesh(new THREE.BoxGeometry(w, 1.02, 1.6), this.edgeMat);
     edge.position.set((minX + maxX) / 2, -0.5, wl + 0.8);
     this.scene.add(edge);
-    const water = new THREE.Mesh(
-      new THREE.PlaneGeometry(w + 200, 160),
-      new THREE.MeshPhongMaterial({ color: this.pal.water, shininess: 90, specular: 0x6688aa, flatShading: true }),
-    );
+    this.waterMat = new THREE.MeshPhongMaterial({ color: this.look.water, shininess: 90, specular: 0x6688aa, flatShading: true });
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(w + 200, 160), this.waterMat);
     water.rotation.x = -Math.PI / 2;
     water.position.set((minX + maxX) / 2, -0.55, wl - 80);
     this.scene.add(water);
@@ -563,9 +614,10 @@ export class TownScene {
     const door = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.4, 0.12), this.lambert(0x1c1410));
     door.position.y = 1.2;
     front.add(door);
-    const glow = this.opts.friendly ? 0.25 : 1;
     for (const x of [-w / 2 + 1.5, w / 2 - 1.5]) {
-      const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 0.08), this.lambert(0x2a2418, this.pal.window, glow));
+      const lit = this.lambert(0x2a2418, this.look.window, 1);
+      this.windows.push(lit);
+      const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 0.08), lit);
       win.position.set(x, 2, 0);
       front.add(win);
     }
@@ -583,18 +635,21 @@ export class TownScene {
     if (p.kind === 'lamp') {
       const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.1, 4, 6), this.lambert(0x20242c));
       pole.position.y = 2;
-      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 6), this.lambert(0x332a18, 0xffb45a, this.opts.friendly ? 0.2 : 2));
+      const bulbMat = this.lambert(0x332a18, 0xffb45a, 2);
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 6), bulbMat);
       bulb.position.y = 4.05;
       g.add(pole, bulb);
-      if (this.pal.lamp) {
-        const light = new THREE.PointLight(0xffa850, this.pal.lamp * 14, 17, 1.6);
+      const lamp: (typeof this.lamps)[number] = { bulb: bulbMat };
+      this.lamps.push(lamp);
+      // Junior's town is always daylight: its lamps never need a light. The grown-up town keeps them all, so the lamp count never changes as the day does.
+      if (!this.opts.friendly) {
+        const light = new THREE.PointLight(0xffa850, this.look.lamp * 14, 17, 1.6);
+        lamp.light = light;
         light.position.y = 3.8;
         g.add(light);
         // warm pool on the wet street
-        const pool = new THREE.Mesh(
-          new THREE.CircleGeometry(4.2, 24),
-          new THREE.MeshBasicMaterial({ color: 0xffa850, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false }),
-        );
+        lamp.pool = new THREE.MeshBasicMaterial({ color: 0xffa850, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false });
+        const pool = new THREE.Mesh(new THREE.CircleGeometry(4.2, 24), lamp.pool);
         pool.rotation.x = -Math.PI / 2;
         pool.position.y = 0.03;
         g.add(pool);
@@ -621,7 +676,9 @@ export class TownScene {
       const hull = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 0.7, 0.9, 5, 1), this.lambert(0x6a3d2a));
       hull.scale.set(1, 1, 2.6);
       hull.position.y = 0.2;
-      const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 1.4), this.lambert(0xd9d2c0, this.pal.window, this.opts.friendly ? 0 : 0.25));
+      const cabinMat = this.lambert(0xd9d2c0, this.look.window, 0.25);
+      this.cabins.push(cabinMat);
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 1.4), cabinMat);
       cabin.position.set(0, 1, -0.6);
       g.add(hull, cabin);
       g.rotation.y = Math.PI / 2 + (p.at[0] % 3) * 0.1;
@@ -646,7 +703,7 @@ export class TownScene {
     const seed = this.people.length * 7.3;
     const made = CAST3D[npc.cast];
     if (made) {
-      const body = new Figure3D(made.rig, null, { seed, glow: this.opts.friendly ? 0.05 : 0.22 });
+      const body = new Figure3D(made.rig, null, { seed, glow: this.glow() });
       body.root.visible = false;
       new THREE.TextureLoader().load(made.atlas, (tex) => {
         if (this.disposed) return tex.dispose();
@@ -667,7 +724,7 @@ export class TownScene {
         new GLTFLoader().load(made.glb, (gltf) => {
           const mesh = meshOf(gltf.scene);
           if (this.disposed || !mesh) return;
-          const fresh = new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, ...made.fit, hair: samplerOf((mesh.material as THREE.MeshStandardMaterial).map), seed, glow: this.opts.friendly ? 0.05 : 0.22 });
+          const fresh = new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, ...made.fit, hair: samplerOf((mesh.material as THREE.MeshStandardMaterial).map), seed, glow: this.glow() });
           pivot.remove(body.root);
           body.dispose();
           pivot.add(fresh.root);
@@ -677,11 +734,12 @@ export class TownScene {
       }
       return;
     }
-    const mat = new THREE.MeshBasicMaterial({ color: this.pal.figureTint, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+    const mat = new THREE.MeshBasicMaterial({ color: this.look.figureTint, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
     const figure = new THREE.Mesh(new THREE.PlaneGeometry(1, FIGURE_HEIGHT), mat);
     figure.position.y = FIGURE_HEIGHT / 2;
     const url = this.opts.figures[npc.cast];
     if (url) {
+      this.tints.push(mat);
       new THREE.TextureLoader().load(url, (tex) => {
         if (this.disposed) return tex.dispose();
         tex.colorSpace = THREE.SRGBColorSpace;

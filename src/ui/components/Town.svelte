@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import type { CastMember, Line, Opinion } from '../../game/caseTypes';
   import { greetingFor, hearOpinion, opinionsOf } from '../../game/talk';
   import { clockOn, leadCost, leadOpen, puzzleOf, trustOf } from '../../game/state';
   import { FIGURES } from '../../town/figures';
+  import { storyHour } from '../../town/looks';
   import { dueShots, type Nearby } from '../../town/townLogic';
   import { TownScene, type DoorState } from '../../town/TownScene';
   import type { CameraKind, Door, Shot } from '../../town/townTypes';
@@ -39,6 +41,15 @@
     const lp = g.s.leads[d.lead];
     return lp.solved ? 'solved' : !leadOpen(g, d.lead) ? 'locked' : lp.started ? 'started' : 'open';
   }
+
+  /** What the town needs to know of the story: which leads are open or solved and which events have fired. */
+  const facts = $derived({
+    solved: cf.leads.filter((l) => g.s.leads[l.id].solved).map((l) => l.id),
+    open: cf.leads.filter((l) => leadOpen(g, l.id)).map((l) => l.id),
+    firedEvents: [...g.s.firedEvents],
+  });
+  /** The hour of the day the story has reached. */
+  const hour = $derived(storyHour(town.time, facts));
 
   const leadTitle = (id: string) => session.T(cf.leads.find((l) => l.id === id)!.title);
 
@@ -185,6 +196,8 @@
         figures: FIGURES,
         colors: Object.fromEntries(cf.cast.map((c) => [c.id, c.color])),
         friendly: session.tone === 'friendly',
+        // read once: the scene eases to later hours itself, and must not be rebuilt as the story moves
+        hour: untrack(() => hour),
         pose: session.townPose ?? undefined,
         onNearby: (n) => (nearby = n),
       });
@@ -226,7 +239,7 @@
 
   // Door colours and who is in town follow the game state.
   $effect(() => {
-    const view = { doorStates: Object.fromEntries(town.doors.map((d) => [d.id, doorState(d)])), firedEvents: [...g.s.firedEvents] };
+    const view = { doorStates: Object.fromEntries(town.doors.map((d) => [d.id, doorState(d)])), firedEvents: [...g.s.firedEvents], hour };
     scene?.setView(view);
   });
 
@@ -241,11 +254,6 @@
   // Story shots: when a moment in the case has come, the camera shows it once, then returns to the player.
   $effect(() => {
     if (!live || shot || talking || session.modals.length) return;
-    const facts = {
-      solved: cf.leads.filter((l) => g.s.leads[l.id].solved).map((l) => l.id),
-      open: cf.leads.filter((l) => leadOpen(g, l.id)).map((l) => l.id),
-      firedEvents: [...g.s.firedEvents],
-    };
     const next = dueShots(town, facts, g.s.shotsSeen ?? [])[0];
     if (!next) return;
     // let the opening wide shot or a closing dialog finish first

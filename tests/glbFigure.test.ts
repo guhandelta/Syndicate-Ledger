@@ -196,6 +196,15 @@ describe('3D model person', () => {
     f.dispose();
   });
 
+  it('glows as much as it is told, more in the dark', () => {
+    const f = new GlbFigure(block(), { height: 1.68, skirt: false, face });
+    const uniform = (f as unknown as { material: THREE.Material }).material.userData.uGlow as { value: number };
+    expect(uniform.value).toBe(0.15);
+    f.setGlow(0.22);
+    expect(uniform.value).toBe(0.22);
+    f.dispose();
+  });
+
   it('swings less when the model says its hair lies close on the coat', () => {
     const dark = (): [number, number, number] => [34, 26, 26];
     const swing = (hairSwing?: number) => {

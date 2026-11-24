@@ -253,5 +253,17 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
     if (!(shot.distance >= 2) || !(shot.height >= 1)) errors.push(`${what} has the camera too close or too low`);
     if (!shot.caption) errors.push(`${what} has no caption`);
   }
+  if (town.time) {
+    const { start, moments = [] } = town.time;
+    if (!(start >= 0 && start < 24)) errors.push('The time of day must start between 0 and 24');
+    moments.forEach((m, i) => {
+      const what = `Time moment ${i + 1}`;
+      const { leadOpens, leadSolved, event } = m.when;
+      if ([leadOpens, leadSolved, event].filter(Boolean).length !== 1) errors.push(`${what} needs exactly one trigger`);
+      for (const id of [leadOpens, leadSolved]) if (id && !leadIds.has(id)) errors.push(`${what} waits on unknown lead ${id}`);
+      if (event && !eventIds.has(event)) errors.push(`${what} waits on unknown event ${event}`);
+      if (!(m.hour >= start && m.hour < start + 48)) errors.push(`${what} must come at or after the start, within two days`);
+    });
+  }
   return errors;
 }
