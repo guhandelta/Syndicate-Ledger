@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Expression } from '../ui/voices';
 import { CAST3D, faceOf } from './cast3d';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { buildingParts, seaLine, type Part } from './buildingStyles';
 import { Figure3D } from './figure3d';
 import { GlbFigure, meshOf } from './glbFigure';
 import { samplerOf } from './glbPixels';
@@ -92,6 +93,7 @@ export class TownScene {
   private streetMat!: THREE.MeshLambertMaterial;
   private edgeMat!: THREE.MeshLambertMaterial;
   private waterMat!: THREE.MeshPhongMaterial;
+  private waterMesh!: THREE.Mesh;
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(50, 1, 0.1, 300);
@@ -102,6 +104,12 @@ export class TownScene {
   private readonly people: Person[] = [];
   private readonly markers = new Map<string, THREE.Mesh>();
   private readonly boats: THREE.Object3D[] = [];
+  /** Things floating out on the sea, each rocking from its own base height. */
+  private readonly floaters: { obj: THREE.Object3D; y: number; phase: number }[] = [];
+  /** Foam running in on the quay edge. */
+  private readonly foam: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; z: number; phase: number }[] = [];
+  /** The lighthouse beam, and the lantern it turns with. */
+  private beam: { pivot: THREE.Object3D; mat: THREE.MeshBasicMaterial } | null = null;
   private readonly buildings: { b: Building; mats: THREE.Material[]; opacity: number }[] = [];
   private rain: THREE.Points | null = null;
   private focus: Vec2 | undefined;
@@ -299,6 +307,7 @@ export class TownScene {
       if (l.light) l.light.intensity = k.lamp * 14;
       if (l.pool) l.pool.opacity = 0.1 * Math.min(1, k.lamp / NIGHT.lamp);
     }
+    if (this.beam) this.beam.mat.opacity = 0.12 * (1 - k.daylight);
     for (const t of this.tints) t.color.setHex(k.figureTint);
     const glow = this.glow();
     for (const p of this.people) {
@@ -455,6 +464,18 @@ export class TownScene {
       const s = mesh.userData.pulse ? 1 + Math.sin(this.time * 3) * 0.12 : 1;
       mesh.scale.setScalar(s);
     }
+    for (const f of this.floaters) {
+      f.obj.position.y = f.y + Math.sin(this.time * 0.9 + f.phase) * 0.12;
+      f.obj.rotation.z = Math.sin(this.time * 0.7 + f.phase) * 0.03;
+    }
+    this.waterMesh.position.y = -0.55 + Math.sin(this.time * 0.6) * 0.03;
+    for (const f of this.foam) {
+      // each line of foam rolls in toward the quay, then fades away
+      const t = (this.time * 0.25 + f.phase / 6.3) % 1;
+      f.mesh.position.z = f.z - 2.4 * (1 - t);
+      f.mat.opacity = Math.sin(t * Math.PI) * 0.4 * (0.35 + 0.65 * this.look.daylight);
+    }
+    if (this.beam) this.beam.pivot.rotation.y = this.time * 0.8;
     this.boats.forEach((b, i) => {
       b.position.y = -0.25 + Math.sin(this.time * 1.1 + i * 2) * 0.08;
       b.rotation.z = Math.sin(this.time * 0.8 + i) * 0.04;
@@ -566,10 +587,11 @@ export class TownScene {
     edge.position.set((minX + maxX) / 2, -0.5, wl + 0.8);
     this.scene.add(edge);
     this.waterMat = new THREE.MeshPhongMaterial({ color: this.look.water, shininess: 90, specular: 0x6688aa, flatShading: true });
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(w + 200, 160), this.waterMat);
+    const water = (this.waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(w + 200, 160), this.waterMat));
     water.rotation.x = -Math.PI / 2;
     water.position.set((minX + maxX) / 2, -0.55, wl - 80);
     this.scene.add(water);
+    this.buildSea();
     void minZ;
   }
 
@@ -596,15 +618,7 @@ export class TownScene {
   private makeBuilding(b: Building): THREE.Group {
     const group = new THREE.Group();
     const [w, d] = b.size;
-    const body = new THREE.Mesh(new THREE.BoxGeometry(w, b.height, d), this.lambert(b.color));
-    body.position.y = b.height / 2;
-    group.add(body);
-    // low hip roof: a four-sided cone stretched over the footprint
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(1, 1.5, 4), this.lambert(b.roof));
-    roof.rotation.y = Math.PI / 4;
-    roof.scale.set((w / 2 + 0.4) / Math.SQRT1_2, 1, (d / 2 + 0.4) / Math.SQRT1_2);
-    roof.position.y = b.height + 0.75;
-    group.add(roof);
+    for (const part of buildingParts(b)) group.add(this.partMesh(part));
 
     const face = b.doorSide === 'south' ? 1 : -1;
     const wallZ = (d / 2) * face;
@@ -627,6 +641,111 @@ export class TownScene {
     group.add(front);
     group.position.set(b.at[0], 0, b.at[1]);
     return group;
+  }
+
+  /** One piece of a building or of the sea line as a mesh. */
+  private partMesh(part: Part): THREE.Mesh {
+    const [sx, sy, sz] = part.size;
+    const mat = part.glow ? this.lambert(0x2a2418, this.look.window, 1) : this.lambert(part.color);
+    if (part.glow) this.windows.push(mat as THREE.MeshLambertMaterial);
+    let mesh: THREE.Mesh;
+    let rise = 0;
+    if (part.shape === 'box') {
+      mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
+      rise = sy / 2;
+    } else if (part.shape === 'hip') {
+      mesh = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 4), mat);
+      mesh.rotation.y = Math.PI / 4;
+      mesh.scale.set(sx / 2 / Math.SQRT1_2, sy, sz / 2 / Math.SQRT1_2);
+      rise = sy / 2;
+    } else if (part.shape === 'gable') {
+      const tri = new THREE.Shape([new THREE.Vector2(-sz / 2, 0), new THREE.Vector2(sz / 2, 0), new THREE.Vector2(0, sy)]);
+      const geo = new THREE.ExtrudeGeometry(tri, { depth: sx, bevelEnabled: false });
+      geo.translate(0, 0, -sx / 2);
+      geo.rotateY(Math.PI / 2);
+      mesh = new THREE.Mesh(geo, mat);
+    } else if (part.shape === 'dome') {
+      mesh = new THREE.Mesh(new THREE.SphereGeometry(sx, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat);
+    } else {
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(sx, sx, sy, 10), mat);
+      rise = sy / 2;
+    }
+    mesh.position.set(part.at[0], part.at[1] + rise, part.at[2]);
+    return mesh;
+  }
+
+  /** Foam on the quay edge, a breakwater with a lighthouse, ships standing off the harbour and buoys in the channel. */
+  private buildSea() {
+    const wl = this.town.waterline;
+    const [minX, , maxX] = this.town.bounds;
+    const wide = maxX - minX + 60;
+    const cx = (minX + maxX) / 2;
+    for (let i = 0; i < 3; i++) {
+      const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(wide, 0.35), mat);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(cx, -0.5, wl - 0.6);
+      this.scene.add(mesh);
+      this.foam.push({ mesh, mat, z: wl - 0.6, phase: i * 2.1 });
+    }
+    for (const t of seaLine(this.town.bounds, wl)) {
+      const g = new THREE.Group();
+      g.position.set(t.at[0], 0, t.at[1]);
+      if (t.kind === 'breakwater') {
+        const wall = new THREE.Mesh(new THREE.BoxGeometry(16, 1.4, 2.4), this.lambert(0x6b6f72));
+        wall.position.y = -0.1;
+        g.add(wall);
+      } else if (t.kind === 'lighthouse') {
+        g.position.x += 5;
+        const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.5, 9, 10), this.lambert(0xf1ece0));
+        tower.position.y = 5.1;
+        const band = new THREE.Mesh(new THREE.CylinderGeometry(1.04, 1.2, 1.6, 10), this.lambert(0xb23a2c));
+        band.position.y = 4;
+        const lanternMat = this.lambert(0x2a2418, this.look.window, 1);
+        this.cabins.push(lanternMat);
+        const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.1, 10), lanternMat);
+        lantern.position.y = 10.2;
+        const cap = new THREE.Mesh(new THREE.ConeGeometry(1, 0.9, 10), this.lambert(0x3b2a24));
+        cap.position.y = 11.2;
+        g.add(tower, band, lantern, cap);
+        // a long pale beam that turns at night
+        const mat = new THREE.MeshBasicMaterial({ color: 0xfff1c0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(2.2, 40, 12, 1, true), mat);
+        cone.rotation.z = Math.PI / 2;
+        cone.position.x = 20;
+        const pivot = new THREE.Group();
+        pivot.position.y = 10.2;
+        pivot.add(cone);
+        g.add(pivot);
+        this.beam = { pivot, mat };
+      } else if (t.kind === 'ship') {
+        const hull = new THREE.Mesh(new THREE.BoxGeometry(7, 1.4, 2.2), this.lambert(0x2e3640));
+        hull.position.y = 0.4;
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(7.02, 0.25, 2.22), this.lambert(0x9a3328));
+        stripe.position.y = 0.6;
+        const houseMat = this.lambert(0x2a2418, this.look.window, 0.25);
+        this.cabins.push(houseMat);
+        const house = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.6, 1.8), houseMat);
+        house.position.set(-2, 1.9, 0);
+        const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.2, 8), this.lambert(0xd9c8a0));
+        funnel.position.set(-2, 3.3, 0);
+        const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 3, 5), this.lambert(0x20242c));
+        mast.position.set(2.2, 2.5, 0);
+        g.add(hull, stripe, house, funnel, mast);
+        g.scale.setScalar(t.scale);
+        g.rotation.y = Math.PI * (0.05 + t.phase * 0.02);
+        this.floaters.push({ obj: g, y: -0.25, phase: t.phase });
+      } else {
+        const buoy = new THREE.Mesh(new THREE.ConeGeometry(0.45, 1.2, 8), this.lambert(0xc23a2a));
+        buoy.position.y = 0.35;
+        const topMat = this.lambert(0x2a2418, 0xffb45a, 1.2);
+        const top = new THREE.Mesh(new THREE.SphereGeometry(0.16, 6, 6), topMat);
+        top.position.y = 1.05;
+        g.add(buoy, top);
+        this.floaters.push({ obj: g, y: -0.4, phase: t.phase });
+      }
+      this.scene.add(g);
+    }
   }
 
   private addProp(p: Prop) {

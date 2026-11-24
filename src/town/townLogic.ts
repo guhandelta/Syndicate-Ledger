@@ -1,6 +1,6 @@
 import { PRESETS, type CaseFile, type Lead, type Preset } from '../game/caseTypes';
 import { caseForRank } from '../game/rankStory';
-import type { Building, CameraKind, CameraSettings, Door, Npc, Shot, Town, Vec2 } from './townTypes';
+import { BUILDING_STYLES, type Building, type CameraKind, type CameraSettings, type Door, type Npc, type Shot, type Town, type Vec2 } from './townTypes';
 
 /** Pure town rules: movement, collisions, who is nearby and where the camera goes. No rendering here. */
 
@@ -252,6 +252,10 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
     if (!(shot.seconds >= 2 && shot.seconds <= 8)) errors.push(`${what} must last 2 to 8 seconds`);
     if (!(shot.distance >= 2) || !(shot.height >= 1)) errors.push(`${what} has the camera too close or too low`);
     if (!shot.caption) errors.push(`${what} has no caption`);
+  }
+  for (const b of town.buildings) {
+    if (b.style && !BUILDING_STYLES.includes(b.style)) errors.push(`Building ${b.id} has unknown style ${b.style}`);
+    for (const c of [b.color, b.roof, b.trim]) if (c !== undefined && !/^#[0-9a-f]{6}$/i.test(c)) errors.push(`Building ${b.id} has a colour that is not #rrggbb: ${c}`);
   }
   if (town.time) {
     const { start, moments = [] } = town.time;
