@@ -65,8 +65,8 @@ const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 /** The look at an hour of the day. Hours past 24 wrap to the next day, so a story can count on past midnight. */
 export function lookAt(hour: number): Look {
   const h = ((hour % 24) + 24) % 24;
-  let i = KEYS.findIndex(([at]) => at > h);
-  if (i < 1) i = KEYS.length - 1;
+  // the last key is 24, so some key is always after an hour in [0, 24)
+  const i = KEYS.findIndex(([at]) => at > h);
   const [h0, a] = KEYS[i - 1];
   const [h1, b] = KEYS[i];
   const x = (h - h0) / (h1 - h0);
@@ -104,7 +104,7 @@ export function storyHour(time: TownTime | undefined, facts: ShotFacts): number 
   let hour = time.start;
   for (const m of time.moments ?? []) {
     const { leadOpens, leadSolved, event } = m.when;
-    const came = leadOpens ? facts.open.includes(leadOpens) : leadSolved ? facts.solved.includes(leadSolved) : event ? facts.firedEvents.includes(event) : false;
+    const came = (leadOpens && facts.open.includes(leadOpens)) || (leadSolved && facts.solved.includes(leadSolved)) || (event && facts.firedEvents.includes(event));
     if (came && m.hour > hour) hour = m.hour;
   }
   return hour;
