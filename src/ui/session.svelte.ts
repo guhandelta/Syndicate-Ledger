@@ -1,19 +1,20 @@
 import { nextStep } from '../engine/logic';
 import { cipherStep, wrongDigit } from '../engine/cipher';
+import { stakeoutStep, wrongSpot } from '../engine/stakeout';
 import { networkStep, pairs, wrongPair } from '../engine/network';
 import { timelineStep, wrongMoment } from '../engine/timeline';
 import type { Cell } from '../engine/types';
 import type { AnyClaim, CaseEvent, CaseFile, CastMember, MissedClue, Preset, PuzzleBook, Text, Voice } from '../game/caseTypes';
 import { markCluesShown, markMistakes, pendingClues } from '../game/missedClues';
 import {
-  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, leadOpen, cipherOf, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
+  accuseStatus, accusedPeople, addFlag, buyTip, checkLead, evidenceLeads, leadOpen, cipherOf, stakeoutOf, gridOf, networkOf, newGame, puzzleOf, recoverSpeaker, rules, solveLead, spendFavors, startLead,
   timelineOf,
   submitAccusation,
   proofProblems,
   type Game, type GameState,
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
-import { describeStatement, gridLabels, networkPeople, t, timelineLabels, type Tone } from '../game/text';
+import { describeStatement, gridLabels, networkPeople, stakeoutLabels, t, timelineLabels, type Tone } from '../game/text';
 import { wordStatement, type Answers } from '../game/links';
 import { buildInWorker, FRESH_RANKS, type WorkerLike } from '../game/rankClient';
 import RankWorker from '../game/rankWorker?worker&inline';
@@ -409,6 +410,36 @@ export class Session {
     return this.anyPuzzle.type === 'timeline';
   }
 
+  /** The open stakeout lead's puzzle. */
+  get stakeout() {
+    return stakeoutOf(this.g, this.leadId!);
+  }
+
+  get isStakeout() {
+    return this.anyPuzzle.type === 'stakeout';
+  }
+
+  /** Stakeout: names of the districts and the watchers. */
+  get stakeLabels() {
+    return stakeoutLabels(this.lead, this.stakeout.size, this.tone);
+  }
+
+  /** Stakeout: is this row's watcher fixed (a given, shown by an ally or after a witness left, or the lead is solved)? */
+  spotLocked(r: number) {
+    return this.lp.solved || this.stakeout.givens.some((x) => x.r === r) || !!this.lp.shownSpots?.includes(r);
+  }
+
+  /** Stakeout: puts the row's watcher on a column (0 takes it off). Choosing the same square again takes it off. */
+  placeSpot(r: number, c: number) {
+    if (this.spotLocked(r)) return;
+    this.pushUndo();
+    const lp = this.lp;
+    lp.spots![r] = lp.spots![r] === c ? 0 : c;
+    this.pui.pos = r;
+    this.pui.hint = null;
+    this.pui.message = null;
+  }
+
   /** The open cipher lead's puzzle. */
   get cipher() {
     return cipherOf(this.g, this.leadId!);
@@ -553,7 +584,7 @@ export class Session {
 
   private snapshot() {
     const lp = this.lp;
-    return JSON.stringify({ grid: lp.grid, notes: lp.notes, order: lp.order, links: lp.links, digits: lp.digits });
+    return JSON.stringify({ grid: lp.grid, notes: lp.notes, order: lp.order, links: lp.links, digits: lp.digits, spots: lp.spots });
   }
 
   private pushUndo() {
@@ -569,6 +600,7 @@ export class Session {
     if (o.order) this.lp.order = o.order;
     if (o.links) this.lp.links = o.links;
     if (o.digits) this.lp.digits = o.digits;
+    if (o.spots) this.lp.spots = o.spots;
   }
 
   undo() {
@@ -622,7 +654,10 @@ export class Session {
 
   checkGrid() {
     this.pui.flashWrong = true;
-    if (this.isCipher) {
+    if (this.isStakeout) {
+      const bad = wrongSpot(this.stakeout, this.lp.spots!) >= 0;
+      this.pui.message = bad ? 'Watchers on the wrong square are shown in red.' : 'Every watcher you have placed so far is on the right square.';
+    } else if (this.isCipher) {
       const bad = wrongDigit(this.cipher, this.lp.digits!) >= 0;
       this.pui.message = bad ? 'Digits in the wrong place are shown in red.' : 'Every digit you have entered so far is correct.';
     } else if (this.isNetwork) {
@@ -636,6 +671,46 @@ export class Session {
       this.pui.message = wrong ? 'Wrong numbers are shown in red.' : 'Everything on the grid so far is correct.';
     }
     setTimeout(() => (this.pui.flashWrong = false), 2500);
+  }
+
+  /** Allies on a stakeout: forensics confirms the picked row's watcher, the partner points the way. */
+  private useAllyOnStakeout(ally: CastMember) {
+    const g = this.g;
+    const p = this.stakeout;
+    const lp = this.lp;
+    const pui = this.pui;
+    const L = this.stakeLabels;
+    const rowName = (r: number) => `row ${r + 1}`;
+    if (ally.ability === 'forensics') {
+      const r = pui.pos;
+      if (r === null || this.spotLocked(r)) {
+        pui.message = `Pick a row of the map first, then call ${ally.name}.`;
+        return;
+      }
+      if (!spendFavors(g, 1)) return;
+      this.pushUndo();
+      lp.spots![r] = p.cols[r] + 1;
+      lp.shownSpots!.push(r);
+      g.s.hintsUsed++;
+      pui.message = `${ally.name} confirms: ${L.districts[p.regions[r][p.cols[r]]]}’s ${L.one} stood in ${rowName(r)}, column ${p.cols[r] + 1}.`;
+      return;
+    }
+    // partner
+    if (!spendFavors(g, 1)) return;
+    g.s.hintsUsed++;
+    const wrong = wrongSpot(p, lp.spots!);
+    if (wrong >= 0) {
+      pui.pos = wrong;
+      pui.message = `${ally.name}: "Hold on. Look again at ${rowName(wrong)}. That doesn't fit the case."`;
+      return;
+    }
+    const step = stakeoutStep(p, lp.spots!);
+    if (!step) {
+      pui.message = `${ally.name}: "Every ${L.one} is placed. Now check each statement against the map."`;
+      return;
+    }
+    pui.pos = step.row;
+    pui.message = `${ally.name}: "Look at ${rowName(step.row)}. Think about what ${this.person(p.statements[step.statement].speaker).name} said."`;
   }
 
   /** Allies on a cipher: forensics fills the picked position, the partner points the way. */
@@ -765,6 +840,7 @@ export class Session {
   }
 
   useAlly(ally: CastMember) {
+    if (this.isStakeout && ally.ability !== 'undercover') return this.useAllyOnStakeout(ally);
     if (this.isCipher && ally.ability !== 'undercover') return this.useAllyOnCipher(ally);
     if (this.isNetwork && ally.ability !== 'undercover') return this.useAllyOnNetwork(ally);
     if (this.isTimeline && ally.ability !== 'undercover') return this.useAllyOnTimeline(ally);
@@ -857,11 +933,12 @@ export class Session {
     const tl = this.isTimeline;
     const nw = this.isNetwork;
     const cp = this.isCipher;
+    const sk = this.isStakeout;
     const msgs: Record<string, string> = {
-      'grid-incomplete': cp ? 'Some digits of the code are still empty.' : nw ? 'Some pairs are still undecided. Mark each pair as in contact or never in contact.' : tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
-      'grid-wrong': cp ? "Something doesn't add up. At least one digit of the code is wrong." : nw ? "Something doesn't add up. At least one pair is decided the wrong way." : tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
+      'grid-incomplete': sk ? 'Some rows of the map still have no watcher.' : cp ? 'Some digits of the code are still empty.' : nw ? 'Some pairs are still undecided. Mark each pair as in contact or never in contact.' : tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
+      'grid-wrong': sk ? "Something doesn't add up. At least one watcher is on the wrong square." : cp ? "Something doesn't add up. At least one digit of the code is wrong." : nw ? "Something doesn't add up. At least one pair is decided the wrong way." : tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
       'marks-incomplete': 'Mark every statement as True or Lie before closing the lead.',
-      'marks-wrong': cp ? "The code is right, but your read on the witnesses isn't. Check each statement against it." : nw ? "The network is right, but your read on the witnesses isn't. Check each statement against it." : tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
+      'marks-wrong': sk ? "The map is right, but your read on the witnesses isn't. Check each statement against it." : cp ? "The code is right, but your read on the witnesses isn't. Check each statement against it." : nw ? "The network is right, but your read on the witnesses isn't. Check each statement against it." : tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
     };
     if (res === 'marks-wrong' || res === 'marks-incomplete') {
       const kind = res === 'marks-wrong' ? 'wrong-mark' : 'unmarked';

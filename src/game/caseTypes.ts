@@ -1,15 +1,16 @@
 import type { CipherClaim, CipherPuzzle } from '../engine/cipher';
 import type { NetClaim, NetworkPuzzle } from '../engine/network';
+import type { StakeClaim, StakeoutPuzzle } from '../engine/stakeout';
 import type { TimeClaim, TimelinePuzzle } from '../engine/timeline';
 import type { Claim } from '../engine/types';
 import type { GeneratedPuzzle, GridType } from '../engine/types';
 
-/** The kinds of puzzle a lead can hold: the two number grids, a timeline of moments to put in order, or a network of who was in contact with whom. */
-export type LeadType = GridType | 'timeline' | 'network' | 'cipher';
-export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline', 'network', 'cipher'];
+/** The kinds of puzzle a lead can hold: the two number grids, a timeline of moments to put in order, a network of who was in contact with whom, a cipher, or a stakeout map. */
+export type LeadType = GridType | 'timeline' | 'network' | 'cipher' | 'stakeout';
+export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline', 'network', 'cipher', 'stakeout'];
 
 /** What a witness can say, in any kind of lead. */
-export type AnyClaim = Claim | TimeClaim | NetClaim | CipherClaim;
+export type AnyClaim = Claim | TimeClaim | NetClaim | CipherClaim | StakeClaim;
 
 export type Preset = 'junior' | 'detective' | 'inspector' | 'chief';
 export const PRESETS: Preset[] = ['junior', 'detective', 'inspector', 'chief'];
@@ -160,6 +161,13 @@ export interface Lead {
   map?: boolean;
   /** Timeline leads: what one step between times is called in "two hours apart". Default "hour". */
   step?: string;
+  /**
+   * Stakeout leads: the districts of the map, most important first (smaller ranks take the first N). `rows` and `columns`
+   * are empty; the map is as big as the rank's stakeout size (5 to 8).
+   */
+  districts?: Text[];
+  /** Stakeout leads: what stands in each district, e.g. { one: "patrol", many: "patrols" }. Default "watcher". */
+  watchers?: { one: string; many: string };
   speakers: string[];
   liars: Record<Preset, string[]>;
   fact: Text;
@@ -324,7 +332,7 @@ export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>
 };
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
-export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle;
+export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle;
 export type PuzzleBook = Record<string, AnyPuzzle>;
 /** A book of grid puzzles only (Case 1 today). */
 export type GridBook = Record<string, GeneratedPuzzle>;

@@ -5,9 +5,10 @@
 import caseFile from '../cases/case-01-harbor-ledger.json';
 import { generateCipher } from '../src/engine/cipher';
 import { generateNetwork } from '../src/engine/network';
+import { generateStakeout } from '../src/engine/stakeout';
 import { generateTimeline } from '../src/engine/timeline';
 import { PRESETS, type CaseFile, type Lead, type PuzzleBook } from '../src/game/caseTypes';
-import { CIPHER_RULES, MAP_RULES, NET_RULES, PRESET_RULES } from '../src/game/presets';
+import { CIPHER_RULES, MAP_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from '../src/game/presets';
 
 const lead: Lead = {
   id: 'T1',
@@ -64,11 +65,28 @@ const cipher: Lead = {
   pointsTo: ['tip'],
 } as unknown as Lead;
 
+const stake: Lead = {
+  id: 'S1',
+  type: 'stakeout',
+  cost: 2,
+  opensAfter: [],
+  title: 'The night watch',
+  intro: 'Every district had one watchman. No two shared a row or a column, and none stood on touching squares. Work out where each one stood. Not every witness is telling the truth.',
+  columns: [],
+  rows: [],
+  districts: ['Fish hall', 'Net loft', 'Warehouse 9', 'Ice house', 'Boathouse', 'Pier end', 'Market square', 'Harbor office'],
+  watchers: { one: 'watchman', many: 'watchmen' },
+  speakers: ['meena', 'kane', 'tip', 'nevethitha'],
+  liars: { junior: ['kane'], detective: ['kane'], inspector: ['kane', 'tip'], chief: ['kane', 'tip'] },
+  fact: 'Every watchman waved the van through.',
+  pointsTo: ['vex'],
+} as unknown as Lead;
+
 export const timelineCase = {
   ...(caseFile as unknown as CaseFile),
   id: 'timeline-demo',
   rankStories: undefined,
-  leads: [lead, net, cipher],
+  leads: [lead, net, cipher, stake],
   events: [],
   offers: [],
   missedClues: [],
@@ -115,5 +133,18 @@ for (const preset of PRESETS) {
     maxGrade: Math.min(PRESET_RULES[preset].maxGrade, 3),
     ...CIPHER_RULES[preset],
     seed: n * 307,
+  });
+}
+
+for (const preset of PRESETS) {
+  const { size, ...rules } = STAKEOUT_RULES[preset];
+  const lies = stake.liars[preset];
+  timelineBook[`S1:${preset}`] = generateStakeout({
+    size,
+    speakers: stake.speakers.map((id) => ({ id, lies: lies.filter((l) => l === id).length })),
+    liarRange: PRESET_RULES[preset].liarRange,
+    maxGrade: Math.min(PRESET_RULES[preset].maxGrade, 3),
+    ...rules,
+    seed: size * 409,
   });
 }

@@ -5,6 +5,7 @@
   import type { Session } from '../session.svelte';
   import AllyPanel from './AllyPanel.svelte';
   import Cipher from './Cipher.svelte';
+  import Stakeout from './Stakeout.svelte';
   import Network from './Network.svelte';
   import Grid from './Grid.svelte';
   import NumberPad from './NumberPad.svelte';
@@ -15,7 +16,7 @@
   let { session }: { session: Session } = $props();
   const lead = $derived(session.lead);
   const p = $derived(session.anyPuzzle);
-  const kind = $derived(lead.type === 'ledger' ? 'Cash ledger' : lead.type === 'surveillance' ? 'Camera log' : lead.type === 'cipher' ? 'Code' : lead.type === 'network' ? 'Network' : lead.map ? 'Map' : 'Timeline');
+  const kind = $derived(lead.type === 'ledger' ? 'Cash ledger' : lead.type === 'surveillance' ? 'Camera log' : lead.type === 'cipher' ? 'Code' : lead.type === 'stakeout' ? 'Stakeout' : lead.type === 'network' ? 'Network' : lead.map ? 'Map' : 'Timeline');
   const lp = $derived(session.lp);
   const pui = $derived(session.pui);
   const n = $derived(p.size);
@@ -41,7 +42,10 @@
   {/if}
   <div class="puzzle-layout">
     <div class="left">
-      {#if p.type === 'cipher'}
+      {#if p.type === 'stakeout'}
+        <Stakeout {session} />
+        {#if lp.solved}<p class="solved-banner">✓ Solved. {session.T(lead.fact)}</p>{/if}
+      {:else if p.type === 'cipher'}
         <Cipher {session} />
         {#if lp.solved}<p class="solved-banner">✓ Solved. {session.T(lead.fact)}</p>{/if}
       {:else if p.type === 'network'}
@@ -70,7 +74,7 @@
       {#if pui.message}<div class="msg" role="status">{pui.message}</div>{/if}
       {#if !lp.solved}
         <div class="close-row">
-          {#if rules(session.g).mistakes === 'on-request'}<button class="btn" onclick={() => session.checkGrid()}>Check my {p.type === 'cipher' ? 'code' : p.type === 'network' ? 'network' : p.type === 'timeline' ? (lead.map ? 'map' : 'timeline') : 'grid'}</button>{/if}
+          {#if rules(session.g).mistakes === 'on-request'}<button class="btn" onclick={() => session.checkGrid()}>Check my {p.type === 'stakeout' ? 'map' : p.type === 'cipher' ? 'code' : p.type === 'network' ? 'network' : p.type === 'timeline' ? (lead.map ? 'map' : 'timeline') : 'grid'}</button>{/if}
           <button class="btn primary" onclick={() => session.closeLead()}>Close this lead</button>
         </div>
       {/if}

@@ -111,7 +111,7 @@ describe('Case 1 links', () => {
     const story = caseForRank(cf, 'junior');
     const answers: Answers = {};
     for (const l of story.leads) answers[l.id] = book[`${l.id}:junior`];
-    const lead = story.leads.find((l) => l.id === 'J5')!;
+    const lead = story.leads.find((l) => l.id === 'J6')!;
     const a = planLinks(story, 'junior', lead, 4, answers, makeRng(5));
     const b = planLinks(story, 'junior', lead, 4, answers, makeRng(5));
     expect(a).toEqual(b);

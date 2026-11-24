@@ -14,7 +14,7 @@ test('a new case builds its own puzzles, keeps them in the save and plays the sa
   await open(page);
   const s = await save(page);
   expect(s.seed).toBeGreaterThan(0);
-  expect(Object.keys(s.puzzles).sort()).toEqual(['J1:junior', 'J2:junior', 'J3:junior', 'J4:junior', 'J5:junior']);
+  expect(Object.keys(s.puzzles).sort()).toEqual(['J1:junior', 'J2:junior', 'J3:junior', 'J4:junior', 'J5:junior', 'J6:junior']);
   // a linked clue still quotes an earlier lead
   expect(s.puzzles['J2:junior'].statements.some((st: { via?: unknown }) => st.via)).toBe(true);
   await page.reload();

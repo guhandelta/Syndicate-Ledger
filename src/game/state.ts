@@ -3,6 +3,7 @@ import { randomClaim } from '../engine/generator';
 import { enumerate } from '../engine/solver';
 import { makeRng } from '../engine/rng';
 import { fittingCodes, freshTrueCipherClaim, type CipherClaim, type CipherPuzzle } from '../engine/cipher';
+import { fittingPlacements, freshTrueStakeClaim, type StakeClaim, type StakeoutPuzzle } from '../engine/stakeout';
 import { fittingNetworks, freshTrueNetClaim, type NetClaim, type NetworkPuzzle } from '../engine/network';
 import { fittingOrders, freshTrueTimeClaim, type TimeClaim, type TimelinePuzzle } from '../engine/timeline';
 import type { Claim, GeneratedPuzzle, Grid } from '../engine/types';
@@ -37,6 +38,10 @@ export interface LeadProgress {
   digits?: number[];
   /** Cipher leads: positions shown by an ally or after a witness left. */
   shownDigits?: number[];
+  /** Stakeout leads: the column + 1 the player put the watcher at in each row of the map, 0 = none. */
+  spots?: number[];
+  /** Stakeout leads: rows whose watcher was shown by an ally or after a witness left. */
+  shownSpots?: number[];
 }
 
 export interface GameState {
@@ -95,6 +100,12 @@ export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset, characte
       leads[lead.id] = { ...common, grid: [], notes: [], digits, shownDigits: [] };
       continue;
     }
+    if (p.type === 'stakeout') {
+      const spots = p.cols.map(() => 0);
+      for (const gv of p.givens) spots[gv.r] = gv.c + 1;
+      leads[lead.id] = { ...common, grid: [], notes: [], spots, shownSpots: [] };
+      continue;
+    }
     if (p.type === 'network') {
       leads[lead.id] = { ...common, grid: [], notes: [], links: p.links.map(() => 0), shownPairs: [] };
       continue;
@@ -118,6 +129,8 @@ export const timelineOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as Ti
 export const networkOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as NetworkPuzzle;
 /** A cipher lead's puzzle. */
 export const cipherOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as CipherPuzzle;
+/** A stakeout lead's puzzle. */
+export const stakeoutOf = (g: Game, leadId: string) => puzzleOf(g, leadId) as StakeoutPuzzle;
 export const rules = (g: Game) => PRESET_RULES[g.s.preset];
 export const clockOn = (g: Game) => rules(g).clock !== 'off';
 export const totalHours = (g: Game) => g.cf.clock.days * g.cf.clock.hoursPerDay + rules(g).extraHours;
@@ -202,6 +215,14 @@ function fillGapLeft(g: Game, leadId: string) {
     }
     return;
   }
+  if (puzzleOf(g, leadId).type === 'stakeout') {
+    const p = stakeoutOf(g, leadId);
+    for (const r of gapRows(g, leadId)) {
+      lp.spots![r] = p.cols[r] + 1;
+      lp.shownSpots!.push(r);
+    }
+    return;
+  }
   if (puzzleOf(g, leadId).type === 'network') {
     const p = networkOf(g, leadId);
     for (const k of gapPairs(g, leadId)) {
@@ -238,6 +259,32 @@ export function gapDigits(g: Game, leadId: string): number[] {
       }
     }
     fits = fits.filter((c) => c[best] === p.code[best]);
+    added.push(best);
+  }
+  return added;
+}
+
+/** Stakeout version of gapCells: rows whose watcher to show so the statements left still give one layout. */
+export function gapRows(g: Game, leadId: string): number[] {
+  const p = stakeoutOf(g, leadId);
+  const lp = g.s.leads[leadId];
+  const said = p.statements.filter((s) => !lp.missingSpeakers.includes(s.speaker)).map((s) => s.claim);
+  const shown = [...p.givens.map((x) => x.r), ...lp.shownSpots!];
+  const pin = (rs: number[]) => ({ ...p, givens: rs.map((r) => ({ r, c: p.cols[r] })) });
+  let fits = fittingPlacements(pin(shown), said);
+  const added: number[] = [];
+  while (fits.length > 1) {
+    let best = -1;
+    let bestLeft = fits.length;
+    for (let r = 0; r < p.size; r++) {
+      if (shown.includes(r) || added.includes(r)) continue;
+      const left = fits.filter((o) => o[r] === p.cols[r]).length;
+      if (left < bestLeft) {
+        bestLeft = left;
+        best = r;
+      }
+    }
+    fits = fits.filter((o) => o[best] === p.cols[best]);
     added.push(best);
   }
   return added;
@@ -352,6 +399,9 @@ export function checkLead(g: Game, leadId: string): CheckResult {
   } else if (p.type === 'cipher') {
     if (lp.digits!.some((v) => !v)) return 'grid-incomplete';
     if (lp.digits!.some((v, k) => v !== p.code[k])) return 'grid-wrong';
+  } else if (p.type === 'stakeout') {
+    if (lp.spots!.some((v) => !v)) return 'grid-incomplete';
+    if (lp.spots!.some((v, r) => v - 1 !== p.cols[r])) return 'grid-wrong';
   } else if (p.type === 'network') {
     if (lp.links!.some((v) => !v)) return 'grid-incomplete';
     if (lp.links!.some((v, k) => (v === 1) !== (p.links[k] === 1))) return 'grid-wrong';
@@ -434,6 +484,16 @@ export function buyTip(g: Game, leadId: string, informant: string): AnyClaim | '
     spendHours(g, 1);
     lp.paidTips.push({ speaker: informant, claim: cc });
     return cc;
+  }
+  if (any.type === 'stakeout') {
+    const have = [...any.statements.map((s) => s.claim), ...(lp.paidTips.map((x) => x.claim) as StakeClaim[])];
+    const sc = freshTrueStakeClaim(any, have, rng);
+    /* v8 ignore next -- a 5x5 map still has fresh true claims left */
+    if (!sc) return 'cant';
+    g.s.favors -= 1;
+    spendHours(g, 1);
+    lp.paidTips.push({ speaker: informant, claim: sc });
+    return sc;
   }
   if (any.type === 'network') {
     const have = [...any.statements.map((s) => s.claim), ...(lp.paidTips.map((x) => x.claim) as NetClaim[])];

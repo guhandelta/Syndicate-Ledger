@@ -6,12 +6,13 @@
 import { generateCipher, verifyCipher } from '../engine/cipher';
 import { generatePuzzle, verifyUnique } from '../engine/generator';
 import { generateNetwork, verifyNetwork } from '../engine/network';
+import { generateStakeout, verifyStakeout } from '../engine/stakeout';
 import { makeRng } from '../engine/rng';
 import { generateTimeline, verifyTimeline } from '../engine/timeline';
 import type { GridType } from '../engine/types';
 import type { AnyPuzzle, CaseFile, Lead, Preset, PuzzleBook } from './caseTypes';
 import { checkLinks, linkResolves, linksFor, planLinks, type Answers } from './links';
-import { CIPHER_RULES, MAP_RULES, NET_RULES, PRESET_RULES } from './presets';
+import { CIPHER_RULES, MAP_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from './presets';
 import { caseForRank } from './rankStory';
 
 /** What each grid size asks of its generators (the rule book's sizes, 4 to 7). Plain tables, so a size has one place to be tuned. */
@@ -108,6 +109,13 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
       /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
       if (!cc.ok) throw new Error(`${lead.id}:${preset} failed: ${cc.reason}`);
       p = cp;
+    } else if (lead.type === 'stakeout') {
+      const { size, ...rules2 } = STAKEOUT_RULES[preset];
+      const sp = withLinks(cfr, preset, lead, size, seed, built, (planted) => generateStakeout({ size, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...rules2, planted: planted as never, seed }, 800));
+      const sc = verifyStakeout(sp);
+      /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
+      if (!sc.ok) throw new Error(`${lead.id}:${preset} failed: ${sc.reason}`);
+      p = sp;
     } else if (lead.type === 'network') {
       const net = withLinks(cfr, preset, lead, n, seed, built, (planted) => generateNetwork({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...NET_RULES[preset], planted: planted as never, seed }, 800));
       const nc = verifyNetwork(net);

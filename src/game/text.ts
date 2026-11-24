@@ -1,5 +1,6 @@
 import type { CipherClaim } from '../engine/cipher';
 import type { NetClaim } from '../engine/network';
+import type { StakeClaim } from '../engine/stakeout';
 import type { TimeClaim } from '../engine/timeline';
 import type { Claim } from '../engine/types';
 import type { AnyClaim, AnyPuzzle, CaseFile, Lead, Text } from './caseTypes';
@@ -155,10 +156,48 @@ export function describeCipherClaim(c: CipherClaim): string {
   }
 }
 
+export interface StakeoutLabels {
+  /** District names, in district order. */
+  districts: string[];
+  /** What stands in each district, singular and plural. */
+  one: string;
+  many: string;
+}
+
+export function stakeoutLabels(lead: Lead, size: number, tone: Tone): StakeoutLabels {
+  const named = (lead.districts ?? []).slice(0, size).map((d) => t(d, tone));
+  const districts = Array.from({ length: size }, (_, i) => named[i] ?? `District ${String.fromCharCode(65 + i)}`);
+  return { districts, one: lead.watchers?.one ?? 'watcher', many: lead.watchers?.many ?? 'watchers' };
+}
+
+/** Plain-language wording of a stakeout claim: districts are named, rows count from the top and columns from the left. */
+export function describeStakeClaim(c: StakeClaim, L: StakeoutLabels): string {
+  const W = (z: number) => `${L.districts[z]}’s ${L.one}`;
+  switch (c.kind) {
+    case 'at':
+      return `${W(c.z)} stood on the square in row ${c.r + 1}, column ${c.c + 1}.`;
+    case 'notAt':
+      return `${W(c.z)} did not stand on the square in row ${c.r + 1}, column ${c.c + 1}.`;
+    case 'row':
+      return `${W(c.z)} stood in row ${c.value} (counting from the top).`;
+    case 'col':
+      return `${W(c.z)} stood in column ${c.value} (counting from the left).`;
+    case 'above':
+      return `${W(c.a)} stood further up the map than ${W(c.b)}.`;
+    case 'left':
+      return `${W(c.a)} stood further left on the map than ${W(c.b)}.`;
+    case 'gap': {
+      const unit = c.axis === 'row' ? 'row' : 'column';
+      return `${W(c.a)} and ${W(c.b)} stood ${c.gap} ${unit}${c.gap === 1 ? '' : 's'} apart.`;
+    }
+  }
+}
+
 /** Wording of a statement from any kind of lead. */
 export function describeStatement(cf: CaseFile, lead: Lead, p: AnyPuzzle, claim: AnyClaim, tone: Tone): string {
   if (p.type === 'timeline') return describeTimeClaim(claim as TimeClaim, timelineLabels(lead, p.size, tone));
   if (p.type === 'cipher') return describeCipherClaim(claim as CipherClaim);
+  if (p.type === 'stakeout') return describeStakeClaim(claim as StakeClaim, stakeoutLabels(lead, p.size, tone));
   if (p.type === 'network') return describeNetClaim(claim as NetClaim, networkPeople(cf, lead, p.size));
   return describeClaim(claim as Claim, gridLabels(cf, lead, p.size, tone), p.type);
 }
