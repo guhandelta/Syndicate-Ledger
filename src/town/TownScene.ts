@@ -667,7 +667,7 @@ export class TownScene {
         new GLTFLoader().load(made.glb, (gltf) => {
           const mesh = meshOf(gltf.scene);
           if (this.disposed || !mesh) return;
-          const fresh = new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, hair: samplerOf((mesh.material as THREE.MeshStandardMaterial).map), seed, glow: this.opts.friendly ? 0.05 : 0.22 });
+          const fresh = new GlbFigure(mesh, { height: made.rig.height, skirt: made.rig.skirt, face: made.rig.face, ...made.fit, hair: samplerOf((mesh.material as THREE.MeshStandardMaterial).map), seed, glow: this.opts.friendly ? 0.05 : 0.22 });
           pivot.remove(body.root);
           body.dispose();
           pivot.add(fresh.root);

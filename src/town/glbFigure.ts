@@ -342,11 +342,14 @@ export const FEATURES: Features = {
   cheekL: [0.74, 0.3],
 };
 
+/** How far each basic movement goes on one model, compared with usual (1): less where something sits on the face, such as glasses. */
+export type Reach = Partial<Record<Basis, number>>;
+
 /**
  * Gives the geometry a morph target for each basic movement, made by nudging the points of the face the model already has
  * (brows, lids, mouth corners), so the face shows a feeling without a picture laid over it.
  */
-export function addExpressions(geo: THREE.BufferGeometry, box: FaceBox, at: Features = FEATURES): void {
+export function addExpressions(geo: THREE.BufferGeometry, box: FaceBox, at: Features = FEATURES, reach: Reach = {}): void {
   const pos = geo.getAttribute('position');
   const nor = geo.getAttribute('normal');
   const w = box.x1 - box.x0;
@@ -379,6 +382,7 @@ export function addExpressions(geo: THREE.BufferGeometry, box: FaceBox, at: Feat
   geo.morphTargetsRelative = true;
   geo.morphAttributes.position = BASIS.map((name) => {
     const delta = new Float32Array(pos.count * 3);
+    const far = reach[name] ?? 1;
     for (let i = 0; i < pos.count; i++) {
       // only the front of the face moves, never the hair behind it
       const front = THREE.MathUtils.smoothstep(nor.getZ(i), 0.15, 0.5);
@@ -386,7 +390,7 @@ export function addExpressions(geo: THREE.BufferGeometry, box: FaceBox, at: Feat
       const x = pos.getX(i);
       const y = pos.getY(i);
       for (const m of moves[name]) {
-        const k = m.patch(x, y) * front;
+        const k = m.patch(x, y) * front * far;
         delta[i * 3] += m.by[0] * k;
         delta[i * 3 + 1] += m.by[1] * k;
         delta[i * 3 + 2] += m.by[2] * k;
@@ -455,6 +459,9 @@ export interface GlbOptions {
   features?: Features;
   /** Reads the model's colour picture; with it the hair is found and swings. */
   hair?: Sampler;
+  /** How far the hair swings, compared with usual (1): less for hair laid close on the coat, so the coat never shows through. */
+  hairSwing?: number;
+  reach?: Reach;
   seed?: number;
   glow?: number;
 }
@@ -472,12 +479,14 @@ export class GlbFigure {
   private feeling: Partial<Record<Basis, number>> = {};
   private mesh: THREE.SkinnedMesh;
   private readonly swing = HAIR.map(() => ({ x: 0, z: 0, vx: 0, vz: 0 }));
+  private readonly hairSwing: number;
   private anchor: THREE.Vector3 | null = null;
   private readonly here = new THREE.Vector3();
   private readonly quat = new THREE.Quaternion();
 
   constructor(source: THREE.Mesh, opts: GlbOptions) {
     this.skirt = opts.skirt;
+    this.hairSwing = opts.hairSwing ?? 1;
     this.seed = opts.seed ?? 0;
     this.material = glbMaterial(source.material as THREE.Material, opts.glow ?? 0.15);
 
@@ -490,7 +499,7 @@ export class GlbFigure {
     const layout = layoutFor(opts.height, opts.joints);
     skinTo(geo, layout);
     if (opts.hair) hairTo(geo, layout, opts.hair, opts.height);
-    addExpressions(geo, opts.face, opts.features);
+    addExpressions(geo, opts.face, opts.features, opts.reach);
     this.geometry = geo;
 
     for (const name of ORDER) {
@@ -599,7 +608,7 @@ export class GlbFigure {
       }
       s.x = THREE.MathUtils.clamp(s.x, -0.3, 0.3);
       s.z = THREE.MathUtils.clamp(s.z, -0.3, 0.3);
-      this.bones[HAIR[n]].rotation.set(s.x, 0, s.z);
+      this.bones[HAIR[n]].rotation.set(s.x * this.hairSwing, 0, s.z * this.hairSwing);
     });
   }
 

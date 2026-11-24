@@ -80,6 +80,16 @@ describe('3D model face', () => {
     const geo2 = new THREE.BoxGeometry(0.6, 1.7, 0.3, 12, 40, 3);
     addExpressions(geo2, face, { ...FEATURES, browL: [0.1, 0.1] });
     expect(geo2.morphAttributes.position!.length).toBe(BASIS.length);
+    // and can hold a movement back, where glasses or the like sit on the face
+    const full = new THREE.BoxGeometry(0.6, 1.7, 0.3, 12, 40, 3);
+    full.translate(0, 0.85, 0);
+    const held = full.clone();
+    addExpressions(full, face);
+    addExpressions(held, face, FEATURES, { browUp: 0.5, lidClose: 0 });
+    const sum = (g: THREE.BufferGeometry, name: (typeof BASIS)[number]) => Array.from(g.morphAttributes.position![BASIS.indexOf(name)].array).reduce((a, v) => a + Math.abs(v), 0);
+    expect(sum(held, 'browUp')).toBeCloseTo(sum(full, 'browUp') / 2);
+    expect(sum(held, 'lidClose')).toBe(0);
+    expect(sum(held, 'smileL')).toBeCloseTo(sum(full, 'smileL'));
   });
 
   it('has a feeling for each expression it shows, and none for a plain face', () => {
@@ -184,6 +194,22 @@ describe('3D model person', () => {
     f.setExpression(null);
     f.update(0.05, still);
     f.dispose();
+  });
+
+  it('swings less when the model says its hair lies close on the coat', () => {
+    const dark = (): [number, number, number] => [34, 26, 26];
+    const swing = (hairSwing?: number) => {
+      const f = new GlbFigure(block(), { height: 1.68, skirt: false, face, hair: dark, hairSwing });
+      f.update(0.016, still);
+      for (let i = 0; i < 30; i++) {
+        f.root.position.z += 0.04;
+        f.update(0.016, { ...still, walk: 1, stride: i * 0.04 });
+      }
+      const x = Math.abs(f.bones['hair2_3'].rotation.x);
+      f.dispose();
+      return x;
+    };
+    expect(swing(0.5)).toBeCloseTo(swing() / 2);
   });
 });
 
