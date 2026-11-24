@@ -68,6 +68,19 @@
     "talk": { "distance": 1.5, "height": 1.75, "side": 1.5 }
   },
   "moments": { "enter": "wide", "explore": "angled", "talk": "talk" },
+  "weather": "rain",
+  "time": {
+    "start": 18.5,
+    "moments": [
+      { "when": { "leadOpens": "L2" }, "hour": 20 },
+      { "when": { "leadOpens": "L3" }, "hour": 21.5 },
+      { "when": { "event": "nevethitha-leaves" }, "hour": 22 },
+      { "when": { "leadOpens": "L4" }, "hour": 23 },
+      { "when": { "event": "warehouse-burns" }, "hour": 23.5 },
+      { "when": { "event": "ship-sails" }, "hour": 29.5 },
+      { "when": { "leadSolved": "L4" }, "hour": 30.5 }
+    ]
+  },
   "shots": [
     {
       "id": "cameras-open", "when": { "leadOpens": "L2" }, "focus": { "door": "camera-post" }, "distance": 7, "height": 3.2, "angle": 20, "orbit": 6, "seconds": 4,

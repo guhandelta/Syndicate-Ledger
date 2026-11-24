@@ -438,8 +438,11 @@ export function glbMaterial(source: THREE.Material | null, glow: number): THREE.
   shortMips(from?.map);
   shortMips(from?.normalMap);
   const material = new THREE.MeshLambertMaterial({ map: from?.map ?? null, normalMap: from?.normalMap ?? null });
+  // one uniform object per material, so the glow can change as the light does
+  const uGlow = { value: glow };
+  material.userData.uGlow = uGlow;
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.uGlow = { value: glow };
+    shader.uniforms.uGlow = uGlow;
     shader.fragmentShader =
       'uniform float uGlow;\n' + shader.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * uGlow;');
   };
@@ -519,6 +522,11 @@ export class GlbFigure {
     this.root.add(mesh);
     this.root.updateMatrixWorld(true);
     mesh.bind(new THREE.Skeleton(ORDER.map((b) => this.bones[b])));
+  }
+
+  /** Changes how much the person glows (more in the dark). */
+  setGlow(glow: number) {
+    (this.material.userData.uGlow as { value: number }).value = glow;
   }
 
   /** Shows a feeling on the face (it eases in), or none to go back to the face the model was made with. */

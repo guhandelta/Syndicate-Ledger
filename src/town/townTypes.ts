@@ -87,6 +87,24 @@ export interface Shot {
   caption: Text;
 }
 
+/** A moment in the story that moves the clock of the town's day on. */
+export interface TimeMoment {
+  when: ShotTrigger;
+  /** Hour of the day this moment brings, counted on from the first day: 29.5 is half past five the next morning. */
+  hour: number;
+}
+
+/**
+ * The time of day in the town. It follows the story, not the player's own clock: the town opens at `start` and each
+ * moment that has come moves it on to its hour (the latest one wins, so the day never runs backwards).
+ * A town with no `time` stays in the dark of night, as before. Junior's town stays in daylight.
+ */
+export interface TownTime {
+  /** Hour the story opens at (0 to 24). */
+  start: number;
+  moments?: TimeMoment[];
+}
+
 export interface Town {
   name: string;
   /** Walkable ground: min x, min z, max x, max z. */
@@ -103,4 +121,8 @@ export interface Town {
   moments: { enter: CameraKind; explore: CameraKind; talk: CameraKind };
   /** Story shots, in the order they play when several are due at once. */
   shots?: Shot[];
+  /** The time of day, from the story. */
+  time?: TownTime;
+  /** The weather in the grown-up town: rain (the default) or clear. Junior's town never has rain. */
+  weather?: 'rain' | 'clear';
 }

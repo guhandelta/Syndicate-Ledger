@@ -137,4 +137,14 @@ describe('story shots', () => {
     expect(bad({ focus: { door: 'nope' } })).toContain('Shot "x" looks at unknown door nope');
     expect(bad({ seconds: 30 })).toContain('Shot "x" must last 2 to 8 seconds');
   });
+
+  it('reports a time of day that waits on things the case does not have', () => {
+    const bad = (time: object) => validateTown({ ...town, time } as Town, cf);
+    expect(bad({ start: 18.5, moments: [{ when: { leadOpens: 'L2' }, hour: 20 }] })).toEqual([]);
+    expect(bad({ start: 30 })).toContain('The time of day must start between 0 and 24');
+    expect(bad({ start: 18, moments: [{ when: { event: 'nope' }, hour: 20 }] })).toContain('Time moment 1 waits on unknown event nope');
+    expect(bad({ start: 18, moments: [{ when: { leadSolved: 'L9' }, hour: 20 }] })).toContain('Time moment 1 waits on unknown lead L9');
+    expect(bad({ start: 18, moments: [{ when: {}, hour: 20 }] })).toContain('Time moment 1 needs exactly one trigger');
+    expect(bad({ start: 18, moments: [{ when: { event: 'ship-sails' }, hour: 10 }] })).toContain('Time moment 1 must come at or after the start, within two days');
+  });
 });
