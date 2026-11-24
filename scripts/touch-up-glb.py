@@ -30,11 +30,20 @@ TOUCH = {
         'brows': {'box': (-0.097, 0.089, 0.765, 0.802), 'thin': (0.0028, 0.0018), 'tint': ((58, 36, 30), 0.3)},
         # a small dark bindi between the brows, as in the photo
         'bindi': {'at': (0.0, 0.7795), 'radius': 0.0034, 'colour': (52, 18, 22)},
-        # light flecks in the dark hair and trousers, in these (y0, y1) bands: thin triangles on the tool's picture
+        # light flecks in the dark hair and trousers, in these (y0, y1[, z max]) bands: thin triangles on the tool's picture
         # that straddle the edge between a dark patch and a white one (the coat's) pick up a sliver of white
         'flecks': [(0.5, 1.0), (-0.8, -0.3)],
         # the front of the face, left alone by the fleck fix (eyes have light and dark next to each other)
         'face': (-0.11, 0.11, 0.6, 0.86),
+    },
+    'thenmozhi': {
+        # her art and the reference photos have a warmer, more golden tan than the tool's pale peach
+        'skin': (0.92, 0.85, 0.72),
+        # light flecks in the long dark hair (behind her only: in front, the dark hair touches her book, hand and
+        # cardigan, which must keep their colours) and the skirt; a third number is the most forward z to fix
+        'flecks': [(0.0, 1.0, 0.0), (-0.8, -0.1)],
+        # the front of her face (it sits a little to her left of the middle of the model)
+        'face': (-0.06, 0.18, 0.58, 0.86),
     },
 }
 
@@ -130,8 +139,8 @@ def paint_flecks_dark(doc, blob, prim, pos, uv, tri, luma, touch):
     lit = np.stack([look(u) for u in samples], 1)
     mid = pos[tri].mean(1)
     band = np.zeros(len(tri), bool)
-    for y0, y1 in touch['flecks']:
-        band |= (mid[:, 1] > y0) & (mid[:, 1] < y1)
+    for y0, y1, *zmax in touch['flecks']:
+        band |= (mid[:, 1] > y0) & (mid[:, 1] < y1) & (mid[:, 2] < (zmax[0] if zmax else np.inf))
     fx0, fx1, fy0, fy1 = touch['face']
     band &= ~((mid[:, 0] > fx0) & (mid[:, 0] < fx1) & (mid[:, 1] > fy0) & (mid[:, 1] < fy1) & (mid[:, 2] > 0.05))
     dark = lit.max(1) < 45
