@@ -143,7 +143,7 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
         ledgerGivens: lead.type === 'ledger' && lead.opensAfter.length === 0 ? OPENER_GIVENS[n] : 0,
         planted: planted as never,
         seed,
-      }, lead.anchors?.length || planted.length ? 1500 : 300)); // an anchor or a link is one more condition, so it needs more tries
+      }, 1500)); // an anchor or a link is one more condition, so it needs many tries
       const check = verifyUnique(g);
       /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
       if (!check.ok) throw new Error(`${lead.id}:${preset} failed: ${check.reason}`);
