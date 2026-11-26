@@ -94,7 +94,13 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
       const most = STAKEOUT_RULES.chief.size;
       if ((lead.districts?.length ?? 0) < most) fail(`${lead.id}: stakeout leads need ${most} districts so every preset can be built`);
     } else if (lead.type === 'cipher') {
-      // a cipher has no people or times: its statements name the digits by place
+      // a cipher has no people or times: its statements name the digits by place, or the people of its riddle
+      if (lead.riddle) {
+        if (lead.message !== undefined) fail(`${lead.id}: a riddle cannot also carry a message`);
+        if (lead.riddle.people.length < MAX_SIZE) fail(`${lead.id}: a riddle needs ${MAX_SIZE} people so every preset can be built`);
+        for (const id of lead.riddle.people) if (!castIds.has(id)) fail(`${lead.id}: riddle person ${id} is not in the cast`);
+        if (!/^[a-z]+$/.test(lead.riddle.noun)) fail(`${lead.id}: the riddle noun must be one lowercase word`);
+      }
       if (lead.message !== undefined) {
         if (!/^[A-Z]{4,7}$/.test(lead.message)) fail(`${lead.id}: the cipher message must be 4 to 7 capital letters`);
         else for (const tone of ['crime', 'friendly'] as const) if (!t(lead.fact, tone).toUpperCase().includes(lead.message)) fail(`${lead.id}: the ${tone} fact must say the message ${lead.message}`);

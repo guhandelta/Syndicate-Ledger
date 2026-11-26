@@ -176,6 +176,12 @@ export interface Lead {
    * has that many places gets it; the others play the plain digit code). The right code reads it back, and the fact says it.
    */
   message?: string;
+  /**
+   * Cipher leads told as a riddle: each place of the code is one of these people (cast ids, most important first; a
+   * smaller code takes the first N), and the digit is their number, e.g. noun "berth" gives "Kane’s berth number is 3".
+   * The clues, the lie count and the single answer work exactly as they do for a code. A riddle carries no `message`.
+   */
+  riddle?: { people: string[]; noun: string };
   /** Stakeout leads: what stands in each district, e.g. { one: "patrol", many: "patrols" }. Default "watcher". */
   watchers?: { one: string; many: string };
   speakers: string[];

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CaseFile, Lead, PuzzleBook } from '../src/game/caseTypes';
 import { evalCipher, fittingCodes, generateCipher, type CipherClaim, type CipherPuzzle } from '../src/engine/cipher';
 import { buyTip, checkLead, cipherOf, fireEvents, gapDigits, newGame, solveLead, startLead } from '../src/game/state';
-import { describeCipherClaim, describeStatement } from '../src/game/text';
+import { cipherPlaces, describeCipherClaim, describeStatement } from '../src/game/text';
 import { CIPHER_RULES } from '../src/game/presets';
 import { idleHint } from '../src/ui/idleHint';
 
@@ -33,6 +33,25 @@ describe('cipher wording', () => {
     expect(describeCipherClaim({ kind: 'sum', a: 0, b: 2, total: 7 })).toBe('The 1st digit and the 3rd digit add up to 7.');
     expect(describeCipherClaim({ kind: 'apart', a: 3, b: 0, gap: 2 })).toBe('The 4th digit and the 1st digit are 2 apart.');
     expect(describeStatement(cf, lead, book['C1:junior'], { kind: 'odd', p: 0 } as CipherClaim, 'crime')).toBe('The 1st digit is an odd number.');
+  });
+});
+
+describe('a riddle told about named people', () => {
+  const riddle = { ...lead, riddle: { people: ['a', 'b', 'c', 'd', 'a'], noun: 'berth' } } as Lead;
+
+  it('names the places by person and noun, and falls back to a plain name for a person not in the cast', () => {
+    const places = cipherPlaces(cf, riddle, 4);
+    expect([places.long(0), places.short(1), places.thing]).toEqual(['A’s berth number', 'B', 'berth number']);
+    expect(cipherPlaces({ ...cf, cast: [] } as unknown as CaseFile, riddle, 4).short(2)).toBe('c');
+    expect(cipherPlaces(cf, lead, 4)).toMatchObject({ thing: 'digit' });
+    expect(cipherPlaces(cf, lead, 4).short(2)).toBe('3rd');
+  });
+
+  it('words every claim through the people', () => {
+    const places = cipherPlaces(cf, riddle, 4);
+    expect(describeCipherClaim({ kind: 'is', p: 0, d: 3 }, places)).toBe('A’s berth number is 3.');
+    expect(describeCipherClaim({ kind: 'greater', a: 1, b: 0 }, places)).toBe('B’s berth number is bigger than A’s berth number.');
+    expect(describeStatement(cf, riddle, book['C1:junior'], { kind: 'odd', p: 2 } as CipherClaim, 'crime')).toBe('C’s berth number is an odd number.');
   });
 });
 

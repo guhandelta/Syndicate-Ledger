@@ -308,6 +308,10 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 A new grid lead does not have to be written field by field. The author gives a scene brief (`SceneBrief` in `src/game/scene.ts`): the thing on the table ("harbor key log"), the story around it, the people (most important first), the times, the rooms (surveillance), the one fact the lead must reveal (a person, a time and a value) and who speaks. `npm run draft-lead -- scene.json` words the title, intro and fact from that brief, using the cast's names and the case's unit, and prints a lead to paste into the case file. The key fact becomes an anchor, so the generated grid always agrees with the fact text. Links, liars, `hard` and `pointsTo` pass through unchanged. The puzzle is still built by the generator, fresh each game. Only ledger and surveillance scenes are supported so far.
 
+**Riddles**
+
+A cipher lead may be told as a riddle (`riddle: { people, noun }`): each place of the code is a person, and the digit is their number, so the clues read "Kane Hollis’s berth number is 3" or "Meena Selvi’s berth number and Tip Callahan’s berth number add up to 11". The player gives each person a different number from 1 to N+1, so one number is left out. The statements, the lies, the grades and the single answer are the cipher's own, and links to and from a riddle name the person too. A riddle needs as many people as the biggest rank has places, the people must be in the cast, and the noun is one lowercase word (`npm run validate` checks all three). A riddle carries no `message`.
+
 ## 10. Decisions and change log
 
 **Decisions (2026-11-12)**
@@ -321,6 +325,7 @@ A new grid lead does not have to be written field by field. The author gives a s
 
 | Date | Change |
 | --- | --- |
+| 2026-11-26 | Added riddles: a cipher lead can be told about named people and a noun ("berth number") instead of digit places (section 7) |
 | 2026-11-26 | Added scene briefs: `draftLead` and `npm run draft-lead` turn a place, a thing, people and one key fact into a lead (ledger and surveillance) (section 7). Thenmozhi Selvam added to the cast and made the 6th seat of the shared leads |
 | 2026-11-26 | Every puzzle after the first in a rank carries 2 or 3 link clues, mostly from the puzzle just before it (section 2c): more links in Case 1's Junior, Detective, Inspector and Chief leads, decoys at Detective and Chief, "add up" clues, and a two-step person clue (`valueFrom`) in Junior's whisper puzzle. Fresh builds try more link picks and, when needed, a new answer. |
 | 2026-11-24 | New puzzle type, the stakeout (section 2): place one watcher in every district of a map, none in a shared row or column, none touching. Case 1 Junior has it as J4 "Who stood watch?" (at the Boathouse), quoting J1 and J3; the map, the lead and the later Junior leads were renumbered (map is J5, lock is J6). Detective, Inspector and Chief are unchanged. |

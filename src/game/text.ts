@@ -135,9 +135,26 @@ export function describeNetClaim(c: NetClaim, people: string[]): string {
 
 const ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th'];
 
-/** Plain-language wording of a cipher claim: digits are named by their place in the code. */
-export function describeCipherClaim(c: CipherClaim): string {
-  const D = (p: number) => `the ${ORDINALS[p]} digit`;
+/** How a cipher lead names the places of its code: "the 2nd digit" for a plain code, "Kane’s berth number" for a riddle. */
+export interface CipherPlaces {
+  /** In a sentence: "the 2nd digit" or "Kane’s berth number". */
+  long: (p: number) => string;
+  /** On a button: "2nd" or "Kane". */
+  short: (p: number) => string;
+  /** What each place holds, for headings: "digit" or "berth number". */
+  thing: string;
+}
+
+export function cipherPlaces(cf: CaseFile, lead: Lead, size: number): CipherPlaces {
+  const riddle = lead.riddle;
+  if (!riddle) return { long: (p) => `the ${ORDINALS[p]} digit`, short: (p) => ORDINALS[p], thing: 'digit' };
+  const names = riddle.people.slice(0, size).map((id) => (cf.cast.find((c) => c.id === id)?.name ?? id).replace(/"/g, ''));
+  return { long: (p) => `${names[p]}’s ${riddle.noun} number`, short: (p) => names[p], thing: `${riddle.noun} number` };
+}
+
+/** Plain-language wording of a cipher claim: places are named by their order in the code, or by the person in a riddle. */
+export function describeCipherClaim(c: CipherClaim, places?: CipherPlaces): string {
+  const D = places?.long ?? ((p: number) => `the ${ORDINALS[p]} digit`);
   switch (c.kind) {
     case 'is':
       return `${cap(D(c.p))} is ${c.d}.`;
@@ -196,7 +213,7 @@ export function describeStakeClaim(c: StakeClaim, L: StakeoutLabels): string {
 /** Wording of a statement from any kind of lead. */
 export function describeStatement(cf: CaseFile, lead: Lead, p: AnyPuzzle, claim: AnyClaim, tone: Tone): string {
   if (p.type === 'timeline') return describeTimeClaim(claim as TimeClaim, timelineLabels(lead, p.size, tone));
-  if (p.type === 'cipher') return describeCipherClaim(claim as CipherClaim);
+  if (p.type === 'cipher') return describeCipherClaim(claim as CipherClaim, cipherPlaces(cf, lead, p.size));
   if (p.type === 'stakeout') return describeStakeClaim(claim as StakeClaim, stakeoutLabels(lead, p.size, tone));
   if (p.type === 'network') return describeNetClaim(claim as NetClaim, networkPeople(cf, lead, p.size));
   return describeClaim(claim as Claim, gridLabels(cf, lead, p.size, tone), p.type);
