@@ -341,7 +341,14 @@
           "voice": "calm"
         }
       ]
-    }
+    },
+    { "id": "thenmozhi", "name": "Thenmozhi Selvam", "role": "witness", "reliability": "honest", "voice": "calm", "color": "#9a3412",
+      "blurb": { "crime": "Keeps the harbor office's key log. Notices who asks for a key and who does not.", "friendly": "Hands out the keys at the harbor office. Remembers who asked." },
+      "greeting": { "voice": "calm", "text": { "crime": "Every key leaves this desk with a name beside it, detective. Ask me about a door.", "friendly": "Every key goes out with a name. Ask me about any door!" } },
+      "opinions": [
+        { "about": "vex", "text": { "crime": "Vex never signs for a key. He only ever finds the door already open.", "friendly": "Vex never signs for a key. The doors are just open when he comes." }, "voice": "calm" },
+        { "about": "crane", "text": { "crime": "Mr. Crane's office key came back at dawn on the night of the theft, and not by his hand.", "friendly": "Mr. Crane's key came back at dawn, but someone else brought it." }, "voice": "calm", "tell": { "crime": "turns the key log face down", "friendly": "closes the book" } }
+      ] }
   ],
   "leads": [
     {
