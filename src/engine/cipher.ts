@@ -57,6 +57,14 @@ export interface CipherStatement {
   via?: Via;
 }
 
+/** A message hidden under the code: each letter was moved on by the digit at its place, so the right code reads it back. */
+export interface CipherMessage {
+  /** The words the right code reveals, capital letters A to Z, one letter per place. */
+  plain: string;
+  /** The same letters as the player finds them, each moved on by its digit. */
+  cipher: string;
+}
+
 export interface CipherPuzzle {
   type: 'cipher';
   /** Number of digits in the code. */
@@ -67,11 +75,24 @@ export interface CipherPuzzle {
   liarCounts: number[];
   /** code[i] = digit at position i. */
   code: number[];
+  /** A word-cipher lead: the message the code reads back (the letters of the code's own places). */
+  message?: CipherMessage;
   truth: boolean[];
   /** 1 = reading one digit, 2 = comparing digits, 3 = adding or subtracting digits. */
   grade: number;
   seed: number;
 }
+
+const A = 65;
+
+/** Moves a capital letter on by `by` places (back with a negative number), wrapping after Z. */
+export const shiftLetter = (ch: string, by: number) => String.fromCharCode(A + ((((ch.charCodeAt(0) - A + by) % 26) + 26) % 26));
+
+/** The message as the player sees it: each plain letter moved on by the digit of its place. */
+export const encodeMessage = (plain: string, code: number[]): string => [...plain].map((ch, i) => shiftLetter(ch, code[i])).join('');
+
+/** What the player's digits read so far: a letter for each filled place, a dot for each empty one. */
+export const decodeMessage = (cipher: string, digits: number[]): string => [...cipher].map((ch, i) => (digits[i] ? shiftLetter(ch, -digits[i]) : '·')).join('');
 
 /** The biggest digit a code of this size may use: one more than the number of positions. */
 export const maxDigit = (size: number) => size + 1;
@@ -162,6 +183,8 @@ export interface CipherOptions {
   maxStatements?: number;
   /** Digits shown in place at the start. */
   givens?: number;
+  /** A word-cipher lead: the message (capital letters, one per place) the right code reads back. Ignored when its length is not `size`. */
+  message?: string;
   /** Link clues quoting earlier answers: true on the answer, said first, and needed to settle it. The answer is redrawn until they hold. */
   planted?: { speaker: string; claim: CipherClaim; via: Via }[];
   seed: number;
@@ -269,7 +292,10 @@ export function generateCipher(opts: CipherOptions, maxAttempts = 400): CipherPu
   for (let a = 0; a < maxAttempts; a++) {
     const seed = (opts.seed * 7919 + a * 104729) >>> 0;
     const p = tryCipher(opts, makeRng(seed));
-    if (p) return { ...p, seed };
+    if (p) {
+      const plain = opts.message?.length === opts.size ? opts.message : undefined;
+      return { ...p, seed, ...(plain ? { message: { plain, cipher: encodeMessage(plain, p.code) } } : {}) };
+    }
   }
   throw new Error(`Could not generate a ${opts.size}-digit cipher within ${maxAttempts} attempts`);
 }
@@ -280,6 +306,7 @@ export function verifyCipher(p: CipherPuzzle): { ok: boolean; reason?: string } 
   if (fits.length !== 1) return { ok: false, reason: `${fits.length} codes fit the statements` };
   if (!sameCode(fits[0], p.code)) return { ok: false, reason: 'unique code is not the stored code' };
   if (p.statements.some((s, i) => evalCipher(s.claim, p.code) !== p.truth[i])) return { ok: false, reason: 'stored truth does not match the code' };
+  if (p.message && (p.message.cipher !== encodeMessage(p.message.plain, p.code) || decodeMessage(p.message.cipher, p.code) !== p.message.plain)) return { ok: false, reason: 'the message does not read back from the code' };
   return { ok: true };
 }
 

@@ -111,7 +111,7 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
       if (!tc.ok) throw new Error(`${lead.id}:${preset} failed: ${tc.reason}`);
       p = t;
     } else if (lead.type === 'cipher') {
-      const cp = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generateCipher({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...CIPHER_RULES[preset], planted: planted as never, seed }, 800));
+      const cp = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generateCipher({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...CIPHER_RULES[preset], ...(lead.message ? { message: lead.message } : {}), planted: planted as never, seed }, 800));
       const cc = verifyCipher(cp);
       /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
       if (!cc.ok) throw new Error(`${lead.id}:${preset} failed: ${cc.reason}`);
