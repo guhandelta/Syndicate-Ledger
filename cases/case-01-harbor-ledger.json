@@ -1117,7 +1117,7 @@
             "crime": "The Ice house lock",
             "friendly": "The Ice house lock"
           },
-          "intro": { "crime": "The chest ended up behind a locked door at the ice house. Every digit of the code is different. Use what people say to find it.", "friendly": "The chest ended up behind a locked door at the ice house, and the lock has a secret code. Every digit is different. Use what people say to find it!" },
+          "intro": { "crime": "The chest ended up behind a locked door at the ice house. Every digit of the code is different. Use what people say to find it. A scrap of paper is pinned beside the lock: its letters were moved on by the code, so the right code reads it back.", "friendly": "The chest ended up behind a locked door at the ice house, and the lock has a secret code. Every digit is different. Use what people say to find it! A scrap of paper is pinned beside it with scrambled letters. The right code will unscramble it!" },
           "columns": [],
           "rows": [],
           "speakers": [
@@ -1134,9 +1134,10 @@
             "chief": []
           },
           "fact": {
-            "crime": "The chest is full of festival coins, and Tip opened it himself.",
-            "friendly": "The chest is full of festival coins, and Tip opened it himself!"
+            "crime": "The lock opened and the chest is full of festival coins. A scrap pinned inside, decoded with the same code, spelled TIPS. Tip opened it himself.",
+            "friendly": "The lock clicked open and the chest is full of festival coins! A scrap inside, decoded with the same code, spelled TIPS. Tip opened it himself!"
           },
+          "message": "TIPS",
           "pointsTo": [
             "tip"
           ]

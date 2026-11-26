@@ -171,6 +171,11 @@ export interface Lead {
    * are empty; the map is as big as the rank's stakeout size (5 to 8).
    */
   districts?: Text[];
+  /**
+   * Cipher leads: a word hidden under the code. Capital letters A to Z, as many as the code has places (the rank that
+   * has that many places gets it; the others play the plain digit code). The right code reads it back, and the fact says it.
+   */
+  message?: string;
   /** Stakeout leads: what stands in each district, e.g. { one: "patrol", many: "patrols" }. Default "watcher". */
   watchers?: { one: string; many: string };
   speakers: string[];

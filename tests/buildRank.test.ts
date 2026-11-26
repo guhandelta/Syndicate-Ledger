@@ -36,6 +36,13 @@ describe('building a rank', () => {
     for (const key of ['L1:detective', 'L3:detective']) expect(verifyUnique(a[key] as GeneratedPuzzle), key).toEqual({ ok: true });
   });
 
+  it('hides a lead\'s message under its code, and builds a plain code when the lead has none', () => {
+    expect(shipped['J6:junior']).toHaveProperty('message.plain', 'TIPS');
+    const plain: CaseFile = JSON.parse(JSON.stringify(cf));
+    delete plain.rankStories!.junior!.leads!.find((l) => l.id === 'J6')!.message;
+    expect(buildRank(plain, 'junior')['J6:junior']).not.toHaveProperty('message');
+  });
+
   it('gives up on a lead whose links cannot be planned', () => {
     expect(() => buildRank(broken(), 'junior')).toThrow(/could not be built with its links/);
   });

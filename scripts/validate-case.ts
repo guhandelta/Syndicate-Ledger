@@ -95,6 +95,10 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
       if ((lead.districts?.length ?? 0) < most) fail(`${lead.id}: stakeout leads need ${most} districts so every preset can be built`);
     } else if (lead.type === 'cipher') {
       // a cipher has no people or times: its statements name the digits by place
+      if (lead.message !== undefined) {
+        if (!/^[A-Z]{4,7}$/.test(lead.message)) fail(`${lead.id}: the cipher message must be 4 to 7 capital letters`);
+        else for (const tone of ['crime', 'friendly'] as const) if (!t(lead.fact, tone).toUpperCase().includes(lead.message)) fail(`${lead.id}: the ${tone} fact must say the message ${lead.message}`);
+      }
     } else if (lead.type === 'network') {
       // the people of a network are the columns; it has no times
       if (lead.columns.length < MAX_SIZE) fail(`${lead.id}: network leads need ${MAX_SIZE} people so every preset can be built`);
@@ -186,6 +190,7 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
           const check = verifyCipher(p);
           if (!check.ok) fail(`${key}: ${check.reason}`);
           if (p.grade < CIPHER_RULES[preset].minGrade) fail(`${key}: cipher is too easy for ${preset} (grade ${p.grade})`);
+          if (lead.message && lead.message.length === p.size && p.message?.plain !== lead.message) fail(`${key}: the code should hide the message ${lead.message}`);
         } else if (p.type === 'network') {
           const check = verifyNetwork(p);
           if (!check.ok) fail(`${key}: ${check.reason}`);

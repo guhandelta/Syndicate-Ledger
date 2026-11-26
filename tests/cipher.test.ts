@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeRng } from '../src/engine/rng';
 import {
-  allCodes, cipherStep, claimGrade, evalCipher, fittingCodes, freshTrueCipherClaim, generateCipher, maxDigit, positionsOf, randomCipherClaim, verifyCipher, wrongDigit,
+  allCodes, cipherStep, claimGrade, decodeMessage, encodeMessage, evalCipher, fittingCodes, freshTrueCipherClaim, generateCipher, maxDigit, shiftLetter, positionsOf, randomCipherClaim, verifyCipher, wrongDigit,
   type CipherClaim, type CipherPuzzle,
 } from '../src/engine/cipher';
 
@@ -155,5 +155,37 @@ describe('cipher helpers', () => {
     expect(evalCipher(tip, p.code)).toBe(true);
     expect(have.some((c) => JSON.stringify(c) === JSON.stringify(tip))).toBe(false);
     expect(freshTrueCipherClaim(p, have, makeRng(3), 0)).toBeNull();
+  });
+});
+
+describe('word cipher: a message hidden under the code', () => {
+  it('moves letters on and back, wrapping after Z', () => {
+    expect(shiftLetter('A', 1)).toBe('B');
+    expect(shiftLetter('Z', 2)).toBe('B');
+    expect(shiftLetter('B', -3)).toBe('Y');
+    expect(encodeMessage('TIPS', [5, 4, 1, 2])).toBe('YMQU');
+    // a dot stands for a place with no digit yet
+    expect(decodeMessage('YMQU', [5, 0, 1, 2])).toBe('T·PS');
+    expect(decodeMessage('YMQU', [5, 4, 1, 2])).toBe('TIPS');
+  });
+
+  it('hides the lead\'s message under the code the generator draws, for any seed', () => {
+    for (const seed of [1, 2, 3]) {
+      const p = generateCipher({ size: 4, speakers: speakers(3, 1), maxGrade: 2, minGrade: 2, message: 'TIPS', seed });
+      expect(p.message?.plain).toBe('TIPS');
+      expect(decodeMessage(p.message!.cipher, p.code)).toBe('TIPS');
+      expect(verifyCipher(p)).toEqual({ ok: true });
+    }
+  });
+
+  it('plays the plain digit code when the message does not fit the size', () => {
+    const p = generateCipher({ size: 5, speakers: speakers(3, 1), maxGrade: 2, minGrade: 2, message: 'TIPS', seed: 1 });
+    expect(p.message).toBeUndefined();
+  });
+
+  it('catches a message that does not read back from the code', () => {
+    const p = generateCipher({ size: 4, speakers: speakers(3, 1), maxGrade: 2, minGrade: 2, message: 'TIPS', seed: 1 });
+    expect(verifyCipher({ ...p, message: { plain: 'TIPS', cipher: 'AAAA' } })).toEqual({ ok: false, reason: 'the message does not read back from the code' });
+    expect(verifyCipher({ ...p, message: { plain: 'DOCK', cipher: p.message!.cipher } })).toEqual({ ok: false, reason: 'the message does not read back from the code' });
   });
 });

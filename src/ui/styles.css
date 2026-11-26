@@ -413,6 +413,10 @@ kbd {
 .code-slot.wrong, .code-slot.dup { border-color: var(--bad, #e0645c); }
 .code-pick { background: none; border: 0; color: var(--muted); font: inherit; text-align: left; cursor: pointer; padding: 0; }
 .code-digit { font-size: 1.4em; font-weight: 700; }
+.scrap { display: flex; gap: 6px; margin: 4px 0 10px; font: 700 1.6em 'Courier New', ui-monospace, monospace; letter-spacing: 0.1em; }
+.scrap-letter { min-width: 1.6em; text-align: center; padding: 2px 6px; border: 1px dashed var(--accent, #d9a441); border-radius: 6px; background: var(--panel-2); }
+.decoded { font: 700 1.3em 'Courier New', ui-monospace, monospace; color: var(--accent, #d9a441); text-align: center; }
+.reads { margin: 0 0 10px; }
 
 .scene { margin: 18px 0; display: grid; gap: 10px; }
 .scene .narration { font-style: italic; color: var(--muted); margin: 4px 0; }
