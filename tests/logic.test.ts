@@ -17,7 +17,8 @@ describe('logic grading and hints', () => {
   it('gives up (grade 0) when the truth values contradict the grid', () => {
     const results = all.map(([, p]) => gradePuzzle(p, p.truth.map((t) => !t)));
     expect(results).toContain(0);
-  });
+    // grades every shipped grid (the 7x7 ones are heavy), which took over 30s on a busy CI machine
+  }, 120_000);
 
   it('suggests a next step from an empty board and from a partly filled one', () => {
     for (const [, p] of all) {
