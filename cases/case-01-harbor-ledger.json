@@ -345,14 +345,15 @@
   ],
   "leads": [
     {
-      "id": "L1", "type": "ledger", "cost": 2, "opensAfter": [],
+      "id": "L1", "type": "ledger", "cost": 2, "opensAfter": [], "hard": true,
+      "anchors": [{ "time": "10pm", "person": "vex", "value": 3 }],
       "title": { "crime": "Fish market cash book", "friendly": "The fish market notebook" },
-      "intro": { "crime": "Meena keeps a cash book for the market. Somebody has been writing in it at night. Work out who moved how much each hour.", "friendly": "Meena's notebook has numbers in it from last night. Work out how many coins each person carried each hour." },
+      "intro": { "crime": "Meena keeps a cash book for the market. Somebody has been writing in it at night. Work out who moved how much each hour. One of these figures will not match what you have been told.", "friendly": "Meena's notebook has numbers in it from last night. Work out how many coins each person carried each hour." },
       "columns": ["vex", "kane", "meena", "tip", "nevethitha", "crane", "karunakaran"],
       "rows": ["8pm", "9pm", "10pm", "11pm", "Midnight", "1am", "2am"],
-      "speakers": ["meena", "kane"],
-      "liars": { "junior": [], "detective": [], "inspector": [], "chief": [] },
-      "fact": { "crime": "Cash moves through the fish market every night, and Vex carries the biggest bags.", "friendly": "The coins go through the fish market at night, and Vex carries the most." },
+      "speakers": ["meena", "kane", "vex"],
+      "liars": { "junior": [], "detective": ["vex"], "inspector": ["vex"], "chief": ["vex"] },
+      "fact": { "crime": "Cash moves through the fish market every night. At 10pm Vex carried $3k out in a single bag, straight to Warehouse 9, and told everyone he was only moving crates.", "friendly": "The coins go through the fish market at night. At 10 o'clock Vex carried 3 coins in one little bag, straight to Warehouse 9." },
       "pointsTo": ["vex"]
     },
     {
@@ -840,7 +841,7 @@
             "crime": "Fish market cash book",
             "friendly": "The festival notebook"
           },
-          "intro": { "crime": "This is Meena's cash book from the night the prize chest was filled, coin by coin. It got smudged. Fill in how many coins each person carried each hour, then check what people say against your numbers and mark each one True or Lie.", "friendly": "This is Meena's notebook from the night the chest was filled, coin by coin. It got smudged! Fill in how many coins each person carried each hour. Then check what people say against your numbers and mark each one True or Lie." },
+          "intro": { "crime": "This is Meena's cash book from the night the prize chest was filled, coin by coin. It got smudged. Fill in how many coins each person carried each hour, then check what people say against your numbers and mark each one True or Lie. One of the bags in this book is the first real clue of the whole case.", "friendly": "This is Meena's notebook from the night the chest was filled, coin by coin. It got smudged! Fill in how many coins each person carried each hour. Then check what people say against your numbers and mark each one True or Lie. One of the bags in this book is the first real clue of the whole case!" },
           "columns": [
             "vex",
             "kane",
@@ -859,17 +860,20 @@
           ],
           "speakers": [
             "meena",
-            "kane"
+            "kane",
+            "vex"
           ],
           "liars": {
-            "junior": [],
+            "junior": ["vex"],
             "detective": [],
             "inspector": [],
             "chief": []
           },
+          "anchors": [{ "time": "9 PM", "person": "tip", "value": 4 }],
+          "hard": true,
           "fact": {
-            "crime": "Coins left the festival chest in small bags, and they all went through the fish market.",
-            "friendly": "The coins left the chest in little bags, and every bag went through the fish market."
+            "crime": "Coins left the festival chest in small bags, and they all went through the fish market. At 9 PM Tip carried 4 coins, the biggest bag of the night.",
+            "friendly": "The coins left the chest in little bags, and every bag went through the fish market. At 9 PM Tip carried 4 coins, the biggest bag of the night!"
           }
         },
         {

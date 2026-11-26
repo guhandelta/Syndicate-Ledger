@@ -24,8 +24,10 @@ const TIMELINE_MIN_GRADE: Record<number, number> = { 4: 2, 5: 2, 6: 3, 7: 3 };
 const TIMELINE_GIVENS: Record<number, number> = { 4: 0, 5: 0, 6: 0, 7: 1 };
 /** A 7x7 opener needs a few filled cells to stay at the gentle opening grade. */
 const OPENER_GIVENS: Record<number, number> = { 4: 0, 5: 0, 6: 0, 7: 7 };
+/** A "hard" lead keeps at least this many grids open after the sums alone, so the witnesses have to do real work (the 7x7 is slow enough already). */
+const HARD_MIN_BASE: Record<number, number> = { 4: 16, 5: 14, 6: 5, 7: 2 };
 /** A "hard" lead is held to the harder reading on the bigger grids. */
-const HARD_MIN_GRADE: Record<number, number> = { 4: 1, 5: 1, 6: 3, 7: 3 };
+const HARD_MIN_GRADE: Record<number, number> = { 4: 2, 5: 2, 6: 3, 7: 3 };
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
 
@@ -135,7 +137,8 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
         liarRange: rules.liarRange,
         maxGrade: lead.opensAfter.length === 0 ? Math.min(rules.maxGrade, 3) : rules.maxGrade,
         minGrade: lead.hard ? HARD_MIN_GRADE[n] : 1,
-        maxStatements: GRID_STATEMENTS[n],
+        maxStatements: lead.hard ? GRID_STATEMENTS[n] + 1 : GRID_STATEMENTS[n],
+        minBase: lead.hard ? HARD_MIN_BASE[n] : undefined,
         anchors: (lead.anchors ?? []).map((a) => ({ cell: [lead.rows.indexOf(a.time), lead.columns.indexOf(a.person)] as [number, number], value: a.value })),
         ledgerGivens: lead.type === 'ledger' && lead.opensAfter.length === 0 ? OPENER_GIVENS[n] : 0,
         planted: planted as never,

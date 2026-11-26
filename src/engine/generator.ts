@@ -24,6 +24,8 @@ export interface GenerateOptions {
   minGrade?: number;
   /** Max grids the base clues may allow (keeps the statement step tractable for players). */
   maxBase?: number;
+  /** Fewest grids the base clues must leave open, so the statements have real work to do (default 2). */
+  minBase?: number;
   maxStatements?: number;
   /** Ledger grids only: cells shown filled in at the start, next to the zone sums (eases big grids). Default 0. */
   ledgerGivens?: number;
@@ -82,7 +84,7 @@ function randomZones(sol: Grid, rng: Rng, bias: number): Zone[] {
     .map((cells) => ({ cells: cells.sort((a, b) => a[0] - b[0] || a[1] - b[1]), sum: cells.reduce((s, [r, c]) => s + sol[r][c], 0) }));
 }
 
-function baseClues(sol: Grid, type: GridType, rng: Rng, maxBase: number, ledgerGivens = 0) {
+function baseClues(sol: Grid, type: GridType, rng: Rng, maxBase: number, ledgerGivens = 0, minBase = MIN_BASE) {
   const n = sol.length;
   if (type === 'ledger') {
     let bias = 0.2;
@@ -94,7 +96,7 @@ function baseClues(sol: Grid, type: GridType, rng: Rng, maxBase: number, ledgerG
         .slice(0, ledgerGivens)
         .map((cell) => ({ cell, value: sol[cell[0]][cell[1]] }));
       const all = enumerate({ size: n, zones, givens }, maxBase + 1);
-      if (all.length >= MIN_BASE && all.length <= maxBase) return { zones, givens, all };
+      if (all.length >= minBase && all.length <= maxBase) return { zones, givens, all };
       bias += all.length > maxBase ? -0.03 : 0.03;
       bias = Math.max(-0.3, Math.min(0.6, bias));
     }
@@ -111,7 +113,7 @@ function baseClues(sol: Grid, type: GridType, rng: Rng, maxBase: number, ledgerG
     const res = enumerate({ size: n, zones: [], givens: trial }, maxBase + 1);
     if (res.length <= maxBase) { current = trial; all = res; }
   }
-  if (all.length < MIN_BASE) return null;
+  if (all.length < minBase) return null;
   return { zones: [] as Zone[], givens: current, all };
 }
 
@@ -173,7 +175,7 @@ function tryGenerate(opts: GenerateOptions, rng: Rng): GeneratedPuzzle | null {
     fitPlanted(sol, [...(opts.anchors ?? []).map((a) => ({ kind: 'is', cell: a.cell, value: a.value }) as Claim), ...opts.planted.map((p) => p.claim)]);
   if (opts.anchors && !opts.anchors.every((a) => sol[a.cell[0]][a.cell[1]] === a.value)) return null;
   if (opts.planted && !opts.planted.every((p) => evalClaim(p.claim, sol))) return null;
-  const base = baseClues(sol, opts.type, rng, maxBase, opts.ledgerGivens);
+  const base = baseClues(sol, opts.type, rng, maxBase, opts.ledgerGivens, opts.minBase);
   if (!base) return null;
   const others = base.all.filter((g) => g.some((row, r) => row.some((v, c) => v !== sol[r][c])));
 
