@@ -41,12 +41,12 @@ describe('building a rank', () => {
   });
 
   it('moves to another seed when one cannot be built, and says which one worked', () => {
-    // seed 628 is a Junior seed whose stakeout clues cannot be linked
-    const r = buildRankFresh(cf, 'junior', 628);
-    expect(r.seed).not.toBe(628);
+    // seed 458 is a Junior seed whose map clues cannot be linked
+    const r = buildRankFresh(cf, 'junior', 458);
+    expect(r.seed).not.toBe(458);
     expect(Object.keys(r.book)).toHaveLength(6);
     expect(buildRankFresh(cf, 'junior', 11).seed).toBe(11);
-    expect(() => buildRankFresh(cf, 'junior', 628, 1)).toThrow(/no seed built junior/);
+    expect(() => buildRankFresh(cf, 'junior', 458, 1)).toThrow(/no seed built junior/);
   });
 });
 

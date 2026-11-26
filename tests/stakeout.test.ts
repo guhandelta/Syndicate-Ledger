@@ -414,19 +414,26 @@ describe('a stakeout in the game', () => {
     const p0 = stakeoutOf(base, 'J4');
     // two witnesses gone leave the layout open, so a watcher has to be shown: one is away already, the event sends the other
     const speakers = [...new Set(p0.statements.map((x) => x.speaker))];
-    const pair = speakers.flatMap((a) => speakers.filter((b) => b !== a).map((b) => [a, b] as const)).find(([a, b]) => {
-      const probe = fresh();
-      probe.s.leads.J4.missingSpeakers = [a, b];
-      return gapRows(probe, 'J4').length > 0;
-    })!;
+    // a pair of witnesses whose leaving still needs a watcher shown after another row is shown already
+    let shown = 0;
+    const rows = Array.from({ length: p0.size }, (_, r) => r);
+    const pair = speakers.flatMap((a) => speakers.filter((b) => b !== a).map((b) => [a, b] as const)).find(([a, b]) =>
+      rows.some((r) => {
+        const probe = fresh();
+        probe.s.leads.J4.missingSpeakers = [a, b];
+        probe.s.leads.J4.shownSpots!.push(r);
+        shown = r;
+        return gapRows(probe, 'J4').length > 0;
+      }),
+    )!;
     const who = pair[1];
     const ev = { id: 'leaves', at: 0, effect: { type: 'removeSpeaker', lead: 'J4', speaker: who, recover: { hours: 1, favors: 1 } }, rumor: '', message: '' };
     const g = newGame({ ...story, events: [ev] } as unknown as CaseFile, book, 'junior');
     for (const id of ['J1', 'J2', 'J3']) g.s.leads[id].solved = true;
     const lp = g.s.leads.J4;
     lp.missingSpeakers = [pair[0]];
-    lp.shownSpots!.push(0);
-    lp.spots![0] = stakeoutOf(g, 'J4').cols[0] + 1;
+    lp.shownSpots!.push(shown);
+    lp.spots![shown] = stakeoutOf(g, 'J4').cols[shown] + 1;
     expect(fireEvents(g).length).toBeGreaterThan(0);
     const p = stakeoutOf(g, 'J4');
     expect(new Set(lp.shownSpots).size).toBe(lp.shownSpots!.length);

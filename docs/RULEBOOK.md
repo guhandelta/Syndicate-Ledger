@@ -102,6 +102,7 @@ A case is an evidence board of linked leads, played against an in-game clock. Ea
 
 | Action | Cost | What it gives |
 | --- | --- | --- |
+| 2026-11-26 | The first puzzle of each rank is no longer a tutorial: it is a `hard` lead with a liar (Junior J1, Detective and above L1), keeps more grids open after the sums (`minBase`), and carries a story number (an `anchor`) that its fact text names (Junior: Tip's 4-coin bag at 9 PM; later ranks: Vex's $3k bag at 10pm). |
 | Work a lead | 2 hours | The lead's facts |
 | Pay the informant | 1 hour + 1 favor | One extra true statement for a puzzle |
 | Call in an ally | 1 or 2 favors | That ally's ability, once |
