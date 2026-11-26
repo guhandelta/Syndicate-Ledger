@@ -92,11 +92,13 @@ export function planLinks(cf: CaseFile, preset: Preset, lead: Lead, size: number
       for (let tries = 0; tries < 60 && !placed; tries++) {
         // a two-step clue: the number that picks the person comes from another earlier answer
         const n = vSrc ? pickNumber(vSrc, rng, 1, src.size, false) : null;
+        /* v8 ignore next -- a grid always has a number in range; this only guards a case file whose source answer has none */
         if (vSrc && !n) continue;
         const ref: LinkRef = n
           ? { kind: 'holder', r: rng.int(0, src.size - 1), v: n.value, from: { lead: spec.valueFrom!, ref: n.ref } }
           : { kind: 'holder', r: rng.int(0, src.size - 1), v: rng.int(1, src.size) };
         const h = refHolder(src, ref);
+        /* v8 ignore next -- every row of a grid holds every value, so the holder always exists */
         if (h < 0) continue;
         const id = srcLead.columns[h];
         const a = lead.columns.slice(0, size).indexOf(id);
@@ -185,9 +187,7 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
   if (ref.kind === 'holder' && ref.from) {
     // two steps: the number is found in one earlier answer, the person in another
     const inner = phrase(cf, { lead: ref.from.lead, ref: ref.from.ref }, answers, tone);
-    return ledger
-      ? `someone you find in two steps. First work out ${inner}. Then take whoever moved exactly that much ${at(L.times[ref.r])} in ${title}`
-      : `someone you find in two steps. First work out ${inner}. Then take whoever was in the room with that number ${at(L.times[ref.r])} in ${title}`;
+    return `someone you find in two steps. First work out ${inner}. Then take whoever had exactly that number ${at(L.times[ref.r])} in ${title}`;
   }
   if (ref.kind === 'holder')
     return ledger

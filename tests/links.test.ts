@@ -158,6 +158,13 @@ describe('Case 1 links', () => {
     expect(linkResolves(story, lead, p, st as never, { ...answers, J2: undefined })).toMatch(/not there/);
   });
 
+  it('refuses a two-step link whose number lead is not built yet', () => {
+    const story = caseForRank(cf, 'junior');
+    const answers: Answers = { J1: book['J1:junior'] as AnyAnswered };
+    const lead = story.leads.find((l) => l.id === 'J3')!;
+    expect(() => planLinks(story, 'junior', lead, 4, answers, makeRng(1))).toThrow(/not built yet/);
+  });
+
   it('refuses a link to a lead that is not built yet', () => {
     const story = caseForRank(cf, 'junior');
     const lead = story.leads.find((l) => l.id === 'J2')!;
