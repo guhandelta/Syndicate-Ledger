@@ -75,6 +75,8 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
     walk(lead.id);
     for (const spec of lead.links ?? []) {
       if (!before.has(spec.from)) fail(`${lead.id}: link quotes ${spec.from}, which does not open before it`);
+      if (spec.valueFrom && !before.has(spec.valueFrom)) fail(`${lead.id}: link quotes ${spec.valueFrom}, which does not open before it`);
+      if (spec.valueFrom && spec.take !== 'person') fail(`${lead.id}: "valueFrom" picks a person, so it needs "take": "person"`);
       if (spec.take === 'person' && (lead.type !== 'network' || spec.use !== 'linked')) fail(`${lead.id}: a person link belongs in a network lead as "linked"`);
       if (spec.take === 'number' && lead.type === 'network') fail(`${lead.id}: a network lead links to a person, not a number`);
       if (spec.take === 'number' && spec.use === 'linked') fail(`${lead.id}: "linked" is for people`);

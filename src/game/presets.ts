@@ -37,7 +37,7 @@ export const MAP_RULES: Record<Preset, { extraCorridors: number; minAlternatives
 
 /** A network lead by rank: how many networks the contact counts alone must allow (so the statements are needed), and the hardest reading skill asked. */
 export const NET_RULES: Record<Preset, { minBase: number; minGrade: number }> = {
-  junior: { minBase: 2, minGrade: 1 },
+  junior: { minBase: 3, minGrade: 1 },
   detective: { minBase: 6, minGrade: 2 },
   inspector: { minBase: 12, minGrade: 3 },
   chief: { minBase: 25, minGrade: 3 },

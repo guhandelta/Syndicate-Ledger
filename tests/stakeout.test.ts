@@ -273,9 +273,9 @@ describe('the stakeout lead in Case 1', () => {
   it('quotes earlier answers: a row or column, and a gap, each needed and not enough alone', () => {
     const p = shipped['J4:junior'] as StakeoutPuzzle;
     const linked = p.statements.filter((s) => s.via);
-    expect(linked).toHaveLength(2);
+    expect(linked).toHaveLength(3);
     expect(linked.map((s) => s.claim.kind)).toContain('gap');
-    expect(linked.map((s) => s.claim.kind).filter((k) => k === 'row' || k === 'col')).toHaveLength(1);
+    expect(linked.map((s) => s.claim.kind).filter((k) => k === 'row' || k === 'col')).toHaveLength(2);
     expect(checkLinks(p)).toEqual({ ok: true });
     for (const st of linked) expect(linkResolves(story, lead, p, st as never, answers)).toBeNull();
     for (const st of linked) {
@@ -301,7 +301,7 @@ describe('the stakeout lead in Case 1', () => {
   it('plans links the same way every time', () => {
     const a = planLinks(story, 'junior', lead, 5, answers, makeRng(5));
     expect(a).toEqual(planLinks(story, 'junior', lead, 5, answers, makeRng(5)));
-    expect(a).toHaveLength(2);
+    expect(a).toHaveLength(3);
     for (const pl of a) expect(refNumber(answers[pl.via.lead]!, pl.via.ref)).toBeGreaterThan(0);
   });
 

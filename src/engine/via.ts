@@ -23,8 +23,11 @@ export type LinkRef =
   | { kind: 'digit'; p: number }
   /** Stakeout: the row or column (numbered from 1) a district's watcher stood in. */
   | { kind: 'spot'; z: number; axis: 'row' | 'col' }
-  /** Grid, a person: whoever has value v in row r. */
-  | { kind: 'holder'; r: number; v: number };
+  /**
+   * Grid, a person: whoever has value v in row r. With `from`, v itself is quoted from another earlier answer
+   * (a two-step clue: find that number first, then the person who has it).
+   */
+  | { kind: 'holder'; r: number; v: number; from?: { lead: string; ref: LinkRef } };
 
 export interface Via {
   /** The earlier lead. */
