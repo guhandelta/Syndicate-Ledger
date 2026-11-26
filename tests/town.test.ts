@@ -139,6 +139,9 @@ describe('story shots', () => {
   });
 
   it('reports a time of day that waits on things the case does not have', () => {
+    const badB = (b: object) => validateTown({ ...town, buildings: [{ ...town.buildings[0], ...b }, ...town.buildings.slice(1)] } as Town, cf);
+    expect(badB({ style: 'castle' })).toContain('Building harbor-office has unknown style castle');
+    expect(badB({ trim: 'red' })).toContain('Building harbor-office has a colour that is not #rrggbb: red');
     const bad = (time: object) => validateTown({ ...town, time } as Town, cf);
     expect(bad({ start: 18.5, moments: [{ when: { leadOpens: 'L2' }, hour: 20 }] })).toEqual([]);
     expect(bad({ start: 30 })).toContain('The time of day must start between 0 and 24');

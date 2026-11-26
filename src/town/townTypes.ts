@@ -4,6 +4,10 @@ import type { Preset, Text } from '../game/caseTypes';
 
 export type Vec2 = [x: number, z: number];
 
+/** How a building is built, after the streets of Chennai and Coimbatore. `plain` is the old box. */
+export const BUILDING_STYLES = ['plain', 'madras', 'bungalow', 'mill', 'shed'] as const;
+export type BuildingStyle = (typeof BUILDING_STYLES)[number];
+
 export interface Building {
   id: string;
   name: string;
@@ -16,6 +20,10 @@ export interface Building {
   roof: string;
   /** Which wall the door and sign are on. */
   doorSide: 'north' | 'south';
+  /** The look of the building; leaving it out keeps the plain box. */
+  style?: BuildingStyle;
+  /** Colour of the trim (cornice, pillars, awning) as #rrggbb; each style has its own when left out. */
+  trim?: string;
 }
 
 export interface Door {

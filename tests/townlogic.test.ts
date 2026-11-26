@@ -15,7 +15,7 @@ const baseTown = (): Town => ({
   bounds: [-10, -10, 10, 10],
   waterline: -8,
   start: { at: [0, 5], heading: 0 },
-  buildings: [{ id: 'hall', name: 'Hall', at: [0, 0], size: [4, 4], height: 3, color: '#fff', roof: '#000', doorSide: 'south' }],
+  buildings: [{ id: 'hall', name: 'Hall', at: [0, 0], size: [4, 4], height: 3, color: '#ffffff', roof: '#000000', doorSide: 'south' }],
   doors: [
     { id: 'd1', at: [5, 5], label: 'One', lead: 'L1' },
     { id: 'd2', at: [-5, 5], label: 'Two', lead: 'L2' },
