@@ -17,7 +17,7 @@ import { verifyUnique } from '../engine/generator';
 import { refHolder, refNumber, type AnyAnswered, type LinkRef, type Via } from '../engine/via';
 import type { CaseFile, Lead, LinkSpec, Preset } from './caseTypes';
 import { LINK_RULES } from './presets';
-import { at, describeStatement, gridLabels, networkPeople, stakeoutLabels, t, timelineLabels, the, type Tone } from './text';
+import { at, cipherPlaces, describeStatement, gridLabels, networkPeople, stakeoutLabels, t, timelineLabels, the, type Tone } from './text';
 
 export interface Planted<C> {
   speaker: string;
@@ -177,7 +177,7 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
     return `the time number (1 is the earliest) of ${`“${L.moments[ref.m]}”`} in ${title}`;
   }
   if (ref.kind === 'degree') return `how many people ${networkPeople(cf, lead, src.size)[ref.p]} was in contact with in ${title}`;
-  if (ref.kind === 'digit') return `the ${ORDINALS[ref.p]} digit of the code in ${title}`;
+  if (ref.kind === 'digit') return lead.riddle ? `${cipherPlaces(cf, lead, src.size).long(ref.p)} in ${title}` : `the ${ORDINALS[ref.p]} digit of the code in ${title}`;
   if (ref.kind === 'spot') {
     const L = stakeoutLabels(lead, src.size, tone);
     return `the ${ref.axis === 'row' ? 'row' : 'column'} number of ${L.districts[ref.z]}’s ${L.one} in ${title}`;
@@ -223,7 +223,7 @@ export function describeLinked(cf: CaseFile, lead: Lead, p: AnyAnswered, st: { c
   }
   if (p.type === 'cipher') {
     const c = st.claim as CipherClaim;
-    const D = (k: number) => `the ${ORDINALS[k]} digit`;
+    const D = cipherPlaces(cf, lead, p.size).long;
     if (story && c.kind === 'is') return told({ a: D(c.p) });
     if (story && c.kind === 'apart') return told({ a: D(c.a), b: D(c.b) });
     if (c.kind === 'is') return `${cap(D(c.p))} is ${q}.`;

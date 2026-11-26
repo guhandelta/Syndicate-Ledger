@@ -363,3 +363,16 @@ describe('the solver on an open grid', () => {
     expect(enumerate({ size: 3, zones: [], givens: [{ cell: [0, 0], value: 1 }] }, 100)).toHaveLength(4);
   });
 });
+
+describe('a riddle told about named people', () => {
+  const riddle = { people: ['a', 'b', 'c', 'd', 'a'], noun: 'berth' };
+  const rLeads = leads.map((l) => (l.id === 'C' ? { ...l, riddle } : l));
+  const RS = story(rLeads);
+
+  it('quotes a place of the riddle by the person, and words a link in the riddle by the people', () => {
+    const [toRiddle] = planLinks(RS, 'detective', { ...leads[0], links: [{ from: 'C', take: 'number', use: 'is' }] }, 4, answers, makeRng(1));
+    expect(describeLinked(RS, leads[0], ledger, toRiddle, answers, 'crime')).toMatch(/’s berth number in “Lead C”/);
+    const [inRiddle] = planLinks(RS, 'detective', { ...rLeads[4], links: [{ from: 'L', take: 'number', use: 'apart' }] }, 4, answers, makeRng(1));
+    expect(describeLinked(RS, rLeads[4], cip, inRiddle, answers, 'crime')).toMatch(/’s berth number and .*’s berth number are what .* apart/);
+  });
+});
