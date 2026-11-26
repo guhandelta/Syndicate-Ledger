@@ -13,6 +13,7 @@
     "coverage": "vitest run --coverage",
     "generate": "tsx scripts/generate-puzzles.ts",
     "validate": "tsx scripts/validate-case.ts",
+    "draft-lead": "tsx scripts/draft-lead.ts",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "e2e": "playwright test"
   },

@@ -304,6 +304,10 @@ A case is not done until every item below passes. Items marked (auto) are checke
 - Spoken lines are shown as comic bubbles beside the speaker's face. A line has a voice (speech, calm, thought, shout, whisper, nervous, suspicious, lying) that sets the bubble's outline shape, colours and lettering; every voice MUST differ in shape or outline style as well as colour. A caught liar's lines always use the lying voice and portrait. Bubbles MUST NOT carry information the text does not, and screen readers get the speaker and a verb ("Tip whispers"). Voices are set in `src/ui/voices.ts` and in the case file.
 - Every change goes through a pull request that runs the tests and validates every case.
 
+**Scene briefs**
+
+A new grid lead does not have to be written field by field. The author gives a scene brief (`SceneBrief` in `src/game/scene.ts`): the thing on the table ("harbor key log"), the story around it, the people (most important first), the times, the rooms (surveillance), the one fact the lead must reveal (a person, a time and a value) and who speaks. `npm run draft-lead -- scene.json` words the title, intro and fact from that brief, using the cast's names and the case's unit, and prints a lead to paste into the case file. The key fact becomes an anchor, so the generated grid always agrees with the fact text. Links, liars, `hard` and `pointsTo` pass through unchanged. The puzzle is still built by the generator, fresh each game. Only ledger and surveillance scenes are supported so far.
+
 ## 10. Decisions and change log
 
 **Decisions (2026-11-12)**
@@ -317,6 +321,7 @@ A case is not done until every item below passes. Items marked (auto) are checke
 
 | Date | Change |
 | --- | --- |
+| 2026-11-26 | Added scene briefs: `draftLead` and `npm run draft-lead` turn a place, a thing, people and one key fact into a lead (ledger and surveillance) (section 7). Thenmozhi Selvam added to the cast and made the 6th seat of the shared leads |
 | 2026-11-26 | Every puzzle after the first in a rank carries 2 or 3 link clues, mostly from the puzzle just before it (section 2c): more links in Case 1's Junior, Detective, Inspector and Chief leads, decoys at Detective and Chief, "add up" clues, and a two-step person clue (`valueFrom`) in Junior's whisper puzzle. Fresh builds try more link picks and, when needed, a new answer. |
 | 2026-11-24 | New puzzle type, the stakeout (section 2): place one watcher in every district of a map, none in a shared row or column, none touching. Case 1 Junior has it as J4 "Who stood watch?" (at the Boathouse), quoting J1 and J3; the map, the lead and the later Junior leads were renumbered (map is J5, lock is J6). Detective, Inspector and Chief are unchanged. |
 | 2026-11-23 | Linked clues (section 2c): puzzles within a rank quote each other's answers. Case 1 Junior (J2 to J5), Detective, Inspector and Chief (L2 to L4) have link clues, with an Evidence panel to look back at solved answers. Proposal and options: docs/LINKED-PUZZLES.md |
