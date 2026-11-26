@@ -149,6 +149,7 @@ describe('Case 1 links', () => {
     expect(ref.v).toBe(refNumber(answers[ref.from!.lead]!, ref.from!.ref));
     expect(linkResolves(story, lead, p, st as never, answers)).toBeNull();
     const said = wordStatement(story, lead, p, st as never, answers, 'crime');
+    expect(said).toContain('two steps');
     expect(said).toContain('Fish market cash book');
     expect(said).toContain('The night of the empty chest');
     // the wrong number is caught
@@ -246,7 +247,7 @@ describe('every kind of link', () => {
     const cases: [Lead, AnyAnswered, object, RegExp][] = [
       [leads[0], ledger, { from: 'L', take: 'number', use: 'is' }, /figure equals what .* moved in the hour .* moved .* in “Lead L”/],
       [leads[1], rooms, { from: 'S', take: 'number', use: 'is' }, /room number .* equals the number of the room .* was in when .* was in .* in “Lead S”/],
-      [leads[0], ledger, { from: 'T', take: 'number', use: 'is' }, /place in the night .* of “m\d” in “Lead T”/],
+      [leads[0], ledger, { from: 'T', take: 'number', use: 'is' }, /time number .* of “m\d” in “Lead T”/],
       [leads[0], ledger, { from: 'N', take: 'number', use: 'is' }, /how many people .* was in contact with in “Lead N”/],
       [leads[0], ledger, { from: 'C', take: 'number', use: 'is' }, /digit of the code in “Lead C”/],
       [leads[2], tline, { from: 'L', take: 'number', use: 'apart' }, /as many hours apart as what/],

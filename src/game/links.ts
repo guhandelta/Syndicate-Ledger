@@ -172,7 +172,7 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
   const { ref } = via;
   if (ref.kind === 'slot') {
     const L = timelineLabels(lead, src.size, tone);
-    return `the place in the night (1st is the earliest) of ${`“${L.moments[ref.m]}”`} in ${title}`;
+    return `the time number (1 is the earliest) of ${`“${L.moments[ref.m]}”`} in ${title}`;
   }
   if (ref.kind === 'degree') return `how many people ${networkPeople(cf, lead, src.size)[ref.p]} was in contact with in ${title}`;
   if (ref.kind === 'digit') return `the ${ORDINALS[ref.p]} digit of the code in ${title}`;
@@ -186,8 +186,8 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
     // two steps: the number is found in one earlier answer, the person in another
     const inner = phrase(cf, { lead: ref.from.lead, ref: ref.from.ref }, answers, tone);
     return ledger
-      ? `the person who, ${at(L.times[ref.r])} in ${title}, moved as much as ${inner}`
-      : `whoever, ${at(L.times[ref.r])} in ${title}, was in room number ${inner} of the list`;
+      ? `someone you find in two steps. First work out ${inner}. Then take whoever moved exactly that much ${at(L.times[ref.r])} in ${title}`
+      : `someone you find in two steps. First work out ${inner}. Then take whoever was in the room with that number ${at(L.times[ref.r])} in ${title}`;
   }
   if (ref.kind === 'holder')
     return ledger

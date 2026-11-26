@@ -957,7 +957,7 @@
         },
         {
           "id": "J3",
-          "links": [{ "from": "J1", "take": "person", "use": "linked", "story": {"crime": "A shopkeeper swore {a} had been seen chatting with {q}."} }, { "from": "J1", "take": "person", "use": "linked", "valueFrom": "J2", "story": {"crime": "Two clues in one: a fisher saw {a} whispering with {q}."} }],
+          "links": [{ "from": "J1", "take": "person", "use": "linked", "story": {"crime": "A shopkeeper swore {a} had been seen chatting with {q}."} }, { "from": "J1", "take": "person", "use": "linked", "valueFrom": "J2", "story": {"crime": "A fisher saw {a} whispering with {q}."} }],
           "type": "network",
           "cost": 2,
           "opensAfter": ["J2"],
