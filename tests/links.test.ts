@@ -115,12 +115,54 @@ describe('Case 1 links', () => {
     const a = planLinks(story, 'junior', lead, 4, answers, makeRng(5));
     const b = planLinks(story, 'junior', lead, 4, answers, makeRng(5));
     expect(a).toEqual(b);
-    expect(a).toHaveLength(2);
+    expect(a).toHaveLength(3);
     for (const pl of a) expect(refNumber(answers[pl.via.lead]!, pl.via.ref)).toBeGreaterThan(0);
     // a person link points at someone in the earlier grid
     const j3 = story.leads.find((l) => l.id === 'J3')!;
     const [who] = planLinks(story, 'junior', j3, 4, answers, makeRng(2));
     expect(refHolder(answers.J1!, who.via.ref)).toBeGreaterThanOrEqual(0);
+  });
+
+  it('every lead after the first gets 2 or 3 link clues, most of them from the lead just before', () => {
+    for (const { preset, story } of ranks)
+      story.leads.forEach((lead, i) => {
+        if (i === 0) return;
+        const specs = linksFor(lead, preset);
+        const prev = story.leads[i - 1].id;
+        const fromPrev = specs.filter((s) => s.from === prev || s.valueFrom === prev).length;
+        expect(specs.length, `${lead.id}:${preset}`).toBeGreaterThanOrEqual(2);
+        expect(specs.length, `${lead.id}:${preset}`).toBeLessThanOrEqual(3);
+        // a network takes people, and a timeline before it has none, so there one two-step clue carries it
+        expect(fromPrev, `${lead.id}:${preset}`).toBeGreaterThanOrEqual(lead.type === 'network' ? 1 : 2);
+      });
+  });
+
+  it('a two-step clue finds the number in one answer and the person in another', () => {
+    const story = caseForRank(cf, 'junior');
+    const answers: Answers = {};
+    for (const l of story.leads) answers[l.id] = book[`${l.id}:junior`];
+    const lead = story.leads.find((l) => l.id === 'J3')!;
+    const p = book['J3:junior'] as AnyAnswered;
+    const st = (p.statements as { via?: Via }[]).find((s) => s.via?.ref.kind === 'holder' && s.via.ref.from)!;
+    expect(st).toBeTruthy();
+    const ref = st.via!.ref as Extract<Via['ref'], { kind: 'holder' }>;
+    expect(ref.v).toBe(refNumber(answers[ref.from!.lead]!, ref.from!.ref));
+    expect(linkResolves(story, lead, p, st as never, answers)).toBeNull();
+    const said = wordStatement(story, lead, p, st as never, answers, 'crime');
+    expect(said).toContain('two steps');
+    expect(said).toContain('Fish market cash book');
+    expect(said).toContain('The night of the empty chest');
+    // the wrong number is caught
+    const wrong = { ...st, via: { ...st.via!, ref: { ...ref, v: ref.v + 1 } } };
+    expect(linkResolves(story, lead, p, wrong as never, answers)).toMatch(/looks for/);
+    expect(linkResolves(story, lead, p, st as never, { ...answers, J2: undefined })).toMatch(/not there/);
+  });
+
+  it('refuses a two-step link whose number lead is not built yet', () => {
+    const story = caseForRank(cf, 'junior');
+    const answers: Answers = { J1: book['J1:junior'] as AnyAnswered };
+    const lead = story.leads.find((l) => l.id === 'J3')!;
+    expect(() => planLinks(story, 'junior', lead, 4, answers, makeRng(1))).toThrow(/not built yet/);
   });
 
   it('refuses a link to a lead that is not built yet', () => {
@@ -212,7 +254,7 @@ describe('every kind of link', () => {
     const cases: [Lead, AnyAnswered, object, RegExp][] = [
       [leads[0], ledger, { from: 'L', take: 'number', use: 'is' }, /figure equals what .* moved in the hour .* moved .* in “Lead L”/],
       [leads[1], rooms, { from: 'S', take: 'number', use: 'is' }, /room number .* equals the number of the room .* was in when .* was in .* in “Lead S”/],
-      [leads[0], ledger, { from: 'T', take: 'number', use: 'is' }, /place in the night .* of “m\d” in “Lead T”/],
+      [leads[0], ledger, { from: 'T', take: 'number', use: 'is' }, /time number .* of “m\d” in “Lead T”/],
       [leads[0], ledger, { from: 'N', take: 'number', use: 'is' }, /how many people .* was in contact with in “Lead N”/],
       [leads[0], ledger, { from: 'C', take: 'number', use: 'is' }, /digit of the code in “Lead C”/],
       [leads[2], tline, { from: 'L', take: 'number', use: 'apart' }, /as many hours apart as what/],

@@ -86,10 +86,21 @@ export function planLinks(cf: CaseFile, preset: Preset, lead: Lead, size: number
       if (lead.type !== 'network' || spec.use !== 'linked') throw new Error(`${lead.id}: a person link is used in a network lead as "linked"`);
       if (src.type !== 'ledger' && src.type !== 'surveillance') throw new Error(`${lead.id}: a person link quotes a grid lead`);
       // whoever has this value in this row, if the network has them
+      const vSrc = spec.valueFrom ? answers[spec.valueFrom] : undefined;
+      if (spec.valueFrom && !vSrc) throw new Error(`${lead.id}: link quotes ${spec.valueFrom}, which is not built yet`);
       let placed = false;
       for (let tries = 0; tries < 60 && !placed; tries++) {
-        const ref: LinkRef = { kind: 'holder', r: rng.int(0, src.size - 1), v: rng.int(1, src.size) };
-        const id = srcLead.columns[refHolder(src, ref)];
+        // a two-step clue: the number that picks the person comes from another earlier answer
+        const n = vSrc ? pickNumber(vSrc, rng, 1, src.size, false) : null;
+        /* v8 ignore next -- a grid always has a number in range; this only guards a case file whose source answer has none */
+        if (vSrc && !n) continue;
+        const ref: LinkRef = n
+          ? { kind: 'holder', r: rng.int(0, src.size - 1), v: n.value, from: { lead: spec.valueFrom!, ref: n.ref } }
+          : { kind: 'holder', r: rng.int(0, src.size - 1), v: rng.int(1, src.size) };
+        const h = refHolder(src, ref);
+        /* v8 ignore next -- every row of a grid holds every value, so the holder always exists */
+        if (h < 0) continue;
+        const id = srcLead.columns[h];
         const a = lead.columns.slice(0, size).indexOf(id);
         if (a < 0) continue;
         const [b] = two(size).filter((x) => x !== a);
@@ -163,7 +174,7 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
   const { ref } = via;
   if (ref.kind === 'slot') {
     const L = timelineLabels(lead, src.size, tone);
-    return `the place in the night (1st is the earliest) of ${`“${L.moments[ref.m]}”`} in ${title}`;
+    return `the time number (1 is the earliest) of ${`“${L.moments[ref.m]}”`} in ${title}`;
   }
   if (ref.kind === 'degree') return `how many people ${networkPeople(cf, lead, src.size)[ref.p]} was in contact with in ${title}`;
   if (ref.kind === 'digit') return `the ${ORDINALS[ref.p]} digit of the code in ${title}`;
@@ -173,6 +184,11 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
   }
   const L = gridLabels(cf, lead, src.size, tone);
   const ledger = lead.type === 'ledger';
+  if (ref.kind === 'holder' && ref.from) {
+    // two steps: the number is found in one earlier answer, the person in another
+    const inner = phrase(cf, { lead: ref.from.lead, ref: ref.from.ref }, answers, tone);
+    return `someone you find in two steps. First work out ${inner}. Then take whoever had exactly that number ${at(L.times[ref.r])} in ${title}`;
+  }
   if (ref.kind === 'holder')
     return ledger
       ? `the person who moved ${L.value(ref.v)} ${at(L.times[ref.r])} in ${title}`
@@ -282,6 +298,12 @@ export function linkResolves(cf: CaseFile, lead: Lead, p: AnyAnswered, st: { cla
   if (!src || !srcLead) return `quotes ${st.via.lead}, which is not there`;
   const { ref } = st.via;
   if (ref.kind === 'holder') {
+    if (ref.from) {
+      const vSrc = answers[ref.from.lead];
+      if (!vSrc) return `quotes ${ref.from.lead}, which is not there`;
+      const want = refNumber(vSrc, ref.from.ref);
+      if (want !== ref.v) return `quotes ${want} from ${ref.from.lead}, but looks for ${ref.v}`;
+    }
     const id = srcLead.columns[refHolder(src, ref)];
     const a = (st.claim as NetClaim & { kind: 'linked' }).a;
     return lead.columns[a] === id ? null : `points at ${id}, but the clue is about ${lead.columns[a]}`;

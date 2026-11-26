@@ -357,7 +357,7 @@
     },
     {
       "id": "L2", "type": "surveillance", "cost": 2, "opensAfter": ["L1"],
-      "links": [{ "from": "L1", "take": "number", "use": "is", "story": {"crime": "A dock hand scribbled it on the camera sheet: {a}’s room number {when} is {q}."} }, { "from": "L1", "take": "number", "use": "is", "ranks": ["inspector", "chief"], "story": {"crime": "The night watchman remembered it this way: {a}’s room {when} is {q}."} }],
+      "links": [{ "from": "L1", "take": "number", "use": "is", "story": {"crime": "A dock hand scribbled it on the camera sheet: {a}’s room number {when} is {q}."} }, { "from": "L1", "take": "number", "use": "is", "story": {"crime": "The night watchman remembered it this way: {a}’s room {when} is {q}."} }, { "from": "L1", "take": "number", "use": "is", "ranks": ["chief"], "herring": true, "story": {"crime": "A gull-stained note on the camera desk claimed {a}’s room {when} was {q}. Worth checking, or a waste of your night?"} }],
       "title": { "crime": "Dock camera log", "friendly": "The dock cameras" },
       "intro": { "crime": "The dock cameras caught a few people in a few rooms. Nevethitha was on duty. Work out who was in which room each hour. Rooms are numbered along the pier.", "friendly": "The cameras saw some people in some rooms. Work out who was in which room each hour. Rooms are numbered along the pier." },
       "columns": ["vex", "kane", "nevethitha", "tip", "meena", "crane", "karunakaran"],
@@ -371,7 +371,7 @@
     },
     {
       "id": "L3", "type": "ledger", "cost": 2, "opensAfter": ["L2"],
-      "links": [{ "from": "L2", "take": "number", "use": "is", "story": {"crime": "A torn payment slip carried only this: {a}’s figure {when} equals {q}."} }, { "from": "L1", "take": "number", "use": "is", "ranks": ["detective"], "herring": true, "story": {"crime": "An old receipt in the same envelope said {a}’s figure {when} equals {q}."} }, { "from": "L1", "take": "number", "use": "sum", "ranks": ["inspector", "chief"], "story": {"crime": "The bookkeeper’s margin note said {when}, {a} and {b} together made {q}."} }],
+      "links": [{ "from": "L2", "take": "number", "use": "is", "story": {"crime": "A torn payment slip carried only this: {a}’s figure {when} equals {q}."} }, { "from": "L2", "take": "number", "use": "sum", "story": {"crime": "Tip paid by the camera clock. His stub said that {when}, {a} and {b} together took {q}."} }, { "from": "L1", "take": "number", "use": "is", "ranks": ["detective"], "herring": true, "story": {"crime": "An old receipt in the same envelope said {a}’s figure {when} equals {q}."} }, { "from": "L1", "take": "number", "use": "sum", "ranks": ["inspector", "chief"], "story": {"crime": "The bookkeeper’s margin note said {when}, {a} and {b} together made {q}."} }],
       "title": { "crime": "Tip's payment records", "friendly": "Tip's secret notes" },
       "intro": { "crime": "Tip hands over his payment records, a little too eagerly. Work out the payments and check what Tip says about them.", "friendly": "Tip gives you his notes. He seems very keen to help. Check if what he says matches the numbers." },
       "columns": ["tip", "vex", "meena", "kane", "crane", "nevethitha", "karunakaran"],
@@ -383,7 +383,7 @@
     },
     {
       "id": "L4", "type": "ledger", "cost": 2, "opensAfter": ["L3"], "hard": true,
-      "links": [{ "from": "L3", "take": "number", "use": "is", "story": {"crime": "Pinned inside the harbormaster’s drawer: {a}’s figure {when} equals {q}."} }, { "from": "L2", "take": "number", "use": "is", "ranks": ["detective", "inspector"], "story": {"crime": "A camera still was clipped to the page: {a}’s figure {when} equals {q}."} }],
+      "links": [{ "from": "L3", "take": "number", "use": "is", "story": {"crime": "Pinned inside the harbormaster’s drawer: {a}’s figure {when} equals {q}."} }, { "from": "L3", "take": "number", "use": "sum", "story": {"crime": "Tip’s last payment was copied into the private ledger: {when}, {a} and {b} together made {q}."} }, { "from": "L2", "take": "number", "use": "is", "ranks": ["detective", "inspector"], "story": {"crime": "A camera still was clipped to the page: {a}’s figure {when} equals {q}."} }, { "from": "L2", "take": "number", "use": "is", "ranks": ["chief"], "herring": true, "story": {"crime": "A camera still was clipped to the page: {a}’s figure {when} equals {q}. Someone wanted it found."} }],
       "title": { "crime": "The harbormaster's private ledger", "friendly": "The secret ledger" },
       "intro": { "crime": "Hidden in Warehouse 9: a private ledger in Crane's handwriting. Crack it and the whole trail is exposed.", "friendly": "Hidden in Warehouse 9: a secret book in Mr. Crane's handwriting! Crack it to solve the case." },
       "columns": ["crane", "vex", "meena", "kane", "tip", "nevethitha", "karunakaran"],
@@ -874,7 +874,7 @@
         },
         {
           "id": "J2",
-          "links": [{ "from": "J1", "take": "number", "use": "is", "story": {"crime": "The baker whispered it over the stall: {a} happened at the time numbered {q} (the first time is 1)."} }],
+          "links": [{ "from": "J1", "take": "number", "use": "is", "story": {"crime": "The baker whispered it over the stall: {a} happened at the time numbered {q} (the first time is 1)."} }, { "from": "J1", "take": "number", "use": "is", "story": {"crime": "The lamp man kept time by the cash book: {a} happened at the time numbered {q}."} }],
           "type": "timeline",
           "cost": 2,
           "opensAfter": [
@@ -957,7 +957,7 @@
         },
         {
           "id": "J3",
-          "links": [{ "from": "J1", "take": "person", "use": "linked", "story": {"crime": "A shopkeeper swore {a} had been seen chatting with {q}."} }],
+          "links": [{ "from": "J1", "take": "person", "use": "linked", "story": {"crime": "A shopkeeper swore {a} had been seen chatting with {q}."} }, { "from": "J1", "take": "person", "use": "linked", "valueFrom": "J2", "story": {"crime": "A fisher saw {a} whispering with {q}."} }],
           "type": "network",
           "cost": 2,
           "opensAfter": ["J2"],
@@ -1007,10 +1007,7 @@
         },
         {
           "id": "J4",
-          "links": [
-            { "from": "J1", "take": "number", "use": "is", "story": { "crime": "A scrap of the watch captain’s rota said {a} stood in the {when} numbered {q}." } },
-            { "from": "J3", "take": "number", "use": "apart", "story": { "crime": "The baker saw them from her stall: {a} and {b} stood as many {when} apart as {q}." } }
-          ],
+          "links": [{ "from": "J3", "take": "number", "use": "apart", "story": {"crime": "The baker saw them from her stall: {a} and {b} stood as many {when} apart as {q}."} }, { "from": "J3", "take": "number", "use": "is", "story": {"crime": "The watch captain counted whispers, not men: {a} stood in the {when} numbered {q}."} }, { "from": "J1", "take": "number", "use": "is", "story": {"crime": "A scrap of the watch captain’s rota said {a} stood in the {when} numbered {q}."} }],
           "type": "stakeout",
           "cost": 2,
           "opensAfter": ["J3"],
@@ -1042,7 +1039,7 @@
         },
         {
           "id": "J5",
-          "links": [{ "from": "J3", "take": "number", "use": "is", "story": {"crime": "The cart driver counted it on his fingers: {a} was stop number {q}."} }],
+          "links": [{ "from": "J4", "take": "number", "use": "is", "story": {"crime": "A watchman who saw the cart go by said {a} was stop number {q}."} }, { "from": "J4", "take": "number", "use": "is", "story": {"crime": "A second watchman agreed on another stop: {a} was stop number {q}."} }],
           "type": "timeline",
           "map": true,
           "cost": 2,
@@ -1106,7 +1103,7 @@
         },
         {
           "id": "J6",
-          "links": [{ "from": "J5", "take": "number", "use": "is", "story": {"crime": "The lock’s brass plate was scratched: {a} is {q}."} }, { "from": "J1", "take": "number", "use": "apart", "story": {"crime": "A note under the lock said {a} and {b} are {q} apart."} }],
+          "links": [{ "from": "J5", "take": "number", "use": "is", "story": {"crime": "The lock’s brass plate was scratched: {a} is {q}."} }, { "from": "J5", "take": "number", "use": "apart", "story": {"crime": "Tip chose the code from his cart route: {a} and {b} are {q} apart."} }, { "from": "J1", "take": "number", "use": "apart", "story": {"crime": "A note under the lock said {a} and {b} are {q} apart."} }],
           "type": "cipher",
           "cost": 2,
           "opensAfter": [

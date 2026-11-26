@@ -32,22 +32,27 @@ const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.char
 /** The seed a lead is built from. Seed 0 is the shipped case; any other seed is a fresh play of it. */
 export const leadSeed = (cf: CaseFile, lead: Lead, preset: Preset, runSeed = 0) => hash(runSeed ? `${cf.id}:${lead.id}:${preset}:${runSeed}` : `${cf.id}:${lead.id}:${preset}`);
 
+/** How many picks of link clues are tried before a lead gives up. Small puzzles with 2 or 3 links need more tries. */
+const LINK_ATTEMPTS = 40;
+const SAME_ANSWER_ATTEMPTS = 12;
+
 /**
  * Builds a lead's puzzle with its link clues. The links are picked from the earlier answers of the same
  * rank; if a pick can't be built, or the proofs fail, another pick is tried.
  */
-function withLinks<P extends { statements: { via?: unknown }[] }>(cfr: CaseFile, preset: Preset, lead: Lead, size: number, seed: number, built: PuzzleBook, build: (planted: ReturnType<typeof planLinks>) => P): P {
+function withLinks<P extends { statements: { via?: unknown }[] }>(cfr: CaseFile, preset: Preset, lead: Lead, size: number, seed: number, built: PuzzleBook, build: (planted: ReturnType<typeof planLinks>, seed: number) => P): P {
   const answers: Answers = {};
   for (const l of cfr.leads) {
     const a = built[`${l.id}:${preset}`];
     if (a) answers[l.id] = a as Answers[string];
   }
-  if (!linksFor(lead, preset).length) return build([]);
+  if (!linksFor(lead, preset).length) return build([], seed);
   let last = '';
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < LINK_ATTEMPTS; attempt++) {
     try {
       const planted = planLinks(cfr, preset, lead, size, answers, makeRng((seed ^ 0x9e3779b9) + attempt * 7919));
-      const p = build(planted);
+      // the first tries keep the lead's own answer; later ones also draw a new answer, for leads whose answer leaves no room for the links
+      const p = build(planted, attempt < SAME_ANSWER_ATTEMPTS ? seed : (seed + attempt * 104729) >>> 0);
       const check = checkLinks(p as never);
       if (!check.ok) {
         last = check.reason!;
@@ -86,7 +91,7 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
     const n = rules.size;
     let p: AnyPuzzle;
     if (lead.type === 'timeline') {
-      const t = withLinks(cfr, preset, lead, n, seed, built, (planted) => generateTimeline({
+      const t = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generateTimeline({
         size: n,
         speakers,
         liarRange: rules.liarRange,
@@ -104,26 +109,26 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
       if (!tc.ok) throw new Error(`${lead.id}:${preset} failed: ${tc.reason}`);
       p = t;
     } else if (lead.type === 'cipher') {
-      const cp = withLinks(cfr, preset, lead, n, seed, built, (planted) => generateCipher({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...CIPHER_RULES[preset], planted: planted as never, seed }, 800));
+      const cp = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generateCipher({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...CIPHER_RULES[preset], planted: planted as never, seed }, 800));
       const cc = verifyCipher(cp);
       /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
       if (!cc.ok) throw new Error(`${lead.id}:${preset} failed: ${cc.reason}`);
       p = cp;
     } else if (lead.type === 'stakeout') {
       const { size, ...rules2 } = STAKEOUT_RULES[preset];
-      const sp = withLinks(cfr, preset, lead, size, seed, built, (planted) => generateStakeout({ size, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...rules2, planted: planted as never, seed }, 800));
+      const sp = withLinks(cfr, preset, lead, size, seed, built, (planted, seed) => generateStakeout({ size, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...rules2, planted: planted as never, seed }, 800));
       const sc = verifyStakeout(sp);
       /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
       if (!sc.ok) throw new Error(`${lead.id}:${preset} failed: ${sc.reason}`);
       p = sp;
     } else if (lead.type === 'network') {
-      const net = withLinks(cfr, preset, lead, n, seed, built, (planted) => generateNetwork({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...NET_RULES[preset], planted: planted as never, seed }, 800));
+      const net = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generateNetwork({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...NET_RULES[preset], planted: planted as never, seed }, 800));
       const nc = verifyNetwork(net);
       /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
       if (!nc.ok) throw new Error(`${lead.id}:${preset} failed: ${nc.reason}`);
       p = net;
     } else {
-      const g = withLinks(cfr, preset, lead, n, seed, built, (planted) => generatePuzzle({
+      const g = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generatePuzzle({
         size: n,
         type: lead.type as GridType,
         speakers,

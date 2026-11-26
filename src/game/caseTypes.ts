@@ -127,6 +127,11 @@ export interface LinkSpec {
    * "apart" (two moments or digits differ by it), "linked" (a person was in contact with the quoted person).
    */
   use: 'is' | 'sum' | 'apart' | 'linked';
+  /**
+   * A person link only: the number that picks the person is itself quoted from this other earlier lead, so the clue
+   * needs two earlier answers put together ("whoever moved, at 8 PM, as many coins as ...").
+   */
+  valueFrom?: string;
   /** Only these ranks get the clue. Default: every rank. */
   ranks?: Preset[];
   /** Who says it. Default: the first witness of the lead who tells no lie at that rank. */
