@@ -307,7 +307,7 @@
     { "id": "kavya", "name": "Kavya Narayanan", "role": "ally", "ability": "accountant", "reliability": "honest", "color": "#0f766e",
       "blurb": { "crime": "Forensic accountant. Sees patterns in totals.", "friendly": "Counts things super fast." },
       "greeting": { "voice": "speech", "text": { "crime": "Bring me the totals. Numbers don't lie, even when people do.", "friendly": "Give me numbers and I'll count them super fast!" } } },
-    { "id": "dex", "name": "Sgt. Devaraj Selvam", "role": "ally", "ability": "partner", "reliability": "honest", "voice": "calm", "color": "#a16207",
+    { "id": "dex", "name": "Sgt. Devaraj Kumar", "role": "ally", "ability": "partner", "reliability": "honest", "voice": "calm", "color": "#a16207",
       "blurb": { "crime": "Your old partner. Patient, explains his thinking.", "friendly": "Your old detective buddy. Great at explaining." },
       "greeting": { "voice": "calm", "text": { "crime": "One cell at a time, partner. I'll walk you through it.", "friendly": "Let's figure it out together, buddy!" } } },
     { "id": "lin", "name": "Dr. Lin Abara", "role": "ally", "ability": "forensics", "reliability": "honest", "color": "#1d4ed8",
@@ -1290,8 +1290,8 @@
       "opening": [
         {
           "text": {
-            "crime": "Rain on the glass. Sgt. Devaraj Selvam slides a file across the desk.",
-            "friendly": "Rain on the glass. Sgt. Devaraj Selvam slides a file across the desk."
+            "crime": "Rain on the glass. Sgt. Devaraj Kumar slides a file across the desk.",
+            "friendly": "Rain on the glass. Sgt. Devaraj Kumar slides a file across the desk."
           }
         },
         {
@@ -1348,7 +1348,7 @@
             "text": { "crime": "A duty roster never leaves the police house.", "friendly": "A duty roster never leaves the police house." }
           },
           {
-            "text": { "crime": "Your phone buzzes on the desk. Sgt. Devaraj Selvam. You let it ring, and when you call back the line is dead.", "friendly": "Your phone buzzes on the desk. Sgt. Devaraj Selvam. You let it ring, and when you call back the line is dead." }
+            "text": { "crime": "Your phone buzzes on the desk. Sgt. Devaraj Kumar. You let it ring, and when you call back the line is dead.", "friendly": "Your phone buzzes on the desk. Sgt. Devaraj Kumar. You let it ring, and when you call back the line is dead." }
           },
           {
             "text": { "crime": "Next, you will see the case through the eyes of Kavya Narayanan.", "friendly": "Next, you will see the case through the eyes of Kavya Narayanan." }
@@ -1747,8 +1747,8 @@
             "friendly": "Full bust"
           },
           "text": {
-            "crime": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Devaraj Selvam's chair is empty, and nobody says why.",
-            "friendly": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Devaraj Selvam's chair is empty, and nobody says why."
+            "crime": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Devaraj Kumar's chair is empty, and nobody says why.",
+            "friendly": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Devaraj Kumar's chair is empty, and nobody says why."
           }
         },
         {
@@ -1823,7 +1823,7 @@
     },
     {
       "id": "dex",
-      "name": "Sgt. Devaraj Selvam",
+      "name": "Sgt. Devaraj Kumar",
       "blurb": "An old hand who knows every face on the docks, and owes some of them.",
       "ready": false
     },

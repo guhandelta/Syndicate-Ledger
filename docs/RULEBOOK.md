@@ -216,7 +216,7 @@ Junior version: the Gold Coin Festival prize chest is empty, and the Tidewater G
 | "Tip" Callahan | Informant | Double agent | Helpful at first, then works for the boss |
 | Silas Crane | Boss | Never speaks | Shipping owner who staged the theft |
 | Kavya Narayanan | Ally | Honest | Accountant |
-| Sgt. Devaraj Selvam | Ally | Honest | Old partner |
+| Sgt. Devaraj Kumar | Ally | Honest | Old partner |
 | Dr. Lin Abara | Ally | Honest | Forensic analyst |
 | Officer Cole | Ally | Honest | Undercover cop |
 
@@ -331,6 +331,7 @@ A cipher lead may be told as a riddle (`riddle: { people, noun }`): each place o
 | Date | Change |
 | --- | --- |
 | 2026-11-27 | Chief plays its own story, "The inside leak": four leads (C1 Mano's payment slips, C2 the phone log, C3 Ilango's berth book, C4 the patrol times), its own proof and endings, and Franklin Mano as an unseen mastermind. Chief's shipped puzzles are the new C1 to C4 |
+| 2026-11-27 | Devaraj Selvam is renamed Devaraj Kumar (Sgt. Devaraj Kumar), which also removes the shared surname with Thenmozhi Selvam. The cast id stays `dex` |
 | 2026-11-27 | Deva is renamed Devaraj Selvam (Sgt. Devaraj Selvam) in every line the player reads. The cast id stays `dex` |
 | 2026-11-27 | Dex is renamed Deva (Sgt. Deva Okafor) in every line the player reads. The cast id stays `dex` so saved games and art files keep working |
 | 2026-11-27 | Capt. Ilango Thangaraj, the harbormaster, joins the cast and the town at Chief only. Franklin Mano's art (silhouette faces, calls-and-letters image) is stored for the later cast entry |
