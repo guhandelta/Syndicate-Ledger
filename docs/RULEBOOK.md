@@ -209,7 +209,7 @@ Junior version: the Gold Coin Festival prize chest is empty, and the Tidewater G
 | Kane Hollis | Suspect | Honest | Dock foreman; looks guilty, isn't |
 | Meena Selvi | Witness | Mistaken | Fish market owner; sometimes rushed |
 | Nevethitha Rajan | Witness | Honest | Night guard; leaves town at the start of Day 2 |
-| Capt. Karunakaran Velu | Witness | Honest | Harbor pilot; guides ships in and out. The 7th person in every grid, so seen only at Chief (7×7) |
+| Capt. Karunakaran Velu | Witness | Honest | Captain of the ship that leaves at dusk on Day 3. The 7th person in every grid, so seen only at Chief (7×7) |
 | "Tip" Callahan | Informant | Double agent | Helpful at first, then works for the boss |
 | Silas Crane | Boss | Never speaks | Shipping owner who staged the theft |
 | Kavya Narayanan | Ally | Honest | Accountant |
@@ -327,6 +327,7 @@ A cipher lead may be told as a riddle (`riddle: { people, noun }`): each place o
 
 | Date | Change |
 | --- | --- |
+| 2026-11-27 | Wording only: Capt. Karunakaran is the captain of the ship that sails at dusk on Day 3 (was harbor pilot); the baker is named Umer and the dock hand Bharath in link clues |
 | 2026-11-27 | Cast rules: a case may have a `mastermind` above the `boss`, the cast limit is 5 to 11 non-allies, and a town person can be limited to certain ranks with `ranks` |
 | 2026-11-26 | Added riddles: a cipher lead can be told about named people and a noun ("berth number") instead of digit places (section 7) |
 | 2026-11-26 | Added scene briefs: `draftLead` and `npm run draft-lead` turn a place, a thing, people and one key fact into a lead (ledger and surveillance) (section 7). Thenmozhi Selvam added to the cast and made the 6th seat of the shared leads |
