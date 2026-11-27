@@ -6,7 +6,7 @@ export interface Part {
    * box: size is [x, y, z]. hip: a four-sided roof over [x, y, z]. gable: a ridge along x, size [length, height, width].
    * dome: half a ball of radius size[0]. cyl: radius size[0], height size[1]. ball: a ball of radius size[0], squashed to
    * size[1] high when that is given. ring: a hoop of radius size[0] and thickness size[1], standing up and facing south.
-   * panel: a flat picture size[0] wide and size[1] high, facing south, painted with `tex`.
+   * panel: a flat picture size[0] wide and size[1] high, facing south, painted with `tex`; tilt lays it back about its middle.
    */
   shape: 'box' | 'hip' | 'gable' | 'dome' | 'cyl' | 'ball' | 'ring' | 'panel';
   /** The middle of the bottom of the piece, relative to the middle of the building's footprint on the ground. */
@@ -21,6 +21,10 @@ export interface Part {
   /** A panel's picture (an image URL), and how its edge is drawn: cut away round a shape, or faded. */
   tex?: string;
   edge?: 'hard' | 'soft' | 'cut';
+  /** A panel seen from both faces (an awning from under it, a hanging sign from behind). */
+  twoSided?: boolean;
+  /** How warm a glowing panel lights up at dusk: a dim tint for a whole pictured wall, full lamp light when left out. */
+  glowTint?: number;
   /** Moves by itself: a wheel that spins on its axle, or a flag that flaps. */
   anim?: 'spin' | 'flap';
 }

@@ -1,62 +1,59 @@
 {
   "trade": "tea",
-  "picture": "assets/shops/tea-stall.webp",
-  "width": 5.0,
-  "height": 3.13,
-  "roof": "gable",
-  "rise": 0.75,
-  "colours": {
-    "wall": "#f2a962",
-    "roof": "#7d8895",
-    "trim": "#946c59",
-    "awning": "#d36859",
-    "stone": "#97795d"
+  "name": "Tea stall",
+  "picture": "assets/shops/tea.webp",
+  "width": 6.219,
+  "depth": 3.974,
+  "walls": {
+    "front": {
+      "w": 6.219,
+      "h": 4.059,
+      "left": 4.059,
+      "right": 4.059
+    },
+    "east": {
+      "w": 3.951,
+      "h": 4.059,
+      "left": 4.059,
+      "right": 3.609
+    },
+    "back": {
+      "w": 6.291,
+      "h": 4.041,
+      "left": 4.041,
+      "right": 4.041
+    },
+    "west": {
+      "w": 3.996,
+      "h": 4.041,
+      "left": 3.609,
+      "right": 4.041
+    }
   },
-  "awnings": [
-    {
-      "x": -0.838,
-      "y": 2.346,
-      "w": 3.211,
-      "h": 0.57,
-      "colour": "#d36859"
-    }
-  ],
-  "pieces": [
-    {
-      "id": "sign",
-      "x": -2.939,
-      "y": 1.974,
-      "w": 0.833,
-      "h": 0.943,
-      "mode": "cut",
-      "glow": false
-    },
-    {
-      "id": "stall",
-      "x": -0.827,
-      "y": 1.303,
-      "w": 2.355,
-      "h": 1.088,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "window",
-      "x": 1.572,
-      "y": 1.636,
-      "w": 1.066,
-      "h": 1.184,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "waves",
-      "x": -0.044,
-      "y": 0.921,
-      "w": 4.649,
-      "h": 0.351,
-      "mode": "soft",
-      "glow": false
-    }
-  ]
+  "colours": {
+    "wall": "#fbbb53",
+    "roof": "#6f5b4d",
+    "trim": "#a97046"
+  },
+  "door": {
+    "x": 0.045,
+    "w": 2.007
+  },
+  "roof": {
+    "kind": "shed",
+    "front": 4.05,
+    "back": 3.609
+  },
+  "awning": {
+    "x": 0.04,
+    "y": 2.826,
+    "w": 5.652,
+    "h": 0.315
+  },
+  "sign": {
+    "x": -3.433,
+    "y": 1.863,
+    "w": 0.9,
+    "h": 0.873
+  }
 }

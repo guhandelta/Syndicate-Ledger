@@ -6,7 +6,7 @@ import { buildingParts, seaLine, type Part } from './buildingStyles';
 import { Figure3D } from './figure3d';
 import { GlbFigure, meshOf } from './glbFigure';
 import { samplerOf } from './glbPixels';
-import { SHOPS, shopParts, shopProps, shopSolids, shopWorkers } from './shops';
+import { frontTop, SHOPS, shopParts, shopProps, shopSolids, shopWorkers } from './shops';
 import { Worker } from './workers';
 import { DAY, DAY_HOUR, NIGHT, NIGHT_HOUR, easeHour, lookAt, type Look } from './looks';
 import { cameraPose, forward, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, type Nearby, type Pose } from './townLogic';
@@ -638,20 +638,14 @@ export class TownScene {
     const [w, d] = b.size;
     const shop = b.trade ? SHOPS[b.trade] : undefined;
     if (shop) {
-      // a shop is built from its picture: its own door, windows and sign, and its name on a board under the eaves
+      // a shop is built from its sheet: all four walls as drawn, the roof, awning and sign in 3D, its name over the door
       for (const part of [...shopParts(b, shop), ...shopProps(b)]) group.add(this.partMesh(part));
-      // the name stands on the eaves, in front of the roof, unless the shop's own sign already hangs there
       const face = b.doorSide === 'south' ? 1 : -1;
-      const boardW = Math.min(w - 1.2, 3.2);
-      const sx = w / shop.width;
-      const sy = b.height / shop.height;
-      const signThere = shop.pieces.some((p) => p.mode === 'cut' && Math.abs(p.x * sx) < boardW / 2 + 0.3 && (p.y + p.h) * sy > b.height - 0.3);
-      if (!signThere) {
-        const board = new THREE.Mesh(new THREE.PlaneGeometry(boardW, 0.5), new THREE.MeshBasicMaterial({ map: this.signTexture(b.name) }));
-        board.position.set(0, b.height + 0.22, (d / 2 + 0.5) * face);
-        if (face < 0) board.rotation.y = Math.PI;
-        group.add(board);
-      }
+      const boardW = Math.min(w - 1.6, 3.0);
+      const board = new THREE.Mesh(new THREE.PlaneGeometry(boardW, 0.46), new THREE.MeshBasicMaterial({ map: this.signTexture(b.name) }));
+      board.position.set(0, frontTop(b, shop) + 0.3, (d / 2 + 0.42) * face);
+      if (face < 0) board.rotation.y = Math.PI;
+      group.add(board);
       group.position.set(b.at[0], 0, b.at[1]);
       return group;
     }
@@ -742,12 +736,17 @@ export class TownScene {
     }
   }
 
-  /** A piece cut from a shop's picture, laid flat on its wall. Windows and lamps in it glow at dusk. */
-  private panelMesh(part: Part): THREE.Mesh {
+  /** A picture cut from a shop's sheet: a wall, a roof slope, an awning or a sign. It glows a little at dusk, with its lit windows. */
+  private panelMesh(part: Part): THREE.Object3D {
     const [w, h] = part.size;
-    const mat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: part.edge !== 'hard', alphaTest: part.edge === 'cut' ? 0.4 : 0.01, side: THREE.FrontSide });
+    const mat = new THREE.MeshLambertMaterial({
+      color: 0xffffff,
+      transparent: part.edge === 'soft',
+      alphaTest: part.edge === 'cut' ? 0.5 : part.edge === 'soft' ? 0.01 : 0,
+      side: part.twoSided ? THREE.DoubleSide : THREE.FrontSide,
+    });
     if (part.glow) {
-      mat.emissive.setHex(0xffd9a0);
+      mat.emissive.setHex(part.glowTint ?? 0xffd9a0);
       mat.emissiveIntensity = 0.7 * (1 - this.look.daylight);
       this.shopGlows.push(mat);
     }
@@ -763,7 +762,7 @@ export class TownScene {
     }
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
     mesh.position.set(part.at[0], part.at[1] + h / 2, part.at[2]);
-    if (part.turn) mesh.rotation.y = part.turn;
+    this.turnPart(mesh, part);
     return mesh;
   }
 

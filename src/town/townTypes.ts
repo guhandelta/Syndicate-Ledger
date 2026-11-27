@@ -9,10 +9,10 @@ export const BUILDING_STYLES = ['plain', 'madras', 'bungalow', 'mill', 'shed'] a
 export type BuildingStyle = (typeof BUILDING_STYLES)[number];
 
 /**
- * The shops of Port Calder, each built from Guha's picture of its front (assets/shops) with a worker busy outside.
- * A building with a trade takes its look from that picture instead of a style.
+ * The shops of Port Calder, each built from Guha's sheet of it seen from all four sides (assets/shops) with a worker
+ * busy outside. A building with a trade takes its look from that sheet instead of a style.
  */
-export const TRADES = ['tea', 'cycle', 'fish', 'flower', 'harbor', 'nets', 'tailor'] as const;
+export const TRADES = ['bikes', 'flower', 'tailor', 'cycle', 'tea', 'fish', 'harbor', 'outfitter', 'nets', 'atelier', 'marine'] as const;
 export type Trade = (typeof TRADES)[number];
 
 export interface Building {
@@ -31,7 +31,7 @@ export interface Building {
   style?: BuildingStyle;
   /** Colour of the trim (cornice, pillars, awning) as #rrggbb; each style has its own when left out. */
   trim?: string;
-  /** A shop: built from its front picture, with its workers busy outside. */
+  /** A shop: built from its four-sided sheet, with its workers busy outside. */
   trade?: Trade;
 }
 

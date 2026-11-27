@@ -1,0 +1,46 @@
+{
+  "trade": "atelier",
+  "name": "Tailor's atelier",
+  "picture": "assets/shops/atelier.webp",
+  "width": 7.11,
+  "depth": 4.68,
+  "walls": {
+    "front": {
+      "w": 7.11,
+      "h": 4.122,
+      "left": 4.122,
+      "right": 4.122
+    },
+    "east": {
+      "w": 4.68,
+      "h": 4.122,
+      "left": 4.122,
+      "right": 4.122
+    },
+    "back": {
+      "w": 7.119,
+      "h": 4.131,
+      "left": 4.131,
+      "right": 4.131
+    },
+    "west": {
+      "w": 4.68,
+      "h": 4.131,
+      "left": 4.131,
+      "right": 4.131
+    }
+  },
+  "colours": {
+    "wall": "#e4d1ba",
+    "roof": "#465170",
+    "trim": "#363845"
+  },
+  "door": {
+    "x": 0.013,
+    "w": 2.457
+  },
+  "roof": {
+    "kind": "flat",
+    "height": 4.122
+  }
+}

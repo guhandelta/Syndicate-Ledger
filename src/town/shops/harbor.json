@@ -1,77 +1,64 @@
 {
   "trade": "harbor",
-  "picture": "assets/shops/harbor-office.webp",
-  "width": 7.5,
-  "height": 3.02,
-  "roof": "gable",
-  "rise": 1.0,
-  "colours": {
-    "wall": "#817e7d",
-    "roof": "#57535b",
-    "trim": "#956143",
-    "awning": "#525a77",
-    "stone": "#9f8572"
+  "name": "Harbor office",
+  "picture": "assets/shops/harbor.webp",
+  "width": 6.228,
+  "depth": 4.091,
+  "walls": {
+    "front": {
+      "w": 6.228,
+      "h": 3.456,
+      "left": 3.456,
+      "right": 3.456
+    },
+    "east": {
+      "w": 4.104,
+      "h": 3.456,
+      "left": 3.456,
+      "right": 3.456
+    },
+    "back": {
+      "w": 6.408,
+      "h": 3.492,
+      "left": 3.492,
+      "right": 3.492
+    },
+    "west": {
+      "w": 4.077,
+      "h": 3.501,
+      "left": 3.501,
+      "right": 3.501
+    }
   },
-  "awnings": [
-    {
-      "x": -0.346,
-      "y": 2.34,
-      "w": 1.968,
-      "h": 0.622,
-      "colour": "#525a77"
-    }
-  ],
-  "pieces": [
-    {
-      "id": "sign",
-      "x": -1.766,
-      "y": 1.878,
-      "w": 0.777,
-      "h": 0.782,
-      "mode": "cut",
-      "glow": false
-    },
-    {
-      "id": "board",
-      "x": 1.497,
-      "y": 0.931,
-      "w": 1.633,
-      "h": 1.41,
-      "mode": "hard",
-      "glow": false
-    },
-    {
-      "id": "window",
-      "x": -2.779,
-      "y": 1.027,
-      "w": 1.059,
-      "h": 1.404,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "window2",
-      "x": 2.888,
-      "y": 1.027,
-      "w": 1.0,
-      "h": 1.404,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "door",
-      "x": -0.346,
-      "y": 0.346,
-      "w": 1.511,
-      "h": 1.995,
-      "mode": "hard",
-      "glow": false
-    }
-  ],
+  "colours": {
+    "wall": "#7a7778",
+    "roof": "#47444a",
+    "trim": "#7e5237"
+  },
+  "door": {
+    "x": 0.036,
+    "w": 1.836
+  },
+  "roof": {
+    "kind": "flat",
+    "height": 3.456
+  },
+  "sign": {
+    "x": -3.384,
+    "y": 1.683,
+    "w": 0.684,
+    "h": 0.657
+  },
   "chimney": {
-    "x": -2.872,
-    "y": 3.83,
-    "w": 0.691,
-    "h": 0.745
+    "x": -2.326,
+    "z": -1.023,
+    "w": 0.765,
+    "top": 4.113,
+    "colour": "#b9a593"
+  },
+  "flag": {
+    "x": 2.106,
+    "z": -0.312,
+    "top": 4.32
   }
 }

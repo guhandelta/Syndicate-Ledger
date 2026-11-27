@@ -1,0 +1,46 @@
+{
+  "trade": "bikes",
+  "name": "Bike workshop",
+  "picture": "assets/shops/bikes.webp",
+  "width": 6.633,
+  "depth": 4.567,
+  "walls": {
+    "front": {
+      "w": 6.633,
+      "h": 3.861,
+      "left": 3.861,
+      "right": 3.861
+    },
+    "east": {
+      "w": 4.572,
+      "h": 3.879,
+      "left": 3.879,
+      "right": 3.879
+    },
+    "back": {
+      "w": 6.651,
+      "h": 3.834,
+      "left": 3.834,
+      "right": 3.834
+    },
+    "west": {
+      "w": 4.563,
+      "h": 3.834,
+      "left": 3.834,
+      "right": 3.834
+    }
+  },
+  "colours": {
+    "wall": "#80958a",
+    "roof": "#595b5d",
+    "trim": "#a76f36"
+  },
+  "door": {
+    "x": 0.153,
+    "w": 2.223
+  },
+  "roof": {
+    "kind": "flat",
+    "height": 3.834
+  }
+}

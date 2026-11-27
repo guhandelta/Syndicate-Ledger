@@ -1,0 +1,66 @@
+{
+  "trade": "outfitter",
+  "name": "Suit maker",
+  "picture": "assets/shops/outfitter.webp",
+  "width": 6.066,
+  "depth": 4.415,
+  "walls": {
+    "front": {
+      "w": 6.066,
+      "h": 4.023,
+      "left": 3.438,
+      "right": 4.023
+    },
+    "east": {
+      "w": 4.32,
+      "h": 4.059,
+      "left": 3.483,
+      "right": 4.059
+    },
+    "back": {
+      "w": 6.21,
+      "h": 3.978,
+      "left": 3.978,
+      "right": 3.501
+    },
+    "west": {
+      "w": 4.509,
+      "h": 4.041,
+      "left": 4.041,
+      "right": 3.501
+    }
+  },
+  "colours": {
+    "wall": "#b0a381",
+    "roof": "#4e494c",
+    "trim": "#5d4433"
+  },
+  "door": {
+    "x": 0.108,
+    "w": 1.8
+  },
+  "roof": {
+    "kind": "shed",
+    "front": 3.492,
+    "back": 4.05
+  },
+  "awning": {
+    "x": 0.054,
+    "y": 2.367,
+    "w": 5.382,
+    "h": 0.567
+  },
+  "sign": {
+    "x": 3.294,
+    "y": 1.899,
+    "w": 0.702,
+    "h": 0.765
+  },
+  "chimney": {
+    "x": -2.614,
+    "z": 1.55,
+    "w": 0.765,
+    "top": 4.185,
+    "colour": "#9e8d7d"
+  }
+}
