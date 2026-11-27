@@ -1388,6 +1388,116 @@
         "question": "Who is really behind it, and who is helping from inside?",
         "reveal": "The money was due to leave on a ship that sails at dusk by a quiet channel, and someone close to the police was passing your plans to Crane."
       },
+      "setup": {
+        "crime": "Crane is in a cell, but the money is still moving. A broker nobody in Port Calder has met has been paying for everything from behind a letter box, and a roster that never leaves the police house reached Crane. You have until the ship sails at the end of Day 3.",
+        "friendly": "Crane is in a cell, but the money is still moving. A broker nobody in Port Calder has met has been paying for everything from behind a letter box, and a roster that never leaves the police house reached Crane. You have until the ship sails at the end of Day 3."
+      },
+      "opening": [
+        {
+          "text": {
+            "crime": "Late rain on the harbor office roof. Crane sits in a cell, and the ship still sails at dusk.",
+            "friendly": "Late rain on the harbor office roof. Crane sits in a cell, and the ship still sails at dusk."
+          }
+        },
+        {
+          "who": "kavya",
+          "text": {
+            "crime": "I'm Kavya Narayanan. I audit what people hide in plain sight, and these slips are hiding a name.",
+            "friendly": "I'm Kavya Narayanan. I audit what people hide in plain sight, and these slips are hiding a name."
+          },
+          "voice": "calm"
+        },
+        {
+          "who": "kavya",
+          "text": {
+            "crime": "Crane never paid this much on his own. Every slip is marked \"for the Office\". Whose office?",
+            "friendly": "Crane never paid this much on his own. Every slip is marked \"for the Office\". Whose office?"
+          },
+          "voice": "calm"
+        },
+        {
+          "who": "kavya",
+          "text": {
+            "crime": "The slips are on your board. Find who is really behind it, and who inside the police house is helping.",
+            "friendly": "The slips are on your board. Find who is really behind it, and who inside the police house is helping."
+          },
+          "voice": "calm"
+        }
+      ],
+      "handover": {
+        "scene": [
+          {
+            "text": {
+              "crime": "The harbor office after midnight. Mano's cell is quiet. Sgt. Devaraj Kumar waits on the stairs with his hat in his hands.",
+              "friendly": "The harbor office after midnight. Mano's cell is quiet. Sgt. Devaraj Kumar waits on the stairs with his hat in his hands."
+            }
+          },
+          {
+            "who": "dex",
+            "text": {
+              "crime": "I need five minutes, partner, and I need you alone for them.",
+              "friendly": "I need five minutes, partner, and I need you alone for them."
+            },
+            "voice": "calm"
+          },
+          {
+            "who": "dex",
+            "text": {
+              "crime": "I passed the roster. Mano held my son's hospital bills over me until I did.",
+              "friendly": "I passed the roster. Mano held my son's hospital bills over me until I did."
+            },
+            "voice": "calm"
+          },
+          {
+            "who": "dex",
+            "text": {
+              "crime": "You found it already: every time on page forty is an hour off. I moved them myself. I wanted somebody to notice.",
+              "friendly": "You found it already: every time on page forty is an hour off. I moved them myself. I wanted somebody to notice."
+            },
+            "voice": "calm",
+            "when": {
+              "solved": [
+                "C4"
+              ]
+            }
+          },
+          {
+            "who": "dex",
+            "text": {
+              "crime": "Look at page forty again some day. Every patrol on it is an hour off the real roster. I moved them myself. I wanted somebody to notice.",
+              "friendly": "Look at page forty again some day. Every patrol on it is an hour off the real roster. I moved them myself. I wanted somebody to notice."
+            },
+            "voice": "calm",
+            "when": {
+              "unsolved": [
+                "C4"
+              ]
+            }
+          },
+          {
+            "who": "dex",
+            "text": {
+              "crime": "I rang you once to say so. Somebody on his side cut the line. After that I played along and left you what I could.",
+              "friendly": "I rang you once to say so. Somebody on his side cut the line. After that I played along and left you what I could."
+            },
+            "voice": "calm"
+          },
+          {
+            "who": "dex",
+            "text": {
+              "crime": "I'm not asking you to forgive it. Whatever you write about me, write that the roster was wrong on purpose.",
+              "friendly": "I'm not asking you to forgive it. Whatever you write about me, write that the roster was wrong on purpose."
+            },
+            "voice": "calm"
+          },
+          {
+            "text": {
+              "crime": "You don't answer yet. Rain on the stairs. By morning his chair is empty, and nobody says why.",
+              "friendly": "You don't answer yet. Rain on the stairs. By morning his chair is empty, and nobody says why."
+            }
+          }
+        ]
+      },
       "events": [
         {
           "id": "ship-sails",

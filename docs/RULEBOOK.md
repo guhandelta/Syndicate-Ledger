@@ -333,6 +333,7 @@ A cipher lead may be told as a riddle (`riddle: { people, noun }`): each place o
 | 2026-11-27 | Chief plays its own story, "The inside leak": four leads (C1 Mano's payment slips, C2 the phone log, C3 Ilango's berth book, C4 the patrol times), its own proof and endings, and Franklin Mano as an unseen mastermind. Chief's shipped puzzles are the new C1 to C4 |
 | 2026-11-27 | Deva is renamed Devaraj Selvam (Sgt. Devaraj Selvam) in every line the player reads. The cast id stays `dex` |
 | 2026-11-27 | Dex is renamed Deva (Sgt. Deva Okafor) in every line the player reads. The cast id stays `dex` so saved games and art files keep working |
+| 2026-11-27 | Chief gets its own briefing (setup and opening scene with Kavya) and a closing scene after the full bust: Devaraj Kumar admits he passed the roster and moved the patrol times an hour on purpose. His fate stays open |
 | 2026-11-27 | Capt. Ilango Thangaraj, the harbormaster, joins the cast and the town at Chief only. Franklin Mano's art (silhouette faces, calls-and-letters image) is stored for the later cast entry |
 | 2026-11-27 | Cast members can carry `ranks` (shown only at those ranks) and `unseen` (no town figure, no faces) |
 | 2026-11-27 | Deva's Detective opening line about the festival chest gains a tell ("Ask who gains. I can't say more than that."); it stays true and only hints |
