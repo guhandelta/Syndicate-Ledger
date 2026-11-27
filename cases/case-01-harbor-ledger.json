@@ -354,7 +354,9 @@
       "greeting": { "voice": "calm", "text": { "crime": "Every ship that ties up at Port Calder is written in my berth book, detective. In ink.", "friendly": "Every boat that parks here is written in my big book!" } },
       "opinions": [
         { "about": "crane", "text": { "crime": "Crane Shipping paid for its berth a year ahead. Nobody pays a year ahead for a berth they plan to keep.", "friendly": "Mr. Crane paid for his parking spot a whole year early. That's odd!" }, "voice": "calm" }
-      ] }
+      ] },
+    { "id": "mano", "name": "Franklin Mano", "role": "mastermind", "reliability": "liar", "voice": "calm", "color": "#44403c", "ranks": ["chief"], "unseen": true,
+      "blurb": {"crime": "Shipping broker and port investor, and the buyer above Crane. Nobody in Port Calder has met him: he writes, he telephones, he sends a man.", "friendly": "Shipping broker and port investor, and the buyer above Crane. Nobody in Port Calder has met him: he writes, he telephones, he sends a man."} }
   ],
   "leads": [
     {
@@ -1385,7 +1387,406 @@
         "title": "The inside leak",
         "question": "Who is really behind it, and who is helping from inside?",
         "reveal": "The money was due to leave on a ship that sails at dusk by a quiet channel, and someone close to the police was passing your plans to Crane."
-      }
+      },
+      "events": [
+        {
+          "id": "ship-sails",
+          "at": 12,
+          "effect": {
+            "type": "endCase"
+          },
+          "rumor": {
+            "crime": "The cargo ship sails at the end of Day 3.",
+            "friendly": "The gang's boat leaves at the end of Day 3."
+          },
+          "message": {
+            "crime": "The ship is leaving. Make your accusation now.",
+            "friendly": "The boat is leaving! Time to say who did it."
+          }
+        }
+      ],
+      "offers": [],
+      "leads": [
+        {
+          "id": "C1",
+          "type": "ledger",
+          "cost": 2,
+          "opensAfter": [],
+          "hard": true,
+          "title": {
+            "crime": "Mano's payment slips",
+            "friendly": "Mano's payment slips"
+          },
+          "intro": {
+            "crime": "A bundle of payment slips was found in Crane's safe, every one folded the same way. Somebody was paid each month, and one small payment every month went somewhere else. Work out the payments and check what the witnesses say about them.",
+            "friendly": "A bundle of payment slips was found in Crane's safe, every one folded the same way. Somebody was paid each month, and one small payment every month went somewhere else. Work out the payments and check what the witnesses say about them."
+          },
+          "columns": [
+            "crane",
+            "mano",
+            "vex",
+            "tip",
+            "meena",
+            "kane",
+            "ilango"
+          ],
+          "rows": [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct"
+          ],
+          "speakers": [
+            "meena",
+            "kane",
+            "vex"
+          ],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": [
+              "vex"
+            ]
+          },
+          "fact": {
+            "crime": "Every payment was routed through Crane Shipping for \"F.M.\" Once a month a small payment also went to a police credit fund, marked \"D.\" and \"for the Office\". Vex lied to keep Crane's name off the slips.",
+            "friendly": "Every payment was routed through Crane Shipping for \"F.M.\" Once a month a small payment also went to a police credit fund, marked \"D.\" and \"for the Office\". Vex lied to keep Crane's name off the slips."
+          },
+          "pointsTo": [
+            "mano",
+            "crane",
+            "vex"
+          ],
+          "links": []
+        },
+        {
+          "id": "C2",
+          "type": "network",
+          "cost": 2,
+          "opensAfter": [
+            "C1"
+          ],
+          "title": {
+            "crime": "The phone log",
+            "friendly": "The phone log"
+          },
+          "intro": {
+            "crime": "The harbor exchange kept a log of who called whom on the night the roster went missing. The log is mostly right, but one entry was added afterwards. Work out who was in contact with whom.",
+            "friendly": "The harbor exchange kept a log of who called whom on the night the roster went missing. The log is mostly right, but one entry was added afterwards. Work out who was in contact with whom."
+          },
+          "columns": [
+            "mano",
+            "crane",
+            "vex",
+            "tip",
+            "kane",
+            "meena",
+            "ilango"
+          ],
+          "rows": [],
+          "speakers": [
+            "tip",
+            "meena",
+            "kane"
+          ],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": [
+              "tip"
+            ]
+          },
+          "links": [
+            {
+              "from": "C1",
+              "take": "person",
+              "use": "linked",
+              "story": {
+                "crime": "The night operator remembered that {a} was put through to {q}.",
+                "friendly": "The night operator remembered that {a} was put through to {q}."
+              }
+            },
+            {
+              "from": "C1",
+              "take": "person",
+              "use": "linked",
+              "story": {
+                "crime": "A dock hand saw {a} using the harbor telephone to ring {q}.",
+                "friendly": "A dock hand saw {a} using the harbor telephone to ring {q}."
+              }
+            }
+          ],
+          "fact": {
+            "crime": "A man sent by Mano spoke to Crane and to the police house that night, and rang the police house twice more after a line went dead. Tip passed word along.",
+            "friendly": "A man sent by Mano spoke to Crane and to the police house that night, and rang the police house twice more after a line went dead. Tip passed word along."
+          },
+          "pointsTo": [
+            "mano",
+            "crane",
+            "tip",
+            "vex"
+          ]
+        },
+        {
+          "id": "C3",
+          "type": "cipher",
+          "cost": 2,
+          "opensAfter": [
+            "C2"
+          ],
+          "hard": true,
+          "title": {
+            "crime": "Ilango's berth book",
+            "friendly": "Ilango's berth book"
+          },
+          "intro": {
+            "crime": "Capt. Ilango keeps every berth in Port Calder in his book, in ink. One page is crossed out and written over. Every berth number is different. Use what people say to work out who docked at which berth.",
+            "friendly": "Capt. Ilango keeps every berth in Port Calder in his book, in ink. One page is crossed out and written over. Every berth number is different. Use what people say to work out who docked at which berth."
+          },
+          "columns": [],
+          "rows": [],
+          "riddle": {
+            "people": [
+              "crane",
+              "mano",
+              "vex",
+              "tip",
+              "meena",
+              "kane",
+              "ilango"
+            ],
+            "noun": "berth"
+          },
+          "speakers": [
+            "ilango",
+            "kane",
+            "tip"
+          ],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": [
+              "tip"
+            ]
+          },
+          "links": [
+            {
+              "from": "C2",
+              "take": "number",
+              "use": "is",
+              "story": {
+                "crime": "A slip folded into the book said {a} is {q}.",
+                "friendly": "A slip folded into the book said {a} is {q}."
+              }
+            },
+            {
+              "from": "C2",
+              "take": "number",
+              "use": "apart",
+              "story": {
+                "crime": "The harbormaster’s note said {a} and {b} are {q} apart.",
+                "friendly": "The harbormaster’s note said {a} and {b} are {q} apart."
+              }
+            },
+            {
+              "from": "C1",
+              "take": "number",
+              "use": "is",
+              "story": {
+                "crime": "A paid-up receipt in the same drawer said {a} is {q}.",
+                "friendly": "A paid-up receipt in the same drawer said {a} is {q}."
+              }
+            }
+          ],
+          "fact": {
+            "crime": "Crane Shipping's berth was booked a year ahead by an order signed \"F.M.\" Mano sold berths that do not exist, and Crane staged the theft to cover the hole.",
+            "friendly": "Crane Shipping's berth was booked a year ahead by an order signed \"F.M.\" Mano sold berths that do not exist, and Crane staged the theft to cover the hole."
+          },
+          "pointsTo": [
+            "mano",
+            "crane"
+          ]
+        },
+        {
+          "id": "C4",
+          "type": "timeline",
+          "cost": 2,
+          "opensAfter": [
+            "C3"
+          ],
+          "hard": true,
+          "title": {
+            "crime": "The patrol times",
+            "friendly": "The patrol times"
+          },
+          "intro": {
+            "crime": "Page forty of the gate book lists the night's patrols. Set it beside the real duty roster and see where the hours part company. The witnesses remember some of it, and the Gazette printed the rest.",
+            "friendly": "Page forty of the gate book lists the night's patrols. Set it beside the real duty roster and see where the hours part company. The witnesses remember some of it, and the Gazette printed the rest."
+          },
+          "columns": [],
+          "rows": [
+            "6 PM",
+            "7 PM",
+            "8 PM",
+            "9 PM",
+            "10 PM",
+            "11 PM",
+            "12 AM"
+          ],
+          "moments": [
+            {
+              "crime": "The first patrol leaves the police house",
+              "friendly": "The first patrol leaves the police house"
+            },
+            {
+              "crime": "A patrol passes the fish hall",
+              "friendly": "A patrol passes the fish hall"
+            },
+            {
+              "crime": "Page forty is written in the gate book",
+              "friendly": "Page forty is written in the gate book"
+            },
+            {
+              "crime": "The duty roster is copied",
+              "friendly": "The duty roster is copied"
+            },
+            {
+              "crime": "A call to the police house goes dead",
+              "friendly": "A call to the police house goes dead"
+            },
+            {
+              "crime": "Crane's alibi is signed",
+              "friendly": "Crane's alibi is signed"
+            },
+            {
+              "crime": "The harbor bell rings",
+              "friendly": "The harbor bell rings"
+            }
+          ],
+          "speakers": [
+            "nevethitha",
+            "thenmozhi",
+            "vex"
+          ],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": [
+              "vex"
+            ]
+          },
+          "links": [
+            {
+              "from": "C3",
+              "take": "number",
+              "use": "is",
+              "story": {
+                "crime": "Ilango logged it against the tide: {a} happened at the time numbered {q} (the first time is 1).",
+                "friendly": "Ilango logged it against the tide: {a} happened at the time numbered {q} (the first time is 1)."
+              }
+            },
+            {
+              "from": "C3",
+              "take": "number",
+              "use": "is",
+              "story": {
+                "crime": "A cashier dated a slip by the bell: {a} happened at the time numbered {q}.",
+                "friendly": "A cashier dated a slip by the bell: {a} happened at the time numbered {q}."
+              }
+            }
+          ],
+          "fact": {
+            "crime": "Every patrol on page forty is one hour off the real roster, so the page was doctored before it reached Crane. Whoever did it wanted it found.",
+            "friendly": "Every patrol on page forty is one hour off the real roster, so the page was doctored before it reached Crane. Whoever did it wanted it found."
+          },
+          "pointsTo": [
+            "dex",
+            "crane"
+          ]
+        }
+      ],
+      "missedClues": [],
+      "proof": {
+        "mano": {
+          "needs": [
+            "C1",
+            "C3"
+          ]
+        },
+        "crane": {
+          "needs": [
+            "C1",
+            "C2"
+          ]
+        },
+        "vex": {
+          "needs": [
+            "C2"
+          ]
+        }
+      },
+      "endings": [
+        {
+          "id": "full-bust",
+          "accuse": [
+            "mano"
+          ],
+          "requires": [
+            "C1",
+            "C3"
+          ],
+          "title": {
+            "crime": "Full bust",
+            "friendly": "Full bust"
+          },
+          "text": {
+            "crime": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Deva Okafor's chair is empty, and nobody says why.",
+            "friendly": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Deva Okafor's chair is empty, and nobody says why."
+          }
+        },
+        {
+          "id": "boss-walks",
+          "accuse": [
+            "crane",
+            "vex",
+            "tip"
+          ],
+          "title": {
+            "crime": "The boss walks",
+            "friendly": "The boss walks"
+          },
+          "text": {
+            "crime": "You make an arrest, but the man who bought Crane stays in his office and writes a letter. The ship sails on schedule.",
+            "friendly": "You make an arrest, but the man who bought Crane stays in his office and writes a letter. The ship sails on schedule."
+          }
+        },
+        {
+          "id": "wrong-arrest",
+          "accuse": [
+            "kane",
+            "meena",
+            "nevethitha",
+            "thenmozhi",
+            "karunakaran",
+            "ilango"
+          ],
+          "title": {
+            "crime": "Wrong arrest",
+            "friendly": "Wrong arrest"
+          },
+          "text": {
+            "crime": "You arrested someone who was only in the wrong place. The syndicate couldn't have planned it better.",
+            "friendly": "You arrested someone who was only in the wrong place. The syndicate couldn't have planned it better."
+          }
+        }
+      ]
     }
   },
   "closing": {

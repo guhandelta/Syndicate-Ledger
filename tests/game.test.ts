@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { CaseFile, GridBook } from '../src/game/caseTypes';
 import { PRESETS } from '../src/game/caseTypes';
+import { caseForRank } from '../src/game/rankStory';
 import { enumerate } from '../src/engine/solver';
 import { evalClaim } from '../src/engine/claims';
 import { fireEvents, accuse, accuseStatus, submitAccusation, addFlag, checkLead, gridOf as puzzleOf, hoursLeft, newGame, solveLead, spendHours, startLead, trustOf } from '../src/game/state';
@@ -72,8 +73,8 @@ describe('case 1', () => {
 
 describe('accusation rules', () => {
   const play = (preset: 'junior' | 'detective' | 'inspector' | 'chief' = 'inspector') => {
-    const g = newGame(cf, book, preset);
-    for (const id of ['L1', 'L2', 'L3', 'L4']) { startLead(g, id); solve(g, id); }
+    const g = newGame(preset === 'chief' ? caseForRank(cf, 'chief') : cf, book, preset);
+    for (const id of preset === 'chief' ? ['C1'] : ['L1', 'L2', 'L3', 'L4']) { startLead(g, id); solve(g, id); }
     return g;
   };
 
@@ -118,7 +119,8 @@ describe('accusation rules', () => {
 });
 
 describe('witness leaves', () => {
-  for (const preset of PRESETS) {
+  // (Chief has its own leads and no Nevethitha event)
+  for (const preset of PRESETS.filter((r) => r !== 'chief')) {
     it(`keeps L2 solvable with one answer at ${preset} after Nevethitha leaves`, () => {
       const g = newGame(cf, book, preset);
       g.s.hoursUsed = 4;
