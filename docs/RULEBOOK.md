@@ -327,6 +327,7 @@ A cipher lead may be told as a riddle (`riddle: { people, noun }`): each place o
 
 | Date | Change |
 | --- | --- |
+| 2026-11-27 | Dex's Detective opening line about the festival chest gains a tell ("Ask who gains. I can't say more than that."); it stays true and only hints |
 | 2026-11-27 | Wording only: Capt. Karunakaran is the captain of the ship that sails at dusk on Day 3 (was harbor pilot); the baker is named Umer and the dock hand Bharath in link clues |
 | 2026-11-27 | Cast rules: a case may have a `mastermind` above the `boss`, the cast limit is 5 to 11 non-allies, and a town person can be limited to certain ranks with `ranks` |
 | 2026-11-26 | Added riddles: a cipher lead can be told about named people and a noun ("berth number") instead of digit places (section 7) |
