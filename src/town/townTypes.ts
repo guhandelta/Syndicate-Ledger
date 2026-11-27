@@ -8,6 +8,13 @@ export type Vec2 = [x: number, z: number];
 export const BUILDING_STYLES = ['plain', 'madras', 'bungalow', 'mill', 'shed'] as const;
 export type BuildingStyle = (typeof BUILDING_STYLES)[number];
 
+/**
+ * The shops of Port Calder, each built from Guha's picture of its front (assets/shops) with a worker busy outside.
+ * A building with a trade takes its look from that picture instead of a style.
+ */
+export const TRADES = ['tea', 'cycle', 'fish', 'flower', 'harbor', 'nets', 'tailor'] as const;
+export type Trade = (typeof TRADES)[number];
+
 export interface Building {
   id: string;
   name: string;
@@ -24,6 +31,8 @@ export interface Building {
   style?: BuildingStyle;
   /** Colour of the trim (cornice, pillars, awning) as #rrggbb; each style has its own when left out. */
   trim?: string;
+  /** A shop: built from its front picture, with its workers busy outside. */
+  trade?: Trade;
 }
 
 export interface Door {

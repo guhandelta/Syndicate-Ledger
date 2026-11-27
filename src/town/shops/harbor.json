@@ -1,0 +1,77 @@
+{
+  "trade": "harbor",
+  "picture": "assets/shops/harbor-office.webp",
+  "width": 7.5,
+  "height": 3.02,
+  "roof": "gable",
+  "rise": 1.0,
+  "colours": {
+    "wall": "#817e7d",
+    "roof": "#57535b",
+    "trim": "#956143",
+    "awning": "#525a77",
+    "stone": "#9f8572"
+  },
+  "awnings": [
+    {
+      "x": -0.346,
+      "y": 2.34,
+      "w": 1.968,
+      "h": 0.622,
+      "colour": "#525a77"
+    }
+  ],
+  "pieces": [
+    {
+      "id": "sign",
+      "x": -1.766,
+      "y": 1.878,
+      "w": 0.777,
+      "h": 0.782,
+      "mode": "cut",
+      "glow": false
+    },
+    {
+      "id": "board",
+      "x": 1.497,
+      "y": 0.931,
+      "w": 1.633,
+      "h": 1.41,
+      "mode": "hard",
+      "glow": false
+    },
+    {
+      "id": "window",
+      "x": -2.779,
+      "y": 1.027,
+      "w": 1.059,
+      "h": 1.404,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "window2",
+      "x": 2.888,
+      "y": 1.027,
+      "w": 1.0,
+      "h": 1.404,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "door",
+      "x": -0.346,
+      "y": 0.346,
+      "w": 1.511,
+      "h": 1.995,
+      "mode": "hard",
+      "glow": false
+    }
+  ],
+  "chimney": {
+    "x": -2.872,
+    "y": 3.83,
+    "w": 0.691,
+    "h": 0.745
+  }
+}

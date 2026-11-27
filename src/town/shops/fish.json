@@ -1,0 +1,77 @@
+{
+  "trade": "fish",
+  "picture": "assets/shops/fish-hall.webp",
+  "width": 7.5,
+  "height": 4.12,
+  "roof": "flat",
+  "rise": 0.3,
+  "colours": {
+    "wall": "#b19583",
+    "roof": "#87624d",
+    "trim": "#8d5f47",
+    "awning": "#8fa085",
+    "stone": "#706555"
+  },
+  "awnings": [
+    {
+      "x": 0.0,
+      "y": 2.437,
+      "w": 7.608,
+      "h": 0.894,
+      "colour": "#8fa085"
+    }
+  ],
+  "pieces": [
+    {
+      "id": "sign",
+      "x": 0.054,
+      "y": 3.303,
+      "w": 2.193,
+      "h": 1.056,
+      "mode": "cut",
+      "glow": false
+    },
+    {
+      "id": "window",
+      "x": -2.385,
+      "y": 1.164,
+      "w": 1.289,
+      "h": 1.191,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "window2",
+      "x": 2.483,
+      "y": 1.164,
+      "w": 1.343,
+      "h": 1.191,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "door",
+      "x": -0.663,
+      "y": 0.271,
+      "w": 1.538,
+      "h": 2.166,
+      "mode": "hard",
+      "glow": false
+    },
+    {
+      "id": "fish",
+      "x": 0.98,
+      "y": 1.289,
+      "w": 1.478,
+      "h": 1.067,
+      "mode": "soft",
+      "glow": false
+    }
+  ],
+  "chimney": {
+    "x": -2.938,
+    "y": 4.116,
+    "w": 0.704,
+    "h": 0.731
+  }
+}

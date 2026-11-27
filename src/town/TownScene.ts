@@ -6,6 +6,8 @@ import { buildingParts, seaLine, type Part } from './buildingStyles';
 import { Figure3D } from './figure3d';
 import { GlbFigure, meshOf } from './glbFigure';
 import { samplerOf } from './glbPixels';
+import { SHOPS, shopParts, shopProps, shopSolids, shopWorkers } from './shops';
+import { Worker } from './workers';
 import { DAY, DAY_HOUR, NIGHT, NIGHT_HOUR, easeHour, lookAt, type Look } from './looks';
 import { cameraPose, forward, nearest, npcPosition, npcPresent, shotFocus, shotPose, step, type Nearby, type Pose } from './townLogic';
 import type { Building, CameraKind, Door, Npc, Prop, Shot, Town, Vec2 } from './townTypes';
@@ -111,6 +113,13 @@ export class TownScene {
   /** The lighthouse beam, and the lantern it turns with. */
   private beam: { pivot: THREE.Object3D; mat: THREE.MeshBasicMaterial } | null = null;
   private readonly buildings: { b: Building; mats: THREE.Material[]; opacity: number }[] = [];
+  /** The people at work outside the shops, and the points the detective walks round there. */
+  private readonly workers: Worker[] = [];
+  private readonly shopSolids: Vec2[] = [];
+  /** Shop pictures that light up at dusk (windows, the stall's lamp), and things that move by themselves. */
+  private readonly shopGlows: THREE.MeshLambertMaterial[] = [];
+  private readonly movers: { obj: THREE.Object3D; anim: 'spin' | 'flap'; phase: number }[] = [];
+  private readonly textures = new THREE.TextureLoader();
   private rain: THREE.Points | null = null;
   private focus: Vec2 | undefined;
   /** Who the player is talking to, and how they feel about it. */
@@ -156,6 +165,7 @@ export class TownScene {
       });
       this.buildings.push({ b, mats, opacity: 1 });
       this.scene.add(group);
+      this.addWorkers(b);
     }
     for (const p of this.town.props) this.addProp(p);
     for (const d of this.town.doors) this.addMarker(d);
@@ -309,7 +319,9 @@ export class TownScene {
     }
     if (this.beam) this.beam.mat.opacity = 0.12 * (1 - k.daylight);
     for (const t of this.tints) t.color.setHex(k.figureTint);
+    for (const m of this.shopGlows) m.emissiveIntensity = 0.7 * (1 - k.daylight);
     const glow = this.glow();
+    for (const w of this.workers) for (const m of w.materials) m.emissiveIntensity = glow * 0.9;
     for (const p of this.people) {
       if (p.body instanceof GlbFigure) p.body.setGlow(glow);
       else if (p.body) p.body.uniforms.uGlow.value = glow;
@@ -329,6 +341,7 @@ export class TownScene {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
     for (const p of this.people) p.body?.dispose();
+    for (const w of this.workers) w.dispose();
     for (const t of this.faces.values()) t.dispose();
     this.scene.traverse((o) => {
       const mesh = o as THREE.Mesh;
@@ -412,7 +425,7 @@ export class TownScene {
       if (dx || dz) {
         if (this.introLeft > 0) this.introLeft = 0;
         const here: Vec2 = [this.pose.x, this.pose.z];
-        const next = step(this.town, here, dx, dz, this.people.filter((p) => p.present).map((p) => p.at));
+        const next = step(this.town, here, dx, dz, [...this.people.filter((p) => p.present).map((p) => p.at), ...this.shopSolids]);
         moving = Math.hypot(next[0] - here[0], next[1] - here[1]) > 1e-4;
         this.stride += Math.hypot(next[0] - here[0], next[1] - here[1]);
         this.pose.x = next[0];
@@ -476,6 +489,11 @@ export class TownScene {
       f.mat.opacity = Math.sin(t * Math.PI) * 0.4 * (0.35 + 0.65 * this.look.daylight);
     }
     if (this.beam) this.beam.pivot.rotation.y = this.time * 0.8;
+    for (const w of this.workers) w.update(this.time);
+    for (const m of this.movers) {
+      if (m.anim === 'spin') m.obj.rotation.z = -this.time * 5;
+      else m.obj.rotation.y = m.phase + Math.sin(this.time * 3.1) * 0.25 + Math.sin(this.time * 7.3) * 0.08;
+    }
     this.boats.forEach((b, i) => {
       b.position.y = -0.25 + Math.sin(this.time * 1.1 + i * 2) * 0.08;
       b.rotation.z = Math.sin(this.time * 0.8 + i) * 0.04;
@@ -618,6 +636,25 @@ export class TownScene {
   private makeBuilding(b: Building): THREE.Group {
     const group = new THREE.Group();
     const [w, d] = b.size;
+    const shop = b.trade ? SHOPS[b.trade] : undefined;
+    if (shop) {
+      // a shop is built from its picture: its own door, windows and sign, and its name on a board under the eaves
+      for (const part of [...shopParts(b, shop), ...shopProps(b)]) group.add(this.partMesh(part));
+      // the name stands on the eaves, in front of the roof, unless the shop's own sign already hangs there
+      const face = b.doorSide === 'south' ? 1 : -1;
+      const boardW = Math.min(w - 1.2, 3.2);
+      const sx = w / shop.width;
+      const sy = b.height / shop.height;
+      const signThere = shop.pieces.some((p) => p.mode === 'cut' && Math.abs(p.x * sx) < boardW / 2 + 0.3 && (p.y + p.h) * sy > b.height - 0.3);
+      if (!signThere) {
+        const board = new THREE.Mesh(new THREE.PlaneGeometry(boardW, 0.5), new THREE.MeshBasicMaterial({ map: this.signTexture(b.name) }));
+        board.position.set(0, b.height + 0.22, (d / 2 + 0.5) * face);
+        if (face < 0) board.rotation.y = Math.PI;
+        group.add(board);
+      }
+      group.position.set(b.at[0], 0, b.at[1]);
+      return group;
+    }
     for (const part of buildingParts(b)) group.add(this.partMesh(part));
 
     const face = b.doorSide === 'south' ? 1 : -1;
@@ -644,13 +681,22 @@ export class TownScene {
   }
 
   /** One piece of a building or of the sea line as a mesh. */
-  private partMesh(part: Part): THREE.Mesh {
+  private partMesh(part: Part): THREE.Object3D {
     const [sx, sy, sz] = part.size;
+    if (part.shape === 'panel') return this.panelMesh(part);
     const mat = part.glow ? this.lambert(0x2a2418, this.look.window, 1) : this.lambert(part.color);
     if (part.glow) this.windows.push(mat as THREE.MeshLambertMaterial);
     let mesh: THREE.Mesh;
     let rise = 0;
-    if (part.shape === 'box') {
+    if (part.shape === 'ball') {
+      mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), mat);
+      const tall = sy || sx * 2;
+      mesh.scale.set(sx, tall / 2, sx);
+      rise = tall / 2;
+    } else if (part.shape === 'ring') {
+      mesh = new THREE.Mesh(new THREE.TorusGeometry(sx, sy, 5, 18), mat);
+      rise = sx + sy;
+    } else if (part.shape === 'box') {
       mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
       rise = sy / 2;
     } else if (part.shape === 'hip') {
@@ -671,7 +717,67 @@ export class TownScene {
       rise = sy / 2;
     }
     mesh.position.set(part.at[0], part.at[1] + rise, part.at[2]);
+    this.turnPart(mesh, part);
+    return (mesh.userData.wrapper as THREE.Object3D | undefined) ?? mesh;
+  }
+
+  /** Leans and turns a piece about its own middle, and sets it moving if it moves by itself. */
+  private turnPart(mesh: THREE.Object3D, part: Part) {
+    if (part.tilt || part.turn) {
+      mesh.rotation.order = 'YXZ';
+      mesh.rotation.y += part.turn ?? 0;
+      mesh.rotation.x += part.tilt ?? 0;
+    }
+    if (part.anim) {
+      // spin and flap act on a wrapper, so the piece keeps its own lean and turn
+      const pivot = new THREE.Group();
+      pivot.position.copy(mesh.position);
+      pivot.rotation.copy(mesh.rotation);
+      mesh.position.set(part.anim === 'flap' ? part.size[0] / 2 : 0, 0, 0);
+      mesh.rotation.set(0, 0, 0);
+      if (part.anim === 'flap') pivot.position.x -= (part.size[0] / 2) * Math.cos(pivot.rotation.y);
+      pivot.add(mesh);
+      this.movers.push({ obj: pivot, anim: part.anim, phase: pivot.rotation.y });
+      mesh.userData.wrapper = pivot;
+    }
+  }
+
+  /** A piece cut from a shop's picture, laid flat on its wall. Windows and lamps in it glow at dusk. */
+  private panelMesh(part: Part): THREE.Mesh {
+    const [w, h] = part.size;
+    const mat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: part.edge !== 'hard', alphaTest: part.edge === 'cut' ? 0.4 : 0.01, side: THREE.FrontSide });
+    if (part.glow) {
+      mat.emissive.setHex(0xffd9a0);
+      mat.emissiveIntensity = 0.7 * (1 - this.look.daylight);
+      this.shopGlows.push(mat);
+    }
+    if (part.tex) {
+      this.textures.load(part.tex, (tex) => {
+        if (this.disposed) return tex.dispose();
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 4;
+        mat.map = tex;
+        if (part.glow) mat.emissiveMap = tex;
+        mat.needsUpdate = true;
+      });
+    }
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    mesh.position.set(part.at[0], part.at[1] + h / 2, part.at[2]);
+    if (part.turn) mesh.rotation.y = part.turn;
     return mesh;
+  }
+
+  /** The people at work outside a shop. */
+  private addWorkers(b: Building) {
+    for (const spot of shopWorkers(b)) {
+      const w = new Worker(spot.action, spot.outfit, this.workers.length * 1.7);
+      w.root.position.set(spot.at[0], 0, spot.at[1]);
+      w.root.rotation.y = spot.heading;
+      for (const m of w.materials) m.emissive.copy(m.color);
+      this.workers.push(w);
+      this.scene.add(w.root);
+    }
+    this.shopSolids.push(...shopSolids(b));
   }
 
   /** Foam on the quay edge, a breakwater with a lighthouse, ships standing off the harbour and buoys in the channel. */
