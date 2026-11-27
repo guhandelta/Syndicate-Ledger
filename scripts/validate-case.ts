@@ -26,10 +26,11 @@ const fail = (msg: string) => errors.push(msg);
 const castIds = new Set(cf.cast.map((c) => c.id));
 const nonAllies = cf.cast.filter((c) => c.role !== 'ally');
 
-if (nonAllies.length < 5 || nonAllies.length > 8) fail(`cast has ${nonAllies.length} non-ally characters; the rule book wants 5 to 8`);
+if (nonAllies.length < 5 || nonAllies.length > 11) fail(`cast has ${nonAllies.length} non-ally characters; the rule book wants 5 to 11`);
+if (cf.cast.filter((c) => c.role === 'mastermind').length > 1) fail('a case has at most one mastermind');
 if (cf.cast.filter((c) => c.role === 'boss').length !== 1) fail('a case needs exactly one boss');
 for (const c of cf.cast) {
-  if ((c.reliability === 'liar' || c.reliability === 'double-agent') && c.role !== 'boss' && !c.protects) fail(`${c.id} lies but has no "protects" motive`);
+  if ((c.reliability === 'liar' || c.reliability === 'double-agent') && c.role !== 'boss' && c.role !== 'mastermind' && !c.protects) fail(`${c.id} lies but has no "protects" motive`);
   if (c.protects && !castIds.has(c.protects)) fail(`${c.id} protects unknown person ${c.protects}`);
 }
 

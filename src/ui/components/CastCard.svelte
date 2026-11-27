@@ -12,7 +12,7 @@
   let { session, person, trust }: { session: Session; person: CastMember; trust?: Trust } = $props();
 
   // the boss is shown as an ordinary suspect so the board doesn't give the ending away
-  const shownRole = $derived(person.role === 'boss' ? 'suspect' : person.role);
+  const shownRole = $derived((person.role === 'boss' || person.role === 'mastermind') ? 'suspect' : person.role);
   /** What others have told the player about this person, in the notebook sense: who said it and what. */
   const heard = $derived(session.game ? heardAbout(session.game, person.id) : []);
   const role = $derived(person.role === 'ally' ? abilityLabel(person) : shownRole[0].toUpperCase() + shownRole.slice(1));

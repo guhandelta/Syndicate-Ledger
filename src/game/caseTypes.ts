@@ -19,7 +19,7 @@ export const PRESETS: Preset[] = ['junior', 'detective', 'inspector', 'chief'];
 export type Text = string | { crime: string; friendly?: string };
 
 export type Reliability = 'honest' | 'liar' | 'mistaken' | 'double-agent';
-export type Role = 'suspect' | 'witness' | 'informant' | 'ally' | 'boss';
+export type Role = 'suspect' | 'witness' | 'informant' | 'ally' | 'boss' | 'mastermind';
 export type Ability = 'forensics' | 'accountant' | 'undercover' | 'partner';
 
 /**

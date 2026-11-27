@@ -184,6 +184,21 @@ describe('a town for a rank story', () => {
     expect(junior.doors.map((d) => d.lead ?? d.goto)).toEqual(['J1', 'L2', 'accuse']);
     expect(townForRank(t, leads, 'chief').doors.map((d) => d.lead ?? d.goto)).toEqual(['L2', 'accuse']);
   });
+  it('keeps a person out of the towns of ranks they are not listed for', () => {
+    const t = baseTown();
+    t.npcs[0].ranks = ['chief'];
+    expect(townForRank(t, leads, 'junior').npcs.map((n) => n.cast)).not.toContain(t.npcs[0].cast);
+    expect(townForRank(t, leads, 'chief').npcs.map((n) => n.cast)).toContain(t.npcs[0].cast);
+    expect(townForRank(t, leads, 'chief').npcs).toHaveLength(t.npcs.length);
+  });
+  it('checks a rank-limited person is listed for a rank and is not the focus of a shot', () => {
+    const t = baseTown();
+    t.npcs[0].ranks = [];
+    expect(validateTown(t, cf())).toContain(`${t.npcs[0].cast} is listed for no rank`);
+    t.npcs[0].ranks = ['chief'];
+    t.shots = [{ id: 's', when: { event: cf().events[0].id }, focus: { npc: t.npcs[0].cast }, seconds: 3, distance: 3, height: 2, caption: 'c' }];
+    expect(validateTown(t, cf()).join()).toContain("who is not in every rank's town");
+  });
   it('checks that a rank story has a door for each of its leads', () => {
     const c = {
       ...cf(),
