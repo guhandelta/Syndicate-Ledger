@@ -190,7 +190,8 @@ export function townForRank(town: Town, leads: Lead[], preset: Preset): Town {
     const lead = d.leadFor?.[preset] ?? d.lead;
     return lead && ids.has(lead) ? [{ ...d, lead }] : [];
   });
-  return { ...town, doors };
+  const npcs = town.npcs.filter((n) => !n.ranks || n.ranks.includes(preset));
+  return { ...town, doors, npcs };
 }
 
 /** Problems in a town file, checked against its case. An empty list means it is fine. */
@@ -225,6 +226,7 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
   if (!town.doors.some((d) => d.goto === 'accuse')) errors.push('No door leads to the accusation');
   for (const npc of town.npcs) {
     if (!castIds.has(npc.cast)) errors.push(`Unknown cast member ${npc.cast}`);
+    if (npc.ranks && !npc.ranks.length) errors.push(`${npc.cast} is listed for no rank`);
     if (npc.untilEvent && !eventIds.has(npc.untilEvent)) errors.push(`${npc.cast} leaves on unknown event ${npc.untilEvent}`);
     for (const p of [npc.at, ...(npc.path ?? [])]) free(p, `${npc.cast}'s spot`);
   }
@@ -247,6 +249,7 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
     if (npc) {
       const who = town.npcs.find((n) => n.cast === npc);
       if (!who) errors.push(`${what} looks at ${npc}, who is not in the town`);
+      else if (who.ranks) errors.push(`${what} looks at ${npc}, who is not in every rank's town`);
       else if (who.untilEvent) errors.push(`${what} looks at ${npc}, who may have left town by then`);
     }
     if (!(shot.seconds >= 2 && shot.seconds <= 8)) errors.push(`${what} must last 2 to 8 seconds`);

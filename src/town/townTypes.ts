@@ -46,6 +46,8 @@ export interface Npc {
   path?: Vec2[];
   /** Gone from the town once this event has fired (for example a witness leaving). */
   untilEvent?: string;
+  /** Only in the town of these ranks (a person nobody has met yet at lower ranks). Left out, every rank. */
+  ranks?: Preset[];
 }
 
 export interface Prop {

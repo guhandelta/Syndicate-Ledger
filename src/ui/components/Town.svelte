@@ -82,7 +82,7 @@
   function roleLine(c: CastMember): string {
     if (c.role === 'ally') return abilityLabel(c);
     // the boss is shown as an ordinary suspect so the town doesn't give the ending away
-    const role = c.role === 'boss' ? 'suspect' : c.role;
+    const role = (c.role === 'boss' || c.role === 'mastermind') ? 'suspect' : c.role;
     return `${role[0].toUpperCase()}${role.slice(1)} · ${TRUST_LABEL[trustOf(g, c.id)]}`;
   }
 

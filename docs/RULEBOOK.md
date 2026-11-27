@@ -157,7 +157,9 @@ A case is an evidence board of linked leads, played against an in-game clock. Ea
 **Character rules**
 
 - A character's lies MUST have a motive the player can find by the end.
-- Each case SHOULD have 5 to 8 characters. Allies don't count toward this limit.
+- Each case SHOULD have 5 to 11 characters. Allies don't count toward this limit.
+- A case has exactly one `boss` and may have one `mastermind`: the person above the boss. A mastermind is a suspect like the boss, and like the boss may lie without a `protects` motive.
+- In the town file a person can carry `ranks`, the ranks whose town they stand in (a person nobody has met yet at lower ranks). Left out, they are there at every rank.
 - Each character gets a name, a one-line description, an icon and a color that never matches a zone color.
 
 ## 5. Difficulty presets and age scaling
@@ -325,6 +327,7 @@ A cipher lead may be told as a riddle (`riddle: { people, noun }`): each place o
 
 | Date | Change |
 | --- | --- |
+| 2026-11-27 | Cast rules: a case may have a `mastermind` above the `boss`, the cast limit is 5 to 11 non-allies, and a town person can be limited to certain ranks with `ranks` |
 | 2026-11-26 | Added riddles: a cipher lead can be told about named people and a noun ("berth number") instead of digit places (section 7) |
 | 2026-11-26 | Added scene briefs: `draftLead` and `npm run draft-lead` turn a place, a thing, people and one key fact into a lead (ledger and surveillance) (section 7). Thenmozhi Selvam added to the cast and made the 6th seat of the shared leads |
 | 2026-11-26 | Every puzzle after the first in a rank carries 2 or 3 link clues, mostly from the puzzle just before it (section 2c): more links in Case 1's Junior, Detective, Inspector and Chief leads, decoys at Detective and Chief, "add up" clues, and a two-step person clue (`valueFrom`) in Junior's whisper puzzle. Fresh builds try more link picks and, when needed, a new answer. |
