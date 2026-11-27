@@ -159,6 +159,7 @@ A case is an evidence board of linked leads, played against an in-game clock. Ea
 - A character's lies MUST have a motive the player can find by the end.
 - Each case SHOULD have 5 to 11 characters. Allies don't count toward this limit.
 - A case has exactly one `boss` and may have one `mastermind`: the person above the boss. A mastermind is a suspect like the boss, and like the boss may lie without a `protects` motive.
+- In the case file a person can carry `ranks` too: they then appear on the board, the accusation list and the intro only at those ranks. A person marked `unseen` (a voice on the phone, a name on a letter) has no town figure and needs no portrait faces; the board shows initials.
 - In the town file a person can carry `ranks`, the ranks whose town they stand in (a person nobody has met yet at lower ranks). Left out, they are there at every rank.
 - Each character gets a name, a one-line description, an icon and a color that never matches a zone color.
 
@@ -327,6 +328,7 @@ A cipher lead may be told as a riddle (`riddle: { people, noun }`): each place o
 
 | Date | Change |
 | --- | --- |
+| 2026-11-27 | Cast members can carry `ranks` (shown only at those ranks) and `unseen` (no town figure, no faces) |
 | 2026-11-27 | Dex's Detective opening line about the festival chest gains a tell ("Ask who gains. I can't say more than that."); it stays true and only hints |
 | 2026-11-27 | Wording only: Capt. Karunakaran is the captain of the ship that sails at dusk on Day 3 (was harbor pilot); the baker is named Umer and the dock hand Bharath in link clues |
 | 2026-11-27 | Cast rules: a case may have a `mastermind` above the `boss`, the cast limit is 5 to 11 non-allies, and a town person can be limited to certain ranks with `ranks` |

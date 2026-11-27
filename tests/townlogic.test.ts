@@ -199,6 +199,15 @@ describe('a town for a rank story', () => {
     t.shots = [{ id: 's', when: { event: cf().events[0].id }, focus: { npc: t.npcs[0].cast }, seconds: 3, distance: 3, height: 2, caption: 'c' }];
     expect(validateTown(t, cf()).join()).toContain("who is not in every rank's town");
   });
+  it('keeps an unseen person out of the town and does not ask for a figure for them', () => {
+    const c = cf();
+    (c.cast[1] as { unseen?: boolean }).unseen = true;
+    const t = baseTown();
+    t.doors[1].lead = 'L2';
+    expect(validateTown(t, c)).toContain('Bob is unseen but stands in the town');
+    t.npcs = t.npcs.filter((n) => n.cast !== 'b');
+    expect(validateTown(t, c)).toEqual([]);
+  });
   it('checks that a rank story has a door for each of its leads', () => {
     const c = {
       ...cf(),

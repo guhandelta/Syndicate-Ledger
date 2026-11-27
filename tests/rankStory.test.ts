@@ -8,6 +8,19 @@ import { book } from './caseBook';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
 
+describe('a person kept for some ranks', () => {
+  const withBoss = (): CaseFile => ({ ...cf, cast: [...cf.cast, { ...cf.cast[0], id: 'hidden', name: 'Hidden', ranks: ['chief'] }] });
+  it('is on the cast of those ranks only, and the case file stays whole', () => {
+    const c = withBoss();
+    expect(caseForRank(c, 'junior').cast.map((x) => x.id)).not.toContain('hidden');
+    expect(caseForRank(c, 'detective').cast).toHaveLength(cf.cast.length);
+    expect(caseForRank(c, 'chief').cast.map((x) => x.id)).toContain('hidden');
+    expect(c.cast.map((x) => x.id)).toContain('hidden');
+    // the rank story's own fields still land on top
+    expect(caseForRank(c, 'junior').leads.map((l) => l.id)).toEqual(caseForRank(cf, 'junior').leads.map((l) => l.id));
+  });
+});
+
 describe('rank stories', () => {
   it('Case 1 gives every rank a part of the case, and a closing', () => {
     for (const preset of PRESETS) expect(partOf(cf, preset)).toBeTruthy();
