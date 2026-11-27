@@ -97,7 +97,7 @@ describe('small helpers', () => {
     expect(allyCost({ ability: 'undercover' } as never)).toBe(2);
     expect(allyCost({ ability: 'forensics' } as never)).toBe(1);
     for (const a of ['forensics', 'accountant', 'undercover', 'partner'] as const) expect(abilityLabel({ ability: a } as never)).toContain(':');
-    expect(initials('Sgt. Devaraj Selvam')).toBe('DS');
+    expect(initials('Sgt. Devaraj Kumar')).toBe('DK');
     expect(liarLine([1, 2], 3, false)).toBe('1 or 2 of these statements are lies.');
     const p = { size: 2, solution: [[1, 2], [2, 1]], zones: [{ cells: [[0, 0], [0, 1]], sum: 3 }, { cells: [[1, 0], [1, 1]], sum: 3 }] } as never;
     expect(findWrong(p, [[1, 2], [0, 0]])).toBeNull();
