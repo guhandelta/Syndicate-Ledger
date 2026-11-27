@@ -61,7 +61,7 @@ describe('puzzle helpers', () => {
   });
 
   it('makes avatar initials without titles or quotes', () => {
-    expect(initials('Sgt. Dex Okafor')).toBe('DO');
+    expect(initials('Sgt. Deva Okafor')).toBe('DO');
     expect(initials('"Tip" Callahan')).toBe('TC');
   });
 

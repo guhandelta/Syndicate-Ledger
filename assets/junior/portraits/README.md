@@ -14,6 +14,6 @@ Officer Cole's suspicious portrait is not in this batch. Later batches will add 
 
 ## Case 1 additions
 
-This folder now also contains `neutral`, `suspicious`, and `caught-lying` portraits for Silas Crane, Tip Callahan, Vex Lorne, Meena Selvi, Sgt. Dex Okafor, Thenmozhi Selvam, Capt. Karunakaran Velu, and the player detective (24 individual PNGs). The first five characters' files came from the earlier friendly portrait set; the detective's neutral portrait is the existing `set-4` Junior art. The other eight files are newly generated.
+This folder now also contains `neutral`, `suspicious`, and `caught-lying` portraits for Silas Crane, Tip Callahan, Vex Lorne, Meena Selvi, Sgt. Deva Okafor, Thenmozhi Selvam, Capt. Karunakaran Velu, and the player detective (24 individual PNGs). The first five characters' files came from the earlier friendly portrait set; the detective's neutral portrait is the existing `set-4` Junior art. The other eight files are newly generated.
 
 These are full-size source images. The game currently uses cropped WebP portraits under `src/ui/portraits/friendly/`; adding new source PNGs does not change the displayed dialogue art until those WebP files are prepared and wired in.

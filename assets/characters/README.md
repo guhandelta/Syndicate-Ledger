@@ -13,7 +13,7 @@ All views are 1024×1536 and sit on a flat grey background (no transparency yet)
 | Sakthivel Siva | "Tip" Callahan (informant) | ✓ | ✓ | ✓ | ✓ |
 | Sivaram Chetllamuthu | Silas Crane (boss) | ✓ | ✓ | ✓ | ✓ |
 | Kavya Narayanan | Accountant | ✓ | ✓ | ✓ | ✓ |
-| Sgt. Devan Rajan | Sgt. Dex Okafor (old partner) | ✓ | ✓ | ✓ | ✓ |
+| Sgt. Devan Rajan | Sgt. Deva Okafor (old partner) | ✓ | ✓ | ✓ | ✓ |
 | Dr. Yazhini Raman | Dr. Lin Abara (forensic analyst) | ✓ | ✓ | ✓ | ✓ |
 | Officer Arul Prakash | Officer Cole (undercover) | ✓ | ✓ | ✓ | ✓ |
 
