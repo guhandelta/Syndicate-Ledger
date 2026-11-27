@@ -68,7 +68,7 @@ export async function solveLead(page: Page, preset: Preset, leadId: string) {
     for (let r = 0; r < p.size; r++) if (!p.givens.some((g) => g.r === r)) await page.locator(`[data-stake="${r}-${p.cols[r]}"]`).click();
   } else if (p.type === 'cipher') {
     const slots = page.locator('ol.code > li.code-slot');
-    for (let k = 0; k < p.size; k++) await slots.nth(k).locator('select').selectOption(String(p.code[k]));
+    for (let k = 0; k < p.size; k++) if (!p.givens.some((g) => g.p === k)) await slots.nth(k).locator('select').selectOption(String(p.code[k]));
   } else {
     const rows = page.locator('table.grid tbody tr');
     const given = new Set(p.givens.map((g) => `${g.cell[0]},${g.cell[1]}`));

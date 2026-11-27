@@ -42,8 +42,8 @@ describe('rank stories', () => {
   });
 
   it('a rank story that replaces nothing plays the case file as it is', () => {
-    // (Ilango, the harbormaster, is on the cast of Chief only, so Chief's case drops no one and plays the file as it is)
-    expect(caseForRank(cf, 'chief')).toBe(cf);
+    // (Chief has its own story now, so only a rank without one plays the file as it is)
+    expect(caseForRank({ ...cf, rankStories: undefined }, 'chief').leads).toBe(cf.leads);
     expect(caseForRank(cf, 'inspector').leads).toBe(cf.leads);
   });
 
@@ -64,7 +64,8 @@ describe('rank stories', () => {
     expect(junior.cast).toEqual(cf.cast.filter((c) => !c.ranks));
     expect(junior.events).toBe(cf.events);
     expect(caseForRank(test, 'junior')).toBe(junior);
-    expect(caseForRank(test, 'chief')).toBe(test);
+    expect(caseForRank(test, 'chief').leads).toBe(caseForRank(test, 'chief').leads);
+    expect(caseForRank(test, 'chief').setup).toBe(cf.rankStories!.chief!.setup ?? cf.setup);
     // the game is built from the rank's own leads
     const g = newGame(junior, { ...book, 'J1:junior': book['L1:junior'] }, 'junior');
     expect(Object.keys(g.s.leads)).toEqual(['J1']);
