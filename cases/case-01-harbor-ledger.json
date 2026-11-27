@@ -317,8 +317,8 @@
       "blurb": { "crime": "Undercover cop inside the syndicate. Can confirm one claim.", "friendly": "A secret helper inside the gang. Can check if someone told the truth." },
       "greeting": { "voice": "whisper", "text": { "crime": "Keep your voice down. I'm still inside the syndicate.", "friendly": "Shh! I'm a secret helper. Don't tell anyone!" } } },
     { "id": "karunakaran", "name": "Capt. Karunakaran Velu", "role": "witness", "reliability": "honest", "voice": "calm", "color": "#155e75",
-      "blurb": { "crime": "Guides every ship in and out of Port Calder. Knows the sailing times.", "friendly": "Steers the big boats into the harbor. Knows when every boat leaves." },
-      "greeting": { "voice": "calm", "text": { "crime": "Tide turns at dusk on Day 3, detective. That ship goes with it.", "friendly": "The big boat leaves on Day 3 when the water rises!" } },
+      "blurb": { "crime": "Captain of the ship that leaves Port Calder at dusk on Day 3. Knows the sailing times.", "friendly": "Captain of the big boat. Knows when it leaves." },
+      "greeting": { "voice": "calm", "text": { "crime": "Tide turns at dusk on Day 3, detective. My ship goes with it.", "friendly": "My big boat leaves on Day 3 when the water rises!" } },
       "opinions": [
         {
           "about": "crane",
@@ -365,7 +365,7 @@
     },
     {
       "id": "L2", "type": "surveillance", "cost": 2, "opensAfter": ["L1"],
-      "links": [{ "from": "L1", "take": "number", "use": "is", "story": {"crime": "A dock hand scribbled it on the camera sheet: {a}’s room number {when} is {q}."} }, { "from": "L1", "take": "number", "use": "is", "story": {"crime": "The night watchman remembered it this way: {a}’s room {when} is {q}."} }, { "from": "L1", "take": "number", "use": "is", "ranks": ["chief"], "herring": true, "story": {"crime": "A gull-stained note on the camera desk claimed {a}’s room {when} was {q}. Worth checking, or a waste of your night?"} }],
+      "links": [{ "from": "L1", "take": "number", "use": "is", "story": {"crime": "Bharath, a dock hand, scribbled it on the camera sheet: {a}’s room number {when} is {q}."} }, { "from": "L1", "take": "number", "use": "is", "story": {"crime": "The night watchman remembered it this way: {a}’s room {when} is {q}."} }, { "from": "L1", "take": "number", "use": "is", "ranks": ["chief"], "herring": true, "story": {"crime": "A gull-stained note on the camera desk claimed {a}’s room {when} was {q}. Worth checking, or a waste of your night?"} }],
       "title": { "crime": "Dock camera log", "friendly": "The dock cameras" },
       "intro": { "crime": "The dock cameras caught a few people in a few rooms. Nevethitha was on duty. Work out who was in which room each hour. Rooms are numbered along the pier.", "friendly": "The cameras saw some people in some rooms. Work out who was in which room each hour. Rooms are numbered along the pier." },
       "columns": ["vex", "kane", "nevethitha", "tip", "meena", "thenmozhi", "karunakaran"],
@@ -885,7 +885,7 @@
         },
         {
           "id": "J2",
-          "links": [{ "from": "J1", "take": "number", "use": "is", "story": {"crime": "The baker whispered it over the stall: {a} happened at the time numbered {q} (the first time is 1)."} }, { "from": "J1", "take": "number", "use": "is", "story": {"crime": "The lamp man kept time by the cash book: {a} happened at the time numbered {q}."} }],
+          "links": [{ "from": "J1", "take": "number", "use": "is", "story": {"crime": "Umer the baker whispered it over the stall: {a} happened at the time numbered {q} (the first time is 1)."} }, { "from": "J1", "take": "number", "use": "is", "story": {"crime": "The lamp man kept time by the cash book: {a} happened at the time numbered {q}."} }],
           "type": "timeline",
           "cost": 2,
           "opensAfter": [
@@ -1018,7 +1018,7 @@
         },
         {
           "id": "J4",
-          "links": [{ "from": "J3", "take": "number", "use": "apart", "story": {"crime": "The baker saw them from her stall: {a} and {b} stood as many {when} apart as {q}."} }, { "from": "J3", "take": "number", "use": "is", "story": {"crime": "The watch captain counted whispers, not men: {a} stood in the {when} numbered {q}."} }, { "from": "J1", "take": "number", "use": "is", "story": {"crime": "A scrap of the watch captain’s rota said {a} stood in the {when} numbered {q}."} }],
+          "links": [{ "from": "J3", "take": "number", "use": "apart", "story": {"crime": "Umer the baker saw them from the stall: {a} and {b} stood as many {when} apart as {q}."} }, { "from": "J3", "take": "number", "use": "is", "story": {"crime": "The watch captain counted whispers, not men: {a} stood in the {when} numbered {q}."} }, { "from": "J1", "take": "number", "use": "is", "story": {"crime": "A scrap of the watch captain’s rota said {a} stood in the {when} numbered {q}."} }],
           "type": "stakeout",
           "cost": 2,
           "opensAfter": ["J3"],
@@ -1378,7 +1378,7 @@
       "part": {
         "title": "The inside leak",
         "question": "Who is really behind it, and who is helping from inside?",
-        "reveal": "The money was due to leave on a pilot-guided ship by a quiet channel, and someone close to the police was passing your plans to Crane."
+        "reveal": "The money was due to leave on a ship that sails at dusk by a quiet channel, and someone close to the police was passing your plans to Crane."
       }
     }
   },
