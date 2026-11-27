@@ -1,8 +1,12 @@
+import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
+import caseJson from '../cases/case-01-harbor-ledger.json';
+import type { CaseFile } from '../src/game/caseTypes';
+import { Worker } from '../src/town/workers';
 import townJson from '../cases/case-01-harbor-ledger/town.json';
-import { pieceUrl, SHOPS, shopParts, shopProps, shopSolids, shopWorkers } from '../src/town/shops';
+import { pieceUrl, shade, SHOPS, shopParts, shopProps, shopSolids, shopWorkers } from '../src/town/shops';
 import { ACTIONS, OUTFITS, PERIOD, workerPose } from '../src/town/workerActions';
-import { PLAYER_RADIUS, step } from '../src/town/townLogic';
+import { PLAYER_RADIUS, step, validateTown } from '../src/town/townLogic';
 import { TRADES, type Building, type Town } from '../src/town/townTypes';
 
 const town = townJson as unknown as Town;
@@ -94,5 +98,64 @@ describe('worker actions', () => {
     expect(workerPose('pour', 0).beat).toBeCloseTo(0);
     for (const a of ['sip', 'sew', 'mend'] as const) expect(workerPose(a, 0).stance).toBe('sit');
     expect(workerPose('repair', 0).stance).toBe('squat');
+  });
+});
+
+describe('shop details', () => {
+  const fish = shops.find((s) => s.trade === 'fish')!;
+  const harbor = shops.find((s) => s.trade === 'harbor')!;
+
+  it('gives the fish hall a flat roof with a parapet, and skips a piece with no picture', () => {
+    const parts = shopParts(fish, SHOPS.fish!, () => undefined);
+    expect(parts.some((p) => p.shape === 'gable')).toBe(false);
+    expect(parts.some((p) => p.shape === 'panel')).toBe(false);
+  });
+
+  it('uses the cut pieces and the picture\'s trim by default', () => {
+    const parts = shopParts({ ...fish, trim: undefined }, SHOPS.fish!);
+    expect(parts.filter((p) => p.shape === 'panel').every((p) => typeof p.tex === 'string')).toBe(true);
+    expect(parts.some((p) => p.color === parseInt(SHOPS.fish!.colours.trim.slice(1), 16))).toBe(true);
+  });
+
+  it('flies a flapping flag over the harbor office', () => {
+    expect(shopProps(harbor).filter((p) => p.anim === 'flap')).toHaveLength(1);
+    expect(shopProps({ ...harbor, trade: undefined })).toEqual([]);
+    expect(shopWorkers({ ...harbor, trade: undefined })).toEqual([]);
+    expect(shopSolids({ ...harbor, trade: undefined })).toEqual([]);
+  });
+
+  it('darkens a colour without leaving 0 to 255', () => {
+    expect(shade(0xff8000, 0.5)).toBe(0x804000);
+    expect(shade(0x808080, 3)).toBe(0xffffff);
+  });
+
+  it('checks a shop in the town file', () => {
+    const cf = caseJson as unknown as CaseFile;
+    const withShop = (b: Partial<Building>) => validateTown({ ...town, buildings: [{ ...shops[0], ...b }, ...town.buildings.filter((x) => x !== shops[0])] }, cf);
+    expect(withShop({})).toEqual([]);
+    expect(withShop({ trade: 'bakery' as never })).toContain(`Building ${shops[0].id} has unknown trade bakery`);
+    expect(withShop({ style: 'shed' }).join()).toContain('takes no style');
+  });
+});
+
+describe('shop workers', () => {
+  it('builds every worker, poses them through their loop and lets them go', () => {
+    const outfit: Record<string, keyof typeof OUTFITS> = { pour: 'teaMaker', sip: 'customer', repair: 'mechanic', gut: 'fishSeller', arrange: 'florist', pin: 'clerk', mend: 'netMender', sew: 'tailor' };
+    for (const a of ACTIONS) {
+      const w = new Worker(a, outfit[a], 1);
+      expect(w.materials.length).toBeGreaterThan(5);
+      for (const t of [0, PERIOD[a] * 0.3, PERIOD[a] * 0.5]) w.update(t);
+      expect(w.root.children.length).toBeGreaterThan(0);
+      w.dispose();
+    }
+  });
+
+  it('shows the stream of tea only while it is pulled high', () => {
+    const w = new Worker('pour', 'teaMaker', 0);
+    const stream = w.root.children.find((c) => (c as THREE.Mesh).material instanceof THREE.MeshBasicMaterial && (c as THREE.Mesh).geometry instanceof THREE.CylinderGeometry)!;
+    w.update(0);
+    expect(stream.visible).toBe(false);
+    w.update(PERIOD.pour / 2);
+    expect(stream.visible).toBe(true);
   });
 });

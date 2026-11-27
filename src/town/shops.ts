@@ -315,7 +315,8 @@ export function shopProps(b: Building): Part[] {
   const props = scene.props.map((p) => place.part({ ...p, at: [p.at[0], p.at[1], front + p.at[2]] }));
   if (b.trade === 'harbor') {
     // the harbour flag on the ridge, flapping
-    const ridge = b.height + (SHOPS.harbor?.rise ?? 1) * (b.height / (SHOPS.harbor?.height ?? b.height)) + 0.2;
+    const facts = SHOPS.harbor!;
+    const ridge = b.height + facts.rise * (b.height / facts.height) + 0.2;
     props.push(place.part({ shape: 'cyl', at: [b.size[0] / 2 - 0.8, ridge - 0.3, 0], size: [0.05, 1.6, 0], color: DARK_WOOD }));
     props.push(place.part({ shape: 'box', at: [b.size[0] / 2 - 0.4, ridge + 0.8, 0], size: [0.75, 0.42, 0.03], color: 0x2a3a6a, anim: 'flap' }));
   }
