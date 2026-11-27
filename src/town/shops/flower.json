@@ -1,0 +1,68 @@
+{
+  "trade": "flower",
+  "picture": "assets/shops/flower-shop.webp",
+  "width": 6.5,
+  "height": 3.3,
+  "roof": "gable",
+  "rise": 0.8,
+  "colours": {
+    "wall": "#e9c4a2",
+    "roof": "#a8705d",
+    "trim": "#845e44",
+    "awning": "#6c7d6c",
+    "stone": "#897567"
+  },
+  "awnings": [
+    {
+      "x": -0.95,
+      "y": 2.5,
+      "w": 4.35,
+      "h": 0.8,
+      "colour": "#6c7d6c"
+    }
+  ],
+  "pieces": [
+    {
+      "id": "sign",
+      "x": 3.393,
+      "y": 2.075,
+      "w": 0.885,
+      "h": 0.975,
+      "mode": "cut",
+      "glow": false
+    },
+    {
+      "id": "window",
+      "x": -1.788,
+      "y": 0.975,
+      "w": 1.925,
+      "h": 1.55,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "bunches",
+      "x": 0.013,
+      "y": 1.525,
+      "w": 1.575,
+      "h": 0.89,
+      "mode": "soft",
+      "glow": false
+    },
+    {
+      "id": "door",
+      "x": 1.91,
+      "y": 0.315,
+      "w": 1.15,
+      "h": 2.25,
+      "mode": "hard",
+      "glow": false
+    }
+  ],
+  "chimney": {
+    "x": -2.575,
+    "y": 3.925,
+    "w": 0.6,
+    "h": 0.69
+  }
+}

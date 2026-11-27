@@ -1,0 +1,62 @@
+{
+  "trade": "tea",
+  "picture": "assets/shops/tea-stall.webp",
+  "width": 5.0,
+  "height": 3.13,
+  "roof": "gable",
+  "rise": 0.75,
+  "colours": {
+    "wall": "#f2a962",
+    "roof": "#7d8895",
+    "trim": "#946c59",
+    "awning": "#d36859",
+    "stone": "#97795d"
+  },
+  "awnings": [
+    {
+      "x": -0.838,
+      "y": 2.346,
+      "w": 3.211,
+      "h": 0.57,
+      "colour": "#d36859"
+    }
+  ],
+  "pieces": [
+    {
+      "id": "sign",
+      "x": -2.939,
+      "y": 1.974,
+      "w": 0.833,
+      "h": 0.943,
+      "mode": "cut",
+      "glow": false
+    },
+    {
+      "id": "stall",
+      "x": -0.827,
+      "y": 1.303,
+      "w": 2.355,
+      "h": 1.088,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "window",
+      "x": 1.572,
+      "y": 1.636,
+      "w": 1.066,
+      "h": 1.184,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "waves",
+      "x": -0.044,
+      "y": 0.921,
+      "w": 4.649,
+      "h": 0.351,
+      "mode": "soft",
+      "glow": false
+    }
+  ]
+}

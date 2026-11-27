@@ -2,14 +2,27 @@ import type { Building, BuildingStyle, Vec2 } from './townTypes';
 
 /** One solid piece of a building or of the sea line, in metres. Colours are 0xRRGGBB. The scene turns each into a mesh. */
 export interface Part {
-  /** box: size is [x, y, z]. hip: a four-sided roof over [x, y, z]. gable: a ridge along x, size [length, height, width]. dome: half a ball of radius size[0]. cyl: radius size[0], height size[1]. */
-  shape: 'box' | 'hip' | 'gable' | 'dome' | 'cyl';
+  /**
+   * box: size is [x, y, z]. hip: a four-sided roof over [x, y, z]. gable: a ridge along x, size [length, height, width].
+   * dome: half a ball of radius size[0]. cyl: radius size[0], height size[1]. ball: a ball of radius size[0], squashed to
+   * size[1] high when that is given. ring: a hoop of radius size[0] and thickness size[1], standing up and facing south.
+   * panel: a flat picture size[0] wide and size[1] high, facing south, painted with `tex`.
+   */
+  shape: 'box' | 'hip' | 'gable' | 'dome' | 'cyl' | 'ball' | 'ring' | 'panel';
   /** The middle of the bottom of the piece, relative to the middle of the building's footprint on the ground. */
   at: [number, number, number];
   size: [number, number, number];
   color: number;
   /** Lit like a window: it glows at dusk. */
   glow?: boolean;
+  /** Turned about its own middle, in radians: tilt leans its south end down, turn swings it round (as a heading). */
+  tilt?: number;
+  turn?: number;
+  /** A panel's picture (an image URL), and how its edge is drawn: cut away round a shape, or faded. */
+  tex?: string;
+  edge?: 'hard' | 'soft' | 'cut';
+  /** Moves by itself: a wheel that spins on its axle, or a flag that flaps. */
+  anim?: 'spin' | 'flap';
 }
 
 /** The colours each style trims itself in when the town file gives none: cornices, pillars, awnings. */

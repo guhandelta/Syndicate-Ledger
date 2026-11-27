@@ -1,0 +1,68 @@
+{
+  "trade": "tailor",
+  "picture": "assets/shops/tailor.webp",
+  "width": 6.5,
+  "height": 3.31,
+  "roof": "gable",
+  "rise": 0.9,
+  "colours": {
+    "wall": "#b9b18e",
+    "roof": "#986b59",
+    "trim": "#725b4a",
+    "awning": "#6e7791",
+    "stone": "#826e60"
+  },
+  "awnings": [
+    {
+      "x": 1.477,
+      "y": 2.297,
+      "w": 3.134,
+      "h": 0.735,
+      "colour": "#6e7791"
+    }
+  ],
+  "pieces": [
+    {
+      "id": "sign",
+      "x": 3.743,
+      "y": 2.004,
+      "w": 0.884,
+      "h": 1.31,
+      "mode": "cut",
+      "glow": false
+    },
+    {
+      "id": "display",
+      "x": 1.413,
+      "y": 1.079,
+      "w": 2.903,
+      "h": 1.413,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "window",
+      "x": -2.299,
+      "y": 1.233,
+      "w": 0.945,
+      "h": 1.351,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "door",
+      "x": -0.773,
+      "y": 0.257,
+      "w": 1.285,
+      "h": 2.482,
+      "mode": "hard",
+      "glow": false
+    }
+  ],
+  "chimney": {
+    "x": -2.672,
+    "y": 3.905,
+    "w": 0.642,
+    "h": 0.745
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "trade": "cycle",
+  "picture": "assets/shops/cycle-repair.webp",
+  "width": 7.5,
+  "height": 3.47,
+  "roof": "gable",
+  "rise": 0.8,
+  "colours": {
+    "wall": "#768779",
+    "roof": "#837f7d",
+    "trim": "#8a6047",
+    "awning": "#e0a75b",
+    "stone": "#5a514a"
+  },
+  "awnings": [
+    {
+      "x": 1.601,
+      "y": 2.482,
+      "w": 4.145,
+      "h": 0.611,
+      "colour": "#e0a75b"
+    }
+  ],
+  "pieces": [
+    {
+      "id": "sign",
+      "x": -1.105,
+      "y": 1.827,
+      "w": 0.873,
+      "h": 1.173,
+      "mode": "cut",
+      "glow": false
+    },
+    {
+      "id": "bay",
+      "x": 1.541,
+      "y": 0.027,
+      "w": 3.764,
+      "h": 2.444,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "window",
+      "x": -2.501,
+      "y": 2.373,
+      "w": 1.265,
+      "h": 1.047,
+      "mode": "hard",
+      "glow": true
+    },
+    {
+      "id": "door",
+      "x": -2.591,
+      "y": 0.071,
+      "w": 1.391,
+      "h": 2.193,
+      "mode": "hard",
+      "glow": false
+    }
+  ],
+  "chimney": {
+    "x": -2.864,
+    "y": 4.118,
+    "w": 0.355,
+    "h": 0.655
+  }
+}

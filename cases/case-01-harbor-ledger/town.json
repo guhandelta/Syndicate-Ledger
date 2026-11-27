@@ -1,27 +1,31 @@
 {
   "name": "Port Calder harbor",
-  "bounds": [-30, -14, 30, 16],
+  "bounds": [-46, -14, 46, 16],
   "waterline": -11,
   "start": { "at": [4.5, 3], "heading": 0 },
   "buildings": [
-    { "id": "harbor-office", "name": "Harbor office", "at": [-22.5, -6.5], "size": [7.5, 5], "height": 4.2, "color": "#d9c58f", "roof": "#8a3b2c", "doorSide": "south", "style": "madras", "trim": "#7a2e24" },
+    { "id": "harbor-office", "name": "Harbor office", "at": [-22.5, -6.5], "size": [7.5, 5], "height": 3.2, "color": "#6f7f99", "roof": "#3e3c46", "doorSide": "south", "trade": "harbor", "trim": "#956143" },
     { "id": "ice-house", "name": "Ice house", "at": [-13.5, -6.5], "size": [7.5, 5], "height": 3.6, "color": "#c9d3d8", "roof": "#5d7f95", "doorSide": "south", "style": "shed", "trim": "#8a9096" },
     { "id": "warehouse-9", "name": "Warehouse 9", "at": [-4.5, -6.5], "size": [7.5, 5], "height": 5.2, "color": "#a35a40", "roof": "#4a2f26", "doorSide": "south", "style": "mill", "trim": "#3b2a24" },
-    { "id": "fish-hall", "name": "Fish hall", "at": [4.5, -6.5], "size": [7.5, 5], "height": 4, "color": "#d8c58a", "roof": "#4f6a5c", "doorSide": "south", "style": "shed", "trim": "#6b5a3a" },
-    { "id": "net-loft", "name": "Net loft", "at": [13.5, -6.5], "size": [7.5, 5], "height": 4.6, "color": "#f0e8d2", "roof": "#a8553a", "doorSide": "south", "style": "bungalow", "trim": "#2f7a6a" },
+    { "id": "fish-hall", "name": "Fish hall", "at": [4.5, -6.5], "size": [7.5, 5], "height": 4, "color": "#dcc9aa", "roof": "#6e5644", "doorSide": "south", "trade": "fish", "trim": "#8d5f47" },
+    { "id": "net-loft", "name": "Net loft", "at": [13.5, -6.5], "size": [7.5, 5], "height": 3.3, "color": "#7e5a68", "roof": "#45434f", "doorSide": "south", "trade": "nets", "trim": "#825e4a" },
     { "id": "boathouse", "name": "Boathouse", "at": [22.5, -6.5], "size": [7.5, 5], "height": 3.4, "color": "#6f9a90", "roof": "#8a4a34", "doorSide": "south", "style": "shed", "trim": "#f1ead8" },
     { "id": "crane-shipping", "name": "Crane Shipping", "at": [-16, 11.5], "size": [10, 5], "height": 5, "color": "#8e4a38", "roof": "#3a3f4a", "doorSide": "north", "style": "mill", "trim": "#3b2a24" },
+    { "id": "tailor", "name": "Tailor", "at": [-32, -6.5], "size": [6.5, 4.5], "height": 3.3, "color": "#a9b68e", "roof": "#a8603e", "doorSide": "south", "trade": "tailor", "trim": "#725b4a" },
+    { "id": "flower-shop", "name": "Flower shop", "at": [-40.5, -6.5], "size": [6.5, 4.5], "height": 3.3, "color": "#e9c9a4", "roof": "#a8705d", "doorSide": "south", "trade": "flower", "trim": "#845e44" },
+    { "id": "tea-stall", "name": "Tea stall", "at": [30.5, -6.5], "size": [5, 3.5], "height": 3.1, "color": "#eaa95e", "roof": "#6e7a88", "doorSide": "south", "trade": "tea", "trim": "#946c59" },
+    { "id": "cycle-repair", "name": "Cycle repair", "at": [38.5, -6.5], "size": [7.5, 5], "height": 3.5, "color": "#7fa596", "roof": "#7a6e66", "doorSide": "south", "trade": "cycle", "trim": "#8a6047" },
     { "id": "detective-office", "name": "Detective's office", "at": [14, 11.5], "size": [8, 5], "height": 4, "color": "#ece3c8", "roof": "#9a4e34", "doorSide": "north", "style": "bungalow", "trim": "#6e4a2c" }
   ],
   "doors": [
-    { "id": "fish-hall", "at": [4.5, -2.9], "label": "Fish hall", "lead": "L1", "leadFor": { "junior": "J1" } },
+    { "id": "fish-hall", "at": [3.85, -2.9], "label": "Fish hall", "lead": "L1", "leadFor": { "junior": "J1" } },
     { "id": "camera-post", "at": [9, 0.8], "label": "Dock camera post", "lead": "L2", "leadFor": { "junior": "J2" } },
-    { "id": "net-loft", "at": [13.5, -2.9], "label": "Tip's lock-up in the Net loft", "lead": "L3", "leadFor": { "junior": "J3" } },
+    { "id": "net-loft", "at": [15.6, -2.9], "label": "Tip's lock-up in the Net loft", "lead": "L3", "leadFor": { "junior": "J3" } },
     { "id": "warehouse-9", "at": [-4.5, -2.9], "label": "Warehouse 9", "lead": "L4", "leadFor": { "junior": "J5" } },
     { "id": "ice-house", "at": [-13.5, -2.9], "label": "The Ice house", "leadFor": { "junior": "J6" } },
     { "id": "boathouse", "at": [22.5, -2.9], "label": "The Boathouse watch post", "leadFor": { "junior": "J4" } },
     { "id": "office", "at": [14, 7.9], "label": "Your office", "goto": "board" },
-    { "id": "police", "at": [-22.5, -2.9], "label": "Harbor police desk", "goto": "accuse" }
+    { "id": "police", "at": [-22.85, -2.9], "label": "Harbor police desk", "goto": "accuse" }
   ],
   "npcs": [
     { "cast": "meena", "at": [1.6, -1.4] },
@@ -44,11 +48,12 @@
     { "kind": "lamp", "at": [0, 7.4] },
     { "kind": "lamp", "at": [12.4, 5] },
     { "kind": "lamp", "at": [22, 2] },
+    { "kind": "lamp", "at": [34.5, 2] },
+    { "kind": "lamp", "at": [-36.2, 2] },
     { "kind": "camera", "at": [9, 2] },
     { "kind": "crate", "at": [-7.6, -3.3] },
     { "kind": "crate", "at": [-1.2, -3.3] },
     { "kind": "crate", "at": [-8.4, -3.2] },
-    { "kind": "crate", "at": [7.6, -3.3] },
     { "kind": "crate", "at": [-27, 5] },
     { "kind": "crate", "at": [26.5, 8] },
     { "kind": "boat", "at": [-10, -13.5] },
@@ -60,7 +65,11 @@
     { "kind": "bollard", "at": [0, -10.5] },
     { "kind": "bollard", "at": [9, -10.5] },
     { "kind": "bollard", "at": [18, -10.5] },
-    { "kind": "bollard", "at": [27, -10.5] }
+    { "kind": "bollard", "at": [27, -10.5] },
+    { "kind": "bollard", "at": [36, -10.5] },
+    { "kind": "bollard", "at": [45, -10.5] },
+    { "kind": "bollard", "at": [-36, -10.5] },
+    { "kind": "bollard", "at": [-45, -10.5] }
   ],
   "cameras": {
     "wide": { "position": [0, 30, 34], "target": [0, 0, -2] },

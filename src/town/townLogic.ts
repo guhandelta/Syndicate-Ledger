@@ -1,6 +1,6 @@
 import { PRESETS, type CaseFile, type Lead, type Preset } from '../game/caseTypes';
 import { caseForRank } from '../game/rankStory';
-import { BUILDING_STYLES, type Building, type CameraKind, type CameraSettings, type Door, type Npc, type Shot, type Town, type Vec2 } from './townTypes';
+import { BUILDING_STYLES, TRADES, type Building, type CameraKind, type CameraSettings, type Door, type Npc, type Shot, type Town, type Vec2 } from './townTypes';
 
 /** Pure town rules: movement, collisions, who is nearby and where the camera goes. No rendering here. */
 
@@ -258,6 +258,8 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
   }
   for (const b of town.buildings) {
     if (b.style && !BUILDING_STYLES.includes(b.style)) errors.push(`Building ${b.id} has unknown style ${b.style}`);
+    if (b.trade && !TRADES.includes(b.trade)) errors.push(`Building ${b.id} has unknown trade ${b.trade}`);
+    if (b.trade && b.style) errors.push(`Building ${b.id} is a shop built from its picture, so it takes no style`);
     for (const c of [b.color, b.roof, b.trim]) if (c !== undefined && !/^#[0-9a-f]{6}$/i.test(c)) errors.push(`Building ${b.id} has a colour that is not #rrggbb: ${c}`);
   }
   if (town.time) {
