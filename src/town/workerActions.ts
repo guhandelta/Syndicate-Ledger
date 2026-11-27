@@ -3,11 +3,11 @@
  * Every action is a loop: the pose at t and at t + its period are the same.
  */
 
-export const ACTIONS = ['pour', 'sip', 'repair', 'gut', 'arrange', 'pin', 'mend', 'sew'] as const;
+export const ACTIONS = ['pour', 'sip', 'repair', 'gut', 'arrange', 'pin', 'mend', 'sew', 'pump', 'measure', 'press', 'coil'] as const;
 export type Action = (typeof ACTIONS)[number];
 
 /** Seconds each action takes before it starts again. */
-export const PERIOD: Record<Action, number> = { pour: 3, sip: 6, repair: 2, gut: 1.1, arrange: 4.5, pin: 3.2, mend: 1.4, sew: 2.2 };
+export const PERIOD: Record<Action, number> = { pour: 3, sip: 6, repair: 2, gut: 1.1, arrange: 4.5, pin: 3.2, mend: 1.4, sew: 2.2, pump: 1.2, measure: 5, press: 2.4, coil: 1.8 };
 
 /** How a worker holds themselves (radians, and 0 to 1 amounts). Arms: fwd raises the arm forward, side swings it out, elbow bends the forearm up. */
 export interface Pose {
@@ -116,6 +116,37 @@ export function workerPose(action: Action, t: number, seed = 0): Pose {
       const pull = bump(u, 0.15, 0.75);
       return { ...base, stance: 'sit', lean: 0.15 + breath, armL: { fwd: 0.85, side: 0, elbow: 0.95 }, armR: { fwd: 0.85 + 0.55 * pull, side: 0.1 + 0.55 * pull, elbow: 0.95 - 0.65 * pull }, pitch: 0.4, yaw: -0.2 * pull, beat: pull };
     }
+    case 'pump': {
+      // squatting over the floor pump, both hands on the handle: a hard push down, a quick pull up
+      const down = u < 0.55 ? u / 0.55 : 1 - (u - 0.55) / 0.45;
+      const arm = { fwd: 0.95 - 0.35 * down, side: 0.02, elbow: 1.0 - 0.7 * down };
+      return { ...base, stance: 'squat', armL: arm, armR: arm, lean: 0.35 + 0.15 * down + breath, pitch: 0.45, yaw: 0, beat: down };
+    }
+    case 'measure': {
+      // the tape held wide across the dummy's shoulders, then run down its back, then a note of it
+      const across = bump(u, 0.05, 0.45);
+      const down = bump(u, 0.45, 0.85);
+      const arm = { fwd: 1.25 + 0.2 * across - 0.45 * down, side: 0.15 + 0.45 * across, elbow: 0.45 };
+      return { ...base, armL: arm, armR: arm, lean: 0.1 + 0.2 * down + breath, pitch: 0.15 + 0.3 * down, yaw: 0.05 * wave, beat: across };
+    }
+    case 'press': {
+      // the iron slides out along the board and back, the free hand smoothing the cloth
+      const slide = 0.5 - 0.5 * Math.cos(u * TAU);
+      return { ...base, lean: 0.3 + 0.1 * slide + breath, armR: { fwd: 0.75 + 0.55 * slide, side: 0.1, elbow: 0.95 - 0.6 * slide }, armL: { fwd: 0.9, side: -0.15, elbow: 0.7 }, pitch: 0.45, yaw: -0.1 * slide, beat: slide };
+    }
+    case 'coil': {
+      // hand over hand, laying loop after loop of rope down onto the coil at their feet
+      const c = Math.cos(u * TAU);
+      return {
+        ...base,
+        lean: 0.4 + breath,
+        armR: { fwd: 0.9 + 0.35 * wave, side: 0.2 + 0.2 * c, elbow: 0.6 + 0.2 * c },
+        armL: { fwd: 0.8, side: 0.05, elbow: 1.1 },
+        pitch: 0.55,
+        yaw: 0.15 * c,
+        beat: u,
+      };
+    }
   }
 }
 
@@ -129,6 +160,10 @@ export const OUTFITS = {
   clerk: { skin: 0x8a5e42, top: 0xe8e4d8, bottom: 0x2c3038, hair: 0x22201c, glasses: true },
   netMender: { skin: 0x7a5038, top: 0x6a7a8a, bottom: 0x6a7a8a, hair: 0x8a8682, skirt: true, scarf: 0xd0c8b0 },
   tailor: { skin: 0x9a6a48, top: 0xc9b99a, bottom: 0x4a4440, hair: 0x5a5650, glasses: true, tape: 0xe0c040 },
+  bikeHand: { skin: 0x8a5a3c, top: 0x3a4a5a, bottom: 0x2c3038, hair: 0x141210, cap: 0x8a3a2c },
+  suitMaker: { skin: 0x7a5038, top: 0xe8e4d8, bottom: 0x2a3450, hair: 0x22201c, tape: 0xe0c040, glasses: true },
+  presser: { skin: 0x9a6848, top: 0x8a5a7a, bottom: 0x8a5a7a, hair: 0x141210, skirt: true, apron: 0xd8d0c0 },
+  chandler: { skin: 0x7a4e34, top: 0x2a3a5a, bottom: 0x5a5048, hair: 0x6a6662, cap: 0x2a3a5a },
 } as const;
 export type OutfitId = keyof typeof OUTFITS;
 export interface Outfit {

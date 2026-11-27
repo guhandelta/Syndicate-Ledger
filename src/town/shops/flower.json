@@ -1,68 +1,74 @@
 {
   "trade": "flower",
-  "picture": "assets/shops/flower-shop.webp",
-  "width": 6.5,
-  "height": 3.3,
-  "roof": "gable",
-  "rise": 0.8,
-  "colours": {
-    "wall": "#e9c4a2",
-    "roof": "#a8705d",
-    "trim": "#845e44",
-    "awning": "#6c7d6c",
-    "stone": "#897567"
+  "name": "Flower shop",
+  "picture": "assets/shops/flower.webp",
+  "width": 5.337,
+  "depth": 2.961,
+  "walls": {
+    "front": {
+      "w": 5.337,
+      "h": 2.709,
+      "left": 2.709,
+      "right": 2.709
+    },
+    "east": {
+      "w": 2.943,
+      "h": 3.789,
+      "left": 2.619,
+      "right": 2.619
+    },
+    "back": {
+      "w": 5.328,
+      "h": 2.727,
+      "left": 2.727,
+      "right": 2.727
+    },
+    "west": {
+      "w": 2.979,
+      "h": 3.852,
+      "left": 2.727,
+      "right": 2.727
+    }
   },
-  "awnings": [
-    {
-      "x": -0.95,
-      "y": 2.5,
-      "w": 4.35,
-      "h": 0.8,
-      "colour": "#6c7d6c"
+  "colours": {
+    "wall": "#e7d5c4",
+    "roof": "#e79074",
+    "trim": "#65472f"
+  },
+  "door": {
+    "x": 0.022,
+    "w": 1.62
+  },
+  "roof": {
+    "kind": "gable",
+    "eave": 2.709,
+    "ridge": 3.821,
+    "front": {
+      "w": 5.355,
+      "x": -0.135
+    },
+    "back": {
+      "w": 5.355,
+      "x": -0.103
     }
-  ],
-  "pieces": [
-    {
-      "id": "sign",
-      "x": 3.393,
-      "y": 2.075,
-      "w": 0.885,
-      "h": 0.975,
-      "mode": "cut",
-      "glow": false
-    },
-    {
-      "id": "window",
-      "x": -1.788,
-      "y": 0.975,
-      "w": 1.925,
-      "h": 1.55,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "bunches",
-      "x": 0.013,
-      "y": 1.525,
-      "w": 1.575,
-      "h": 0.89,
-      "mode": "soft",
-      "glow": false
-    },
-    {
-      "id": "door",
-      "x": 1.91,
-      "y": 0.315,
-      "w": 1.15,
-      "h": 2.25,
-      "mode": "hard",
-      "glow": false
-    }
-  ],
+  },
+  "awning": {
+    "x": 0.004,
+    "y": 2.097,
+    "w": 4.77,
+    "h": 0.63
+  },
+  "sign": {
+    "x": 2.938,
+    "y": 1.629,
+    "w": 0.522,
+    "h": 0.594
+  },
   "chimney": {
-    "x": -2.575,
-    "y": 3.925,
-    "w": 0.6,
-    "h": 0.69
+    "x": -2.025,
+    "z": 0.009,
+    "w": 0.585,
+    "top": 4.257,
+    "colour": "#b1a08d"
   }
 }

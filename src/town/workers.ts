@@ -174,6 +174,21 @@ export class Worker {
         put(L, new THREE.BoxGeometry(0.3, 0.02, 0.22), 0xc8b48a, -0.05, -0.04, 0.08);
         put(R, new THREE.BoxGeometry(0.008, 0.08, 0.008), 0xe0e0e0, 0, -0.06);
         break;
+      case 'pump':
+        // the pump's T-handle across both hands
+        put(R, new THREE.BoxGeometry(0.5, 0.04, 0.04), 0x2a2620, 0.24, -0.05);
+        break;
+      case 'measure':
+        // the tape stretched between the two hands
+        put(R, new THREE.BoxGeometry(0.5, 0.012, 0.03), 0xe0c040, 0.24, -0.06);
+        break;
+      case 'press':
+        put(R, new THREE.BoxGeometry(0.12, 0.08, 0.22), 0x9aa0a8, 0, -0.08, 0.04);
+        break;
+      case 'coil':
+        put(R, new THREE.CylinderGeometry(0.025, 0.025, 0.4, 5), 0xc8a86a, 0, -0.2);
+        put(L, new THREE.TorusGeometry(0.14, 0.03, 4, 12), 0xc8a86a, 0, -0.12, 0.04);
+        break;
     }
   }
 

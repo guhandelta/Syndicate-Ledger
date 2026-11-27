@@ -1,68 +1,60 @@
 {
   "trade": "cycle",
-  "picture": "assets/shops/cycle-repair.webp",
-  "width": 7.5,
-  "height": 3.47,
-  "roof": "gable",
-  "rise": 0.8,
-  "colours": {
-    "wall": "#768779",
-    "roof": "#837f7d",
-    "trim": "#8a6047",
-    "awning": "#e0a75b",
-    "stone": "#5a514a"
+  "name": "Cycle repair",
+  "picture": "assets/shops/cycle.webp",
+  "width": 6.282,
+  "depth": 3.487,
+  "walls": {
+    "front": {
+      "w": 6.282,
+      "h": 4.149,
+      "left": 4.149,
+      "right": 4.149
+    },
+    "east": {
+      "w": 3.519,
+      "h": 4.293,
+      "left": 4.293,
+      "right": 3.753
+    },
+    "back": {
+      "w": 6.363,
+      "h": 4.113,
+      "left": 4.113,
+      "right": 4.113
+    },
+    "west": {
+      "w": 3.456,
+      "h": 4.311,
+      "left": 3.573,
+      "right": 4.311
+    }
   },
-  "awnings": [
-    {
-      "x": 1.601,
-      "y": 2.482,
-      "w": 4.145,
-      "h": 0.611,
-      "colour": "#e0a75b"
-    }
-  ],
-  "pieces": [
-    {
-      "id": "sign",
-      "x": -1.105,
-      "y": 1.827,
-      "w": 0.873,
-      "h": 1.173,
-      "mode": "cut",
-      "glow": false
-    },
-    {
-      "id": "bay",
-      "x": 1.541,
-      "y": 0.027,
-      "w": 3.764,
-      "h": 2.444,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "window",
-      "x": -2.501,
-      "y": 2.373,
-      "w": 1.265,
-      "h": 1.047,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "door",
-      "x": -2.591,
-      "y": 0.071,
-      "w": 1.391,
-      "h": 2.193,
-      "mode": "hard",
-      "glow": false
-    }
-  ],
+  "colours": {
+    "wall": "#778377",
+    "roof": "#555555",
+    "trim": "#9d6838"
+  },
+  "door": {
+    "x": 0.463,
+    "w": 2.025
+  },
+  "roof": {
+    "kind": "shed",
+    "front": 4.302,
+    "back": 3.663
+  },
+  "awning": {
+    "x": 0.463,
+    "y": 2.682,
+    "w": 4.851,
+    "h": 0.576
+  },
   "chimney": {
-    "x": -2.864,
-    "y": 4.118,
-    "w": 0.355,
-    "h": 0.655
+    "x": 2.511,
+    "z": -1.357,
+    "w": 0.54,
+    "top": 4.68,
+    "colour": "#3e3731"
   }
 }

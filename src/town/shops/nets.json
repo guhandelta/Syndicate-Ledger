@@ -1,77 +1,52 @@
 {
   "trade": "nets",
-  "picture": "assets/shops/net-loft.webp",
-  "width": 7.5,
-  "height": 3.17,
-  "roof": "gable",
-  "rise": 1.0,
-  "colours": {
-    "wall": "#856469",
-    "roof": "#5b5965",
-    "trim": "#825e5e",
-    "awning": "#e19b5c",
-    "stone": "#736868"
+  "name": "Net loft",
+  "picture": "assets/shops/nets.webp",
+  "width": 6.588,
+  "depth": 4.806,
+  "walls": {
+    "front": {
+      "w": 6.588,
+      "h": 3.87,
+      "left": 3.87,
+      "right": 3.87
+    },
+    "east": {
+      "w": 4.536,
+      "h": 3.87,
+      "left": 3.87,
+      "right": 3.87
+    },
+    "back": {
+      "w": 6.669,
+      "h": 3.924,
+      "left": 3.924,
+      "right": 3.924
+    },
+    "west": {
+      "w": 5.076,
+      "h": 3.924,
+      "left": 3.924,
+      "right": 3.924
+    }
   },
-  "awnings": [
-    {
-      "x": -0.619,
-      "y": 2.597,
-      "w": 4.337,
-      "h": 0.572,
-      "colour": "#e19b5c"
-    }
-  ],
-  "pieces": [
-    {
-      "id": "sign",
-      "x": 4.267,
-      "y": 2.177,
-      "w": 0.916,
-      "h": 1.15,
-      "mode": "cut",
-      "glow": false
-    },
-    {
-      "id": "nets",
-      "x": -0.686,
-      "y": 1.302,
-      "w": 3.444,
-      "h": 1.15,
-      "mode": "soft",
-      "glow": false
-    },
-    {
-      "id": "window",
-      "x": -2.947,
-      "y": 1.272,
-      "w": 0.928,
-      "h": 1.179,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "window2",
-      "x": 3.248,
-      "y": 1.272,
-      "w": 0.922,
-      "h": 1.179,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "door",
-      "x": 2.087,
-      "y": 0.309,
-      "w": 1.307,
-      "h": 2.335,
-      "mode": "hard",
-      "glow": false
-    }
-  ],
-  "chimney": {
-    "x": -2.86,
-    "y": 4.027,
-    "w": 0.73,
-    "h": 1.021
+  "colours": {
+    "wall": "#705559",
+    "roof": "#63524f",
+    "trim": "#6b5052"
+  },
+  "door": {
+    "x": 0.229,
+    "w": 2.187
+  },
+  "roof": {
+    "kind": "flat",
+    "height": 3.87
+  },
+  "sign": {
+    "x": 3.514,
+    "y": 2.16,
+    "w": 0.603,
+    "h": 0.81
   }
 }

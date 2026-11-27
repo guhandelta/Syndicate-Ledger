@@ -1,77 +1,59 @@
 {
   "trade": "fish",
-  "picture": "assets/shops/fish-hall.webp",
-  "width": 7.5,
-  "height": 4.12,
-  "roof": "flat",
-  "rise": 0.3,
-  "colours": {
-    "wall": "#b19583",
-    "roof": "#87624d",
-    "trim": "#8d5f47",
-    "awning": "#8fa085",
-    "stone": "#706555"
+  "name": "Fish hall",
+  "picture": "assets/shops/fish.webp",
+  "width": 6.669,
+  "depth": 4.316,
+  "walls": {
+    "front": {
+      "w": 6.669,
+      "h": 3.501,
+      "left": 3.501,
+      "right": 3.501
+    },
+    "east": {
+      "w": 4.347,
+      "h": 3.501,
+      "left": 3.501,
+      "right": 3.501
+    },
+    "back": {
+      "w": 6.651,
+      "h": 3.51,
+      "left": 3.51,
+      "right": 3.51
+    },
+    "west": {
+      "w": 4.284,
+      "h": 3.51,
+      "left": 3.51,
+      "right": 3.51
+    }
   },
-  "awnings": [
-    {
-      "x": 0.0,
-      "y": 2.437,
-      "w": 7.608,
-      "h": 0.894,
-      "colour": "#8fa085"
-    }
-  ],
-  "pieces": [
-    {
-      "id": "sign",
-      "x": 0.054,
-      "y": 3.303,
-      "w": 2.193,
-      "h": 1.056,
-      "mode": "cut",
-      "glow": false
-    },
-    {
-      "id": "window",
-      "x": -2.385,
-      "y": 1.164,
-      "w": 1.289,
-      "h": 1.191,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "window2",
-      "x": 2.483,
-      "y": 1.164,
-      "w": 1.343,
-      "h": 1.191,
-      "mode": "hard",
-      "glow": true
-    },
-    {
-      "id": "door",
-      "x": -0.663,
-      "y": 0.271,
-      "w": 1.538,
-      "h": 2.166,
-      "mode": "hard",
-      "glow": false
-    },
-    {
-      "id": "fish",
-      "x": 0.98,
-      "y": 1.289,
-      "w": 1.478,
-      "h": 1.067,
-      "mode": "soft",
-      "glow": false
-    }
-  ],
+  "colours": {
+    "wall": "#eaccb0",
+    "roof": "#5e4e43",
+    "trim": "#c78545"
+  },
+  "door": {
+    "x": 0.085,
+    "w": 1.872
+  },
+  "roof": {
+    "kind": "flat",
+    "height": 3.501
+  },
+  "awning": {
+    "x": 0.0,
+    "y": 2.439,
+    "w": 5.823,
+    "h": 0.54
+  },
   "chimney": {
-    "x": -2.938,
-    "y": 4.116,
-    "w": 0.704,
-    "h": 0.731
+    "x": -2.533,
+    "z": 1.555,
+    "w": 0.72,
+    "top": 4.311,
+    "colour": "#876749"
   }
 }

@@ -4,7 +4,7 @@ import caseJson from '../cases/case-01-harbor-ledger.json';
 import type { CaseFile } from '../src/game/caseTypes';
 import { Worker } from '../src/town/workers';
 import townJson from '../cases/case-01-harbor-ledger/town.json';
-import { pieceUrl, shade, SHOPS, shopParts, shopProps, shopSolids, shopWorkers } from '../src/town/shops';
+import { frontTop, pieceUrl, shade, SHOPS, SIDES, shopParts, shopProps, shopSolids, shopWorkers } from '../src/town/shops';
 import { ACTIONS, OUTFITS, PERIOD, workerPose } from '../src/town/workerActions';
 import { PLAYER_RADIUS, step, validateTown } from '../src/town/townLogic';
 import { TRADES, type Building, type Town } from '../src/town/townTypes';
@@ -13,35 +13,82 @@ const town = townJson as unknown as Town;
 const shops = town.buildings.filter((b) => b.trade);
 const inside = (p: [number, number], b: Building, pad = 0) => Math.abs(p[0] - b.at[0]) < b.size[0] / 2 + pad && Math.abs(p[1] - b.at[1]) < b.size[1] / 2 + pad;
 
-describe('shops from Guha\'s pictures', () => {
-  it('has facts and cut pieces for every trade', () => {
+describe('shops from Guha\'s sheets', () => {
+  it('has facts and all four walls for every trade', () => {
     for (const trade of TRADES) {
       const facts = SHOPS[trade]!;
       expect(facts, trade).toBeDefined();
-      expect(facts.pieces.some((p) => p.id === 'sign' && p.mode === 'cut'), `${trade} sign`).toBe(true);
-      for (const p of facts.pieces) expect(pieceUrl(trade, p.id), `${trade}-${p.id}`).toBeTypeOf('string');
-      expect(facts.awnings.length).toBeGreaterThan(0);
+      for (const side of SIDES) expect(pieceUrl(trade, side), `${trade}-${side}`).toBeTypeOf('string');
+      if (facts.roof.kind === 'gable') for (const s of ['roof-front', 'roof-back']) expect(pieceUrl(trade, s), `${trade}-${s}`).toBeTypeOf('string');
+      if (facts.awning) expect(pieceUrl(trade, 'awning')).toBeTypeOf('string');
+      if (facts.sign) expect(pieceUrl(trade, 'sign')).toBeTypeOf('string');
+      expect(facts.width).toBeGreaterThan(4);
+      expect(facts.depth).toBeGreaterThan(2.5);
     }
   });
 
-  it('puts all seven shops in Port Calder', () => {
-    expect(new Set(shops.map((b) => b.trade))).toEqual(new Set(TRADES));
+  it('puts all eleven shops in Port Calder, each once, front walls on the street line', () => {
+    expect(shops.map((b) => b.trade).sort()).toEqual([...TRADES].sort());
+    expect(TRADES).toHaveLength(11);
+    for (const b of shops) {
+      expect(b.size[0]).toBeCloseTo(SHOPS[b.trade!]!.width, 1);
+      expect(b.at[1] + b.size[1] / 2).toBeCloseTo(-4, 2);
+    }
   });
 
-  it('builds walls, roof, awning and picture pieces, facing the door side', () => {
-    const b = shops.find((s) => s.trade === 'nets')!;
-    const parts = shopParts(b, SHOPS.nets!, (id) => `x/${id}`);
-    expect(parts[0]).toMatchObject({ shape: 'box', size: [7.5, b.height, 5] });
-    expect(parts.some((p) => p.shape === 'gable')).toBe(true);
-    expect(parts.some((p) => p.tilt && p.tilt > 0)).toBe(true);
+  it('keeps the shops apart, signs and all', () => {
+    const row = [...town.buildings].filter((b) => b.doorSide === 'south').sort((a, b) => a.at[0] - b.at[0]);
+    for (let i = 1; i < row.length; i++) {
+      // how far a building reaches east (+1) or west (-1) of its middle, counting a sign hung off its wall
+      const reach = (b: Building, dir: number) => {
+        const sign = b.trade ? SHOPS[b.trade]!.sign : undefined;
+        const out = sign && Math.sign(sign.x) === dir ? Math.abs(sign.x) + sign.w / 2 : 0;
+        return Math.max(b.size[0] / 2, out);
+      };
+      expect(row[i].at[0] - row[i - 1].at[0], `${row[i - 1].id} to ${row[i].id}`).toBeGreaterThan(reach(row[i - 1], 1) + reach(row[i], -1) + 0.5);
+    }
+  });
+
+  it('wraps the four pictured walls round the body, with a roof, facing the door side', () => {
+    const b = shops.find((s) => s.trade === 'marine')!;
+    const parts = shopParts(b, SHOPS.marine!, (id) => `x/${id}`);
+    const [w, d] = b.size;
+    expect(parts[0]).toMatchObject({ shape: 'box', size: [w, expect.any(Number), d] });
     const panels = parts.filter((p) => p.shape === 'panel');
-    expect(panels.map((p) => p.tex)).toContain('x/door');
-    expect(panels.every((p) => p.at[2] > 2.5)).toBe(true);
+    for (const side of SIDES) expect(panels.map((p) => p.tex)).toContain(`x/${side}`);
+    const front = panels.find((p) => p.tex === 'x/front')!;
+    expect(front.at[2] - b.at[1]).toBeGreaterThan(0);
+    expect(front.size[0]).toBe(w);
+    expect(panels.find((p) => p.tex === 'x/east')!.turn).toBeCloseTo(Math.PI / 2);
+    expect(parts.some((p) => p.shape === 'gable')).toBe(true);
+    // both roof slopes lean back toward the ridge
+    const slopes = panels.filter((p) => p.tex?.startsWith('x/roof'));
+    expect(slopes).toHaveLength(2);
+    for (const p of slopes) expect(p.tilt!).toBeLessThan(-0.3);
+    expect(panels.some((p) => p.tex === 'x/awning' && p.twoSided)).toBe(true);
     for (const p of parts) expect(p.size.every((n) => Number.isFinite(n) && n >= 0)).toBe(true);
     // the same shop turned to face north puts its front, props and workers on the north side
     const north: Building = { ...b, at: [0, 0], doorSide: 'north' };
+    expect(shopParts(north, SHOPS.marine!, (id) => `x/${id}`).find((p) => p.tex === 'x/front')!.at[2]).toBeLessThan(0);
     expect(shopProps(north).every((p) => p.at[2] < 0)).toBe(true);
     expect(shopWorkers(north).every((w) => w.at[1] < 0)).toBe(true);
+  });
+
+  it('builds flat and sloping roofs over the walls', () => {
+    const fish = shops.find((s) => s.trade === 'fish')!;
+    const flat = shopParts(fish, SHOPS.fish!, () => undefined);
+    expect(flat.some((p) => p.shape === 'gable' || p.shape === 'panel')).toBe(false);
+    const tea = shops.find((s) => s.trade === 'tea')!;
+    const shed = shopParts(tea, SHOPS.tea!, () => undefined);
+    // the tea stall's roof is higher at the front, so its south end is lifted
+    expect(shed.some((p) => p.shape === 'box' && (p.tilt ?? 0) < 0)).toBe(true);
+    // the cycle shop's chimney stands on its sloping roof, toward the back; its pictures are the cut ones by default
+    const cycle = shops.find((s) => s.trade === 'cycle')!;
+    const withPictures = shopParts(cycle, SHOPS.cycle!);
+    expect(withPictures.filter((p) => p.shape === 'panel').every((p) => typeof p.tex === 'string')).toBe(true);
+    const chimney = withPictures.filter((p) => p.color === parseInt(SHOPS.cycle!.chimney!.colour.slice(1), 16));
+    expect(chimney).toHaveLength(1);
+    expect(chimney[0].at[2]).toBeLessThan(0);
   });
 
   it('has a worker at every shop, outside the walls and on the street', () => {
@@ -73,6 +120,10 @@ describe('shops from Guha\'s pictures', () => {
     expect(Math.hypot(at[0] - door.at[0], at[1] - door.at[1])).toBeLessThan(2.2);
     expect(at[1]).toBeCloseTo(-4 + PLAYER_RADIUS, 1);
   });
+
+  it('gives every shop its own trade at work outside', () => {
+    expect(new Set(shops.flatMap((b) => shopWorkers(b).map((w) => w.action))).size).toBeGreaterThanOrEqual(11);
+  });
 });
 
 describe('worker actions', () => {
@@ -98,6 +149,8 @@ describe('worker actions', () => {
     expect(workerPose('pour', 0).beat).toBeCloseTo(0);
     for (const a of ['sip', 'sew', 'mend'] as const) expect(workerPose(a, 0).stance).toBe('sit');
     expect(workerPose('repair', 0).stance).toBe('squat');
+    expect(workerPose('pump', 0).stance).toBe('squat');
+    expect(workerPose('measure', PERIOD.measure * 0.25).armR.side).toBeGreaterThan(0.5);
   });
 });
 
@@ -105,23 +158,26 @@ describe('shop details', () => {
   const fish = shops.find((s) => s.trade === 'fish')!;
   const harbor = shops.find((s) => s.trade === 'harbor')!;
 
-  it('gives the fish hall a flat roof with a parapet, and skips a piece with no picture', () => {
-    const parts = shopParts(fish, SHOPS.fish!, () => undefined);
-    expect(parts.some((p) => p.shape === 'gable')).toBe(false);
-    expect(parts.some((p) => p.shape === 'panel')).toBe(false);
-  });
-
-  it('uses the cut pieces and the picture\'s trim by default', () => {
-    const parts = shopParts({ ...fish, trim: undefined }, SHOPS.fish!);
-    expect(parts.filter((p) => p.shape === 'panel').every((p) => typeof p.tex === 'string')).toBe(true);
-    expect(parts.some((p) => p.color === parseInt(SHOPS.fish!.colours.trim.slice(1), 16))).toBe(true);
-  });
-
   it('flies a flapping flag over the harbor office', () => {
     expect(shopProps(harbor).filter((p) => p.anim === 'flap')).toHaveLength(1);
     expect(shopProps({ ...harbor, trade: undefined })).toEqual([]);
     expect(shopWorkers({ ...harbor, trade: undefined })).toEqual([]);
     expect(shopSolids({ ...harbor, trade: undefined })).toEqual([]);
+  });
+
+  it('hangs the name board under a pitched roof\'s eaves, or on a flat front\'s top', () => {
+    const marine = shops.find((s) => s.trade === 'marine')!;
+    const roof = SHOPS.marine!.roof;
+    expect(roof.kind === 'gable' && frontTop(marine, SHOPS.marine!)).toBeCloseTo(roof.kind === 'gable' ? roof.eave : 0, 1);
+    expect(frontTop(fish, SHOPS.fish!)).toBeCloseTo(SHOPS.fish!.walls.front.h, 1);
+  });
+
+  it('leaves out a roof slope, sign or awning with no picture, and takes the town\'s trim', () => {
+    const marine = shops.find((s) => s.trade === 'marine')!;
+    const bare = shopParts({ ...marine, trim: '#123456' }, SHOPS.marine!, (id) => (['front', 'east', 'back', 'west'].includes(id) ? `x/${id}` : undefined));
+    expect(bare.filter((p) => p.shape === 'panel')).toHaveLength(4);
+    const dressed = shopParts({ ...marine, trim: '#123456' }, SHOPS.marine!, (id) => `x/${id}`);
+    expect(dressed.some((p) => p.color === 0x123456)).toBe(true);
   });
 
   it('darkens a colour without leaving 0 to 255', () => {
@@ -140,7 +196,7 @@ describe('shop details', () => {
 
 describe('shop workers', () => {
   it('builds every worker, poses them through their loop and lets them go', () => {
-    const outfit: Record<string, keyof typeof OUTFITS> = { pour: 'teaMaker', sip: 'customer', repair: 'mechanic', gut: 'fishSeller', arrange: 'florist', pin: 'clerk', mend: 'netMender', sew: 'tailor' };
+    const outfit: Record<string, keyof typeof OUTFITS> = { pour: 'teaMaker', sip: 'customer', repair: 'mechanic', gut: 'fishSeller', arrange: 'florist', pin: 'clerk', mend: 'netMender', sew: 'tailor', pump: 'bikeHand', measure: 'suitMaker', press: 'presser', coil: 'chandler' };
     for (const a of ACTIONS) {
       const w = new Worker(a, outfit[a], 1);
       expect(w.materials.length).toBeGreaterThan(5);
