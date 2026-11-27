@@ -13,8 +13,9 @@ describe('a person kept for some ranks', () => {
   it('is on the cast of those ranks only, and the case file stays whole', () => {
     const c = withBoss();
     expect(caseForRank(c, 'junior').cast.map((x) => x.id)).not.toContain('hidden');
-    expect(caseForRank(c, 'detective').cast).toHaveLength(cf.cast.length);
+    expect(caseForRank(c, 'detective').cast).toHaveLength(caseForRank(cf, 'detective').cast.length);
     expect(caseForRank(c, 'chief').cast.map((x) => x.id)).toContain('hidden');
+    expect(caseForRank(c, 'chief').cast).toHaveLength(caseForRank(cf, 'chief').cast.length + 1);
     expect(c.cast.map((x) => x.id)).toContain('hidden');
     // the rank story's own fields still land on top
     expect(caseForRank(c, 'junior').leads.map((l) => l.id)).toEqual(caseForRank(cf, 'junior').leads.map((l) => l.id));
@@ -41,7 +42,9 @@ describe('rank stories', () => {
   });
 
   it('a rank story that replaces nothing plays the case file as it is', () => {
-    for (const preset of PRESETS.filter((r) => r === 'inspector' || r === 'chief')) expect(caseForRank(cf, preset)).toBe(cf);
+    // (Ilango, the harbormaster, is on the cast of Chief only, so Chief's case drops no one and plays the file as it is)
+    expect(caseForRank(cf, 'chief')).toBe(cf);
+    expect(caseForRank(cf, 'inspector').leads).toBe(cf.leads);
   });
 
   it("Junior's own story has its own leads, ending and finale link, and keeps the case file's cast", () => {
@@ -49,7 +52,7 @@ describe('rank stories', () => {
     expect(junior.leads.map((l) => l.id)).toEqual(['J1', 'J2', 'J3', 'J4', 'J5', 'J6']);
     expect(junior.leads.find((l) => l.id === 'J5')!.then).toBe('J6');
     expect(junior.endings[0].requires).toEqual(['J5', 'J6']);
-    expect(junior.cast).toBe(cf.cast);
+    expect(junior.cast).toEqual(cf.cast.filter((c) => !c.ranks));
   });
 
   it("a rank story's fields replace the case file's, for that rank only", () => {
@@ -58,10 +61,10 @@ describe('rank stories', () => {
     const junior = caseForRank(test, 'junior');
     expect(junior.leads.map((l) => l.id)).toEqual(['J1']);
     expect(junior.setup).toBe('Junior setup');
-    expect(junior.cast).toBe(cf.cast);
+    expect(junior.cast).toEqual(cf.cast.filter((c) => !c.ranks));
     expect(junior.events).toBe(cf.events);
     expect(caseForRank(test, 'junior')).toBe(junior);
-    expect(caseForRank(test, 'inspector')).toBe(test);
+    expect(caseForRank(test, 'chief')).toBe(test);
     // the game is built from the rank's own leads
     const g = newGame(junior, { ...book, 'J1:junior': book['L1:junior'] }, 'junior');
     expect(Object.keys(g.s.leads)).toEqual(['J1']);

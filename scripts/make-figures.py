@@ -32,6 +32,7 @@ CAST = {
     'lin': ('dr-yazhini-raman', 'dr-lin-abara', {'height': 1.66, 'tol': 9}),
     'karunakaran': ('captain-karunakaran-velu', 'captain-karunakaran-velu', {'height': 1.76}),
     'thenmozhi': ('thenmozhi-selvam', 'thenmozhi-selvam', {'height': 1.62}),
+    'ilango': ('ilango-thangaraj', 'ilango-thangaraj', {'height': 1.7}),
     'kane': ('sethu-raman', 'kane-hollis', {'height': 1.74}),
     'vex': ('arun-kumar', 'vex-lorne', {'height': 1.74}),
     'tip': ('sakthivel-siva', 'tip-callahan', {'height': 1.7}),

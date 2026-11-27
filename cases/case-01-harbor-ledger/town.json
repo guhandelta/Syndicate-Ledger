@@ -43,7 +43,8 @@
     { "cast": "kavya", "at": [17.6, 7.4] },
     { "cast": "lin", "at": [21, 4.6], "path": [[25, 4.6]] },
     { "cast": "karunakaran", "at": [-14, -9.8] },
-    { "cast": "thenmozhi", "at": [-21, -1.2] }
+    { "cast": "thenmozhi", "at": [-21, -1.2] },
+    { "cast": "ilango", "at": [-8.5, -9.6], "ranks": ["chief"] }
   ],
   "props": [
     { "kind": "lamp", "at": [-20, 2] },
