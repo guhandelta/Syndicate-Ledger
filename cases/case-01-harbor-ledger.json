@@ -307,7 +307,7 @@
     { "id": "kavya", "name": "Kavya Narayanan", "role": "ally", "ability": "accountant", "reliability": "honest", "color": "#0f766e",
       "blurb": { "crime": "Forensic accountant. Sees patterns in totals.", "friendly": "Counts things super fast." },
       "greeting": { "voice": "speech", "text": { "crime": "Bring me the totals. Numbers don't lie, even when people do.", "friendly": "Give me numbers and I'll count them super fast!" } } },
-    { "id": "dex", "name": "Sgt. Deva Okafor", "role": "ally", "ability": "partner", "reliability": "honest", "voice": "calm", "color": "#a16207",
+    { "id": "dex", "name": "Sgt. Devaraj Selvam", "role": "ally", "ability": "partner", "reliability": "honest", "voice": "calm", "color": "#a16207",
       "blurb": { "crime": "Your old partner. Patient, explains his thinking.", "friendly": "Your old detective buddy. Great at explaining." },
       "greeting": { "voice": "calm", "text": { "crime": "One cell at a time, partner. I'll walk you through it.", "friendly": "Let's figure it out together, buddy!" } } },
     { "id": "lin", "name": "Dr. Lin Abara", "role": "ally", "ability": "forensics", "reliability": "honest", "color": "#1d4ed8",
@@ -1290,8 +1290,8 @@
       "opening": [
         {
           "text": {
-            "crime": "Rain on the glass. Sgt. Deva Okafor slides a file across the desk.",
-            "friendly": "Rain on the glass. Sgt. Deva Okafor slides a file across the desk."
+            "crime": "Rain on the glass. Sgt. Devaraj Selvam slides a file across the desk.",
+            "friendly": "Rain on the glass. Sgt. Devaraj Selvam slides a file across the desk."
           }
         },
         {
@@ -1348,7 +1348,7 @@
             "text": { "crime": "A duty roster never leaves the police house.", "friendly": "A duty roster never leaves the police house." }
           },
           {
-            "text": { "crime": "Your phone buzzes on the desk. Sgt. Deva Okafor. You let it ring, and when you call back the line is dead.", "friendly": "Your phone buzzes on the desk. Sgt. Deva Okafor. You let it ring, and when you call back the line is dead." }
+            "text": { "crime": "Your phone buzzes on the desk. Sgt. Devaraj Selvam. You let it ring, and when you call back the line is dead.", "friendly": "Your phone buzzes on the desk. Sgt. Devaraj Selvam. You let it ring, and when you call back the line is dead." }
           },
           {
             "text": { "crime": "Next, you will see the case through the eyes of Kavya Narayanan.", "friendly": "Next, you will see the case through the eyes of Kavya Narayanan." }
@@ -1357,7 +1357,7 @@
         "carried": {
           "title": { "crime": "Page forty came from a police roster", "friendly": "Page forty came from a police roster" },
           "fact": { "crime": "Page forty was copied in an office from a police duty roster. Only someone close to the police could have handed it over.", "friendly": "Page forty was copied from a police duty roster. Only someone close to the police could have shared it." },
-          "changed": { "crime": "Crane's alibi was bought, and the buyer used a roster that never leaves the police house. The leak is on your own side. Deva called you once about it, then the line went dead.", "friendly": "Mr. Crane's alibi was bought, using a police roster. Someone on your own side shared it. Deva called you once, then the line went quiet." },
+          "changed": { "crime": "Crane's alibi was bought, and the buyer used a roster that never leaves the police house. The leak is on your own side. Devaraj called you once about it, then the line went dead.", "friendly": "Mr. Crane's alibi was bought, using a police roster. Someone on your own side shared it. Devaraj called you once, then the line went quiet." },
           "open": { "crime": "Who inside the police passed the roster, and who is the buyer above Crane?", "friendly": "Who in the police shared the roster, and who is the boss above Mr. Crane?" }
         }
       },
@@ -1747,8 +1747,8 @@
             "friendly": "Full bust"
           },
           "text": {
-            "crime": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Deva Okafor's chair is empty, and nobody says why.",
-            "friendly": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Deva Okafor's chair is empty, and nobody says why."
+            "crime": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Devaraj Selvam's chair is empty, and nobody says why.",
+            "friendly": "Franklin Mano is arrested at the port office with the berth book open in front of him. Crane talks within the hour. Sgt. Devaraj Selvam's chair is empty, and nobody says why."
           }
         },
         {
@@ -1823,7 +1823,7 @@
     },
     {
       "id": "dex",
-      "name": "Sgt. Deva Okafor",
+      "name": "Sgt. Devaraj Selvam",
       "blurb": "An old hand who knows every face on the docks, and owes some of them.",
       "ready": false
     },

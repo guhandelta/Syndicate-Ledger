@@ -63,7 +63,7 @@ function canDo(ctx: IdleContext): string[] {
         'Click a cell, then a number. Arrow keys and 1–9 work too.',
         'Erase, Notes (pencil marks, key P), Undo and Redo are under the grid.',
         'Mark each witness statement True or Lie.',
-        'Call an ally with a favor: Kavya lists what a zone can hold, Deva explains the next step, Lin reveals a cell, Cole checks a statement.',
+        'Call an ally with a favor: Kavya lists what a zone can hold, Devaraj explains the next step, Lin reveals a cell, Cole checks a statement.',
         'Close this lead when the grid is full and every statement is marked.',
       ];
     }

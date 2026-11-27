@@ -4,8 +4,8 @@ Head-and-shoulders source portraits for the dialog and the trust meter. Each ind
 
 - `set-1/`: Dr. Lin Abara, Kane Hollis and Officer Cole (all three expressions).
 - `set-3/`: Silas Crane (neutral and suspicious, completing his set with set 2), Tip Callahan and Vex Lorne (all three expressions each).
-- `set-2/`: Sgt. Deva Okafor (all three), Silas Crane (caught lying), and a second Officer Cole (suspicious).
-- `set-5/`: All seven expressions for Nevethitha Rajan, Meena Selvi, Kavya Narayanan (new art, 2026-11-20), Thenmozhi Selvam and Capt. Karunakaran Velu, plus the four additional Case 1 expressions for Silas Crane, Tip Callahan, Vex Lorne, Kane Hollis, Meena Selvi, Nevethitha Rajan, the player detective, Officer Cole, Kavya Narayanan, Sgt. Deva Okafor, and Dr. Lin Abara (58 individual PNGs).
+- `set-2/`: Sgt. Devaraj Selvam (all three), Silas Crane (caught lying), and a second Officer Cole (suspicious).
+- `set-5/`: All seven expressions for Nevethitha Rajan, Meena Selvi, Kavya Narayanan (new art, 2026-11-20), Thenmozhi Selvam and Capt. Karunakaran Velu, plus the four additional Case 1 expressions for Silas Crane, Tip Callahan, Vex Lorne, Kane Hollis, Meena Selvi, Nevethitha Rajan, the player detective, Officer Cole, Kavya Narayanan, Sgt. Devaraj Selvam, and Dr. Lin Abara (58 individual PNGs).
 
 Officer Cole appears in both sets; use set 1 for his neutral and caught-lying portraits, and choose between the two suspicious versions.
 
