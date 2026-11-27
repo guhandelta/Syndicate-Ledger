@@ -309,7 +309,18 @@
       "greeting": { "voice": "speech", "text": { "crime": "Bring me the totals. Numbers don't lie, even when people do.", "friendly": "Give me numbers and I'll count them super fast!" } } },
     { "id": "dex", "name": "Sgt. Devaraj Kumar", "role": "ally", "ability": "partner", "reliability": "honest", "voice": "calm", "color": "#a16207",
       "blurb": { "crime": "Your old partner. Patient, explains his thinking.", "friendly": "Your old detective buddy. Great at explaining." },
-      "greeting": { "voice": "calm", "text": { "crime": "One cell at a time, partner. I'll walk you through it.", "friendly": "Let's figure it out together, buddy!" } } },
+      "greeting": { "voice": "calm", "text": { "crime": "One cell at a time, partner. I'll walk you through it.", "friendly": "Let's figure it out together, buddy!" } },
+      "greetings": [
+        { "voice": "calm", "face": "scared", "tell": { "crime": "turns his cap in his hands", "friendly": "turns his cap in his hands" }, "when": { "rank": ["chief"], "solved": ["C4"] },
+          "text": { "crime": "Page forty. You have seen it now. Ask me when you are ready, and I will not look away.", "friendly": "You saw page forty. Ask me when you are ready." } },
+        { "voice": "calm", "tell": { "crime": "keeps glancing at the stairs", "friendly": "glances at the stairs" }, "when": { "rank": ["chief"] },
+          "text": { "crime": "Crane is in a cell and the ship still sails at dusk, partner. Whatever you need from the station, ask me first.", "friendly": "Mr. Crane is locked up, but his ship still sails at dusk. Ask me if you need anything." } }
+      ],
+      "opinions": [
+        { "about": "crane", "voice": "calm", "when": { "rank": ["chief"] }, "text": { "crime": "Crane never planned the roster. Somebody told him what to ask for, and he asked.", "friendly": "Mr. Crane didn't think of the roster himself. Somebody told him what to ask for." } },
+        { "about": "mano", "voice": "whisper", "face": "scared", "when": { "rank": ["chief"] }, "text": { "crime": "I have never seen Mano. A voice, a letter, a man at the door. I can tell you that much and no more.", "friendly": "I have never seen Mr. Mano. Only a voice and some letters." } },
+        { "about": "ilango", "voice": "calm", "when": { "rank": ["chief"] }, "text": { "crime": "Ilango keeps his book like a priest keeps a vow. If a berth was sold twice, it is in there.", "friendly": "Captain Ilango writes everything in his book. If something was sold twice, it is in there." } }
+      ] },
     { "id": "lin", "name": "Dr. Lin Abara", "role": "ally", "ability": "forensics", "reliability": "honest", "color": "#1d4ed8",
       "blurb": { "crime": "Forensic analyst. One sure answer, no guesswork.", "friendly": "Science detective. Can find one answer for sure." },
       "greeting": { "voice": "speech", "text": { "crime": "One sample, one sure answer. Choose it well.", "friendly": "I can find one answer for sure. Pick a good one!" } } },
@@ -353,7 +364,13 @@
       "blurb": { "crime": "The harbormaster. Every berth in Port Calder is in his book, and he knows who paid for what.", "friendly": "The harbormaster. His big book says which boat sleeps where." },
       "greeting": { "voice": "calm", "text": { "crime": "Every ship that ties up at Port Calder is written in my berth book, detective. In ink.", "friendly": "Every boat that parks here is written in my big book!" } },
       "opinions": [
-        { "about": "crane", "text": { "crime": "Crane Shipping paid for its berth a year ahead. Nobody pays a year ahead for a berth they plan to keep.", "friendly": "Mr. Crane paid for his parking spot a whole year early. That's odd!" }, "voice": "calm" }
+        { "about": "crane", "text": { "crime": "Crane Shipping paid for its berth a year ahead. Nobody pays a year ahead for a berth they plan to keep.", "friendly": "Mr. Crane paid for his parking spot a whole year early. That's odd!" }, "voice": "calm" },
+        { "about": "mano", "when": { "rank": ["chief"] }, "voice": "calm", "text": { "crime": "Mr. Mano never set foot on my quay. He bought berths by letter and paid by courier. A careful man pays that way.", "friendly": "Mr. Mano never came to the quay. He bought parking spots by letter." } },
+        { "about": "dex", "when": { "rank": ["chief"] }, "voice": "calm", "text": { "crime": "Sergeant Kumar asked to see my berth book twice this month. Both times he only wanted the page for the night of the festival. Draw what you like from that.", "friendly": "Sergeant Kumar looked at my big book twice. He only wanted the festival night." } }
+      ],
+      "greetings": [
+        { "voice": "calm", "when": { "rank": ["chief"], "solved": ["C3"] }, "tell": { "crime": "closes the book gently", "friendly": "closes the book" },
+          "text": { "crime": "You read my book the way it was meant to be read. Now you know why a berth sells twice.", "friendly": "You read my big book well. Now you know why a berth sells twice." } }
       ] },
     { "id": "mano", "name": "Franklin Mano", "role": "mastermind", "reliability": "liar", "voice": "calm", "color": "#44403c", "ranks": ["chief"], "unseen": true,
       "blurb": {"crime": "Shipping broker and port investor, and the buyer above Crane. Nobody in Port Calder has met him: he writes, he telephones, he sends a man.", "friendly": "Shipping broker and port investor, and the buyer above Crane. Nobody in Port Calder has met him: he writes, he telephones, he sends a man."} }
@@ -1346,6 +1363,11 @@
           },
           {
             "text": { "crime": "A duty roster never leaves the police house.", "friendly": "A duty roster never leaves the police house." }
+          },
+          {
+            "who": "lin",
+            "voice": "whisper",
+            "text": { "crime": "One oddity, and probably nothing: the patrol column sits a shade darker than the rest of the page, as if someone went over it twice.", "friendly": "One odd thing, probably nothing: the patrol column is a bit darker than the rest, as if someone wrote it twice." }
           },
           {
             "text": { "crime": "Your phone buzzes on the desk. Sgt. Devaraj Kumar. You let it ring, and when you call back the line is dead.", "friendly": "Your phone buzzes on the desk. Sgt. Devaraj Kumar. You let it ring, and when you call back the line is dead." }
