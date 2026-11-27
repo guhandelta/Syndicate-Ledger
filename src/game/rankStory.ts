@@ -8,13 +8,15 @@ const merged = new WeakMap<CaseFile, Map<Preset, CaseFile>>();
  */
 export function caseForRank(cf: CaseFile, preset: Preset): CaseFile {
   const story = cf.rankStories?.[preset];
-  if (!story || !STORY_FIELDS.some((f) => story[f] !== undefined)) return cf;
+  const hides = cf.cast.some((c) => c.ranks && !c.ranks.includes(preset));
+  if (!hides && (!story || !STORY_FIELDS.some((f) => story[f] !== undefined))) return cf;
   let byPreset = merged.get(cf);
   if (!byPreset) merged.set(cf, (byPreset = new Map()));
   let out = byPreset.get(preset);
   if (!out) {
     out = { ...cf };
-    for (const f of STORY_FIELDS) if (story[f] !== undefined) (out as unknown as Record<string, unknown>)[f] = story[f];
+    if (hides) out.cast = cf.cast.filter((c) => !c.ranks || c.ranks.includes(preset));
+    for (const f of STORY_FIELDS) if (story?.[f] !== undefined) (out as unknown as Record<string, unknown>)[f] = story![f];
     byPreset.set(preset, out);
   }
   return out;

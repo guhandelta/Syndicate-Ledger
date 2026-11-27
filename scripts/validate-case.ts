@@ -31,6 +31,8 @@ if (cf.cast.filter((c) => c.role === 'mastermind').length > 1) fail('a case has 
 if (cf.cast.filter((c) => c.role === 'boss').length !== 1) fail('a case needs exactly one boss');
 for (const c of cf.cast) {
   if ((c.reliability === 'liar' || c.reliability === 'double-agent') && c.role !== 'boss' && c.role !== 'mastermind' && !c.protects) fail(`${c.id} lies but has no "protects" motive`);
+  for (const r of c.ranks ?? []) if (!PRESETS.includes(r)) fail(`${c.id}: unknown rank "${r}"`);
+  if (c.ranks && !c.ranks.length) fail(`${c.id}: is listed for no rank`);
   if (c.protects && !castIds.has(c.protects)) fail(`${c.id} protects unknown person ${c.protects}`);
 }
 

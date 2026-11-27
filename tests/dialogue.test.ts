@@ -63,7 +63,7 @@ describe('bubble outlines', () => {
 describe('Case 1 dialogue', () => {
   it('has a greeting and all seven faces for everyone in the cast', () => {
     const files = new Set(readdirSync('src/ui/portraits/crime'));
-    for (const c of cf.cast) {
+    for (const c of cf.cast.filter((x) => !x.unseen)) {
       expect(c.greeting, c.id).toBeDefined();
       for (const e of FACES) expect(files.has(`${c.id}-${e}.webp`), `${c.id}-${e}`).toBe(true);
     }

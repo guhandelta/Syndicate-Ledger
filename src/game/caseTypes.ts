@@ -107,6 +107,10 @@ export interface CastMember {
   opinions?: Opinion[];
   /** How they usually talk; their statements use it. Default "speech". */
   voice?: Voice;
+  /** Only in the case of these ranks: a person nobody has met yet at lower ranks never shows on the board or the accusation list. Left out, every rank. */
+  ranks?: Preset[];
+  /** Never seen in the town or in the flesh (a voice on the phone, a name on a letter): no town figure and no portrait faces needed, and the board shows initials. */
+  unseen?: boolean;
 }
 
 /** A newspaper scrap. In the body, a run of ▒ is torn-away text. */

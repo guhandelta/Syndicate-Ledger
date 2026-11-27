@@ -230,7 +230,11 @@ export function validateTown(town: Town, cf: CaseFile): string[] {
     if (npc.untilEvent && !eventIds.has(npc.untilEvent)) errors.push(`${npc.cast} leaves on unknown event ${npc.untilEvent}`);
     for (const p of [npc.at, ...(npc.path ?? [])]) free(p, `${npc.cast}'s spot`);
   }
-  for (const c of cf.cast) if (!town.npcs.some((n) => n.cast === c.id)) errors.push(`${c.name} is not in the town`);
+  for (const c of cf.cast) {
+    const there = town.npcs.some((n) => n.cast === c.id);
+    if (c.unseen && there) errors.push(`${c.name} is unseen but stands in the town`);
+    else if (!c.unseen && !there) errors.push(`${c.name} is not in the town`);
+  }
   const shotIds = new Set<string>();
   for (const shot of town.shots ?? []) {
     const what = `Shot "${shot.id}"`;
