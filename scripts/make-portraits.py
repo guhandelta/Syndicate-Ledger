@@ -18,7 +18,8 @@ CAST = {
     'dr-lin-abara': 'lin', 'nevethitha-rajan': 'nevethitha', 'kane-hollis': 'kane', 'kavya-narayanan': 'kavya',
     'officer-cole': 'cole', 'meena-selvi': 'meena', 'sgt-dex-okafor': 'dex', 'silas-crane': 'crane',
     'tip-callahan': 'tip', 'vex-lorne': 'vex', 'thenmozhi-selvam': 'thenmozhi',
-    'captain-karunakaran-velu': 'karunakaran',
+    'captain-karunakaran-velu': 'karunakaran', 'ilango-thangaraj': 'ilango',
+    'franklin-mano': 'mano',
 }
 
 # Where to look, first match wins. Set 2 has the complete Meena set; set 1 has Cole's neutral and caught-lying.

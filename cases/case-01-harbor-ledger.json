@@ -348,6 +348,12 @@
       "opinions": [
         { "about": "vex", "text": { "crime": "Vex never signs for a key. He only ever finds the door already open.", "friendly": "Vex never signs for a key. The doors are just open when he comes." }, "voice": "calm" },
         { "about": "crane", "text": { "crime": "Mr. Crane's office key came back at dawn on the night of the theft, and not by his hand.", "friendly": "Mr. Crane's key came back at dawn, but someone else brought it." }, "voice": "calm", "tell": { "crime": "turns the key log face down", "friendly": "closes the book" } }
+      ] },
+    { "id": "ilango", "name": "Capt. Ilango Thangaraj", "role": "witness", "reliability": "honest", "voice": "calm", "color": "#1e3a8a", "ranks": ["chief"],
+      "blurb": { "crime": "The harbormaster. Every berth in Port Calder is in his book, and he knows who paid for what.", "friendly": "The harbormaster. His big book says which boat sleeps where." },
+      "greeting": { "voice": "calm", "text": { "crime": "Every ship that ties up at Port Calder is written in my berth book, detective. In ink.", "friendly": "Every boat that parks here is written in my big book!" } },
+      "opinions": [
+        { "about": "crane", "text": { "crime": "Crane Shipping paid for its berth a year ahead. Nobody pays a year ahead for a berth they plan to keep.", "friendly": "Mr. Crane paid for his parking spot a whole year early. That's odd!" }, "voice": "calm" }
       ] }
   ],
   "leads": [
@@ -693,7 +699,7 @@
       "text": { "crime": "You made an arrest, but without the full trail Crane's lawyers tear the case apart. The ship sails on schedule.", "friendly": "You caught a helper, but the boss got away on the boat." }
     },
     {
-      "id": "wrong-arrest", "accuse": ["kane", "meena", "nevethitha", "karunakaran"],
+      "id": "wrong-arrest", "accuse": ["kane", "meena", "nevethitha", "karunakaran", "ilango"],
       "title": { "crime": "Wrong arrest", "friendly": "Oops, wrong person" },
       "text": { "crime": "You arrested an innocent person. The syndicate couldn't have planned it better.", "friendly": "That person didn't do it! The gang is laughing all the way to their boat." }
     }
