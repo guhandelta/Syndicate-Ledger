@@ -4,7 +4,7 @@ import caseJson from '../cases/case-01-harbor-ledger.json';
 import type { CaseFile } from '../src/game/caseTypes';
 import { Worker } from '../src/town/workers';
 import townJson from '../cases/case-01-harbor-ledger/town.json';
-import { pieceUrl, shade, SHOPS, SIDES, shopParts, shopProps, shopSolids, shopWorkers } from '../src/town/shops';
+import { frontTop, pieceUrl, shade, SHOPS, SIDES, shopParts, shopProps, shopSolids, shopWorkers } from '../src/town/shops';
 import { ACTIONS, OUTFITS, PERIOD, workerPose } from '../src/town/workerActions';
 import { PLAYER_RADIUS, step, validateTown } from '../src/town/townLogic';
 import { TRADES, type Building, type Town } from '../src/town/townTypes';
@@ -82,6 +82,13 @@ describe('shops from Guha\'s sheets', () => {
     const shed = shopParts(tea, SHOPS.tea!, () => undefined);
     // the tea stall's roof is higher at the front, so its south end is lifted
     expect(shed.some((p) => p.shape === 'box' && (p.tilt ?? 0) < 0)).toBe(true);
+    // the cycle shop's chimney stands on its sloping roof, toward the back; its pictures are the cut ones by default
+    const cycle = shops.find((s) => s.trade === 'cycle')!;
+    const withPictures = shopParts(cycle, SHOPS.cycle!);
+    expect(withPictures.filter((p) => p.shape === 'panel').every((p) => typeof p.tex === 'string')).toBe(true);
+    const chimney = withPictures.filter((p) => p.color === parseInt(SHOPS.cycle!.chimney!.colour.slice(1), 16));
+    expect(chimney).toHaveLength(1);
+    expect(chimney[0].at[2]).toBeLessThan(0);
   });
 
   it('has a worker at every shop, outside the walls and on the street', () => {
@@ -156,6 +163,21 @@ describe('shop details', () => {
     expect(shopProps({ ...harbor, trade: undefined })).toEqual([]);
     expect(shopWorkers({ ...harbor, trade: undefined })).toEqual([]);
     expect(shopSolids({ ...harbor, trade: undefined })).toEqual([]);
+  });
+
+  it('hangs the name board under a pitched roof\'s eaves, or on a flat front\'s top', () => {
+    const marine = shops.find((s) => s.trade === 'marine')!;
+    const roof = SHOPS.marine!.roof;
+    expect(roof.kind === 'gable' && frontTop(marine, SHOPS.marine!)).toBeCloseTo(roof.kind === 'gable' ? roof.eave : 0, 1);
+    expect(frontTop(fish, SHOPS.fish!)).toBeCloseTo(SHOPS.fish!.walls.front.h, 1);
+  });
+
+  it('leaves out a roof slope, sign or awning with no picture, and takes the town\'s trim', () => {
+    const marine = shops.find((s) => s.trade === 'marine')!;
+    const bare = shopParts({ ...marine, trim: '#123456' }, SHOPS.marine!, (id) => (['front', 'east', 'back', 'west'].includes(id) ? `x/${id}` : undefined));
+    expect(bare.filter((p) => p.shape === 'panel')).toHaveLength(4);
+    const dressed = shopParts({ ...marine, trim: '#123456' }, SHOPS.marine!, (id) => `x/${id}`);
+    expect(dressed.some((p) => p.color === 0x123456)).toBe(true);
   });
 
   it('darkens a colour without leaving 0 to 255', () => {

@@ -434,7 +434,7 @@ export function shopProps(b: Building): Part[] {
     // a pennant on its pole over the roof, flapping
     const k = b.size[0] / facts.width;
     const f = facts.flag;
-    const roofTop = facts.roof.kind === 'flat' ? facts.roof.height * k : frontTop(b, facts);
+    const roofTop = frontTop(b, facts);
     const z = f.z * (b.size[1] / facts.depth);
     props.push(place.part({ shape: 'cyl', at: [f.x * k, roofTop - 0.2, z], size: [0.05, f.top * k - roofTop + 0.2, 0], color: 0x9a7040 }));
     props.push(place.part({ shape: 'box', at: [f.x * k + 0.4, f.top * k - 0.55, z], size: [0.75, 0.38, 0.03], color: 0x2a3a6a, anim: 'flap' }));
