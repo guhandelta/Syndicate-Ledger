@@ -463,3 +463,13 @@ kbd {
 .decode-answer { display: grid; gap: 4px; max-width: 420px; font-weight: 600; }
 .decode-answer input { font: inherit; font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.05em; text-transform: uppercase; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
 .decode-answer input.wrong { border-color: #dc2626; }
+.nono { border-collapse: collapse; justify-self: start; }
+.nono td, .nono th { padding: 0; }
+.nono-clue { font: 600 0.8rem ui-monospace, Menlo, Consolas, monospace; color: var(--muted); vertical-align: bottom; }
+.nono-clue span { display: block; text-align: center; line-height: 1.1; }
+.nono-row { text-align: right; padding-right: 8px; white-space: nowrap; }
+.nono-cell { width: 34px; height: 34px; border: 1px solid var(--line); background: transparent; border-radius: 3px; cursor: pointer; padding: 0; }
+.nono-cell.on { background: var(--accent); }
+.nono-cell.wrong { border-color: #dc2626; }
+.nono-cell:disabled { cursor: default; }
+@media (max-width: 480px) { .nono-cell { width: 28px; height: 28px; } }

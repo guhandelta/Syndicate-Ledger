@@ -103,7 +103,7 @@ function whatToDo(ctx: IdleContext): Omit<IdleHint, 'can'> {
     const where = `Working ${leadName(lead)}`;
     if (lp.solved) return { where, todo: 'This lead is solved. Go back to pick the next one.' };
     const state = checkLead(g, lead.id);
-    if (puzzleOf(g, lead.id).type === 'decode') return { where, todo: 'Read each exhibit, apply the rule it gives you, and type the one answer. Nothing here is a guess.' };
+    if (puzzleOf(g, lead.id).type === 'decode') return { where, todo: 'Read each exhibit, apply the rule it gives you, and type the one answer, or shade the grid if there is one. Nothing here is a guess.' };
     if (puzzleOf(g, lead.id).type === 'stakeout' && (state === 'grid-incomplete' || state === 'grid-wrong')) {
       if (wrongSpot(stakeoutOf(g, lead.id), lp.spots!) >= 0)
         return { where, todo: 'One of your watchers is on the wrong square. Test each against what the witnesses say, or call your partner for a pointer.' };
