@@ -45,7 +45,7 @@ describe('every variant at every level', () => {
           texts.add(JSON.stringify(p.exhibits));
         }
       }
-      expect(answers.size).toBeGreaterThan(20);
+      expect(answers.size).toBeGreaterThan(variant === 'scale' ? 6 : 20);
       expect(texts.size).toBeGreaterThan(55);
     });
     it(`${variant}: the same seed builds the same puzzle`, () => {
@@ -93,5 +93,39 @@ describe('verifyDecode rejects bad puzzles', () => {
       const p = generateDecode({ variant: v, level: 1, seed: 8 });
       expect(verifyDecode({ ...p, exhibits: [{ title: 't', lines: ['nothing here'] }] })).toBe(false);
     }
+  });
+});
+
+describe('the guess-and-feedback puzzles', () => {
+  it('bulls: keeps adding tries until one code is left, and never repeats a digit in the code', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const p = generateDecode({ variant: 'bulls', level: 1 + (seed % 4), seed });
+      expect(new Set(p.answer).size).toBe(p.answer.length);
+      expect(p.exhibits[0].lines.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+  it('smudge: the PIN uses exactly the smudged keys', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const p = generateDecode({ variant: 'smudge', level: 1 + (seed % 4), seed });
+      if (p.data.variant !== 'smudge') throw new Error('x');
+      expect([...p.answer].map(Number).sort((a, b) => a - b)).toEqual(p.data.keys);
+    }
+  });
+  it('scale: known-lighter ranks answer with a number, unknown-weight ranks add LIGHTER or HEAVIER', () => {
+    expect(generateDecode({ variant: 'scale', level: 1, seed: 3 }).answer).toMatch(/^\d+$/);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) seen.add(generateDecode({ variant: 'scale', level: 3, seed }).answer.split(' ')[1]);
+    expect([...seen].sort()).toEqual(['HEAVIER', 'LIGHTER']);
+  });
+  it('rejects clues that leave several answers or none', () => {
+    const p = generateDecode({ variant: 'bulls', level: 2, seed: 4 });
+    if (p.data.variant !== 'bulls') throw new Error('x');
+    expect(solveDecode({ ...p.data, tries: p.data.tries.slice(0, 1) })).toBe('');
+    const s = generateDecode({ variant: 'scale', level: 1, seed: 4 });
+    if (s.data.variant !== 'scale') throw new Error('x');
+    expect(solveDecode({ ...s.data, weighings: [] })).toBe('');
+    const m = generateDecode({ variant: 'smudge', level: 2, seed: 4 });
+    if (m.data.variant !== 'smudge') throw new Error('x');
+    expect(solveDecode({ ...m.data, facts: [] })).toBe('');
   });
 });
