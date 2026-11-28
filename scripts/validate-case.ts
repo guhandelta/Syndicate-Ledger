@@ -8,7 +8,7 @@ import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
 import { verifyCipher } from '../src/engine/cipher';
 import { verifyStakeout } from '../src/engine/stakeout';
-import { verifyDecode, carrySlots, DECODE_VARIANTS } from '../src/engine/decode';
+import { verifyDecode, carrySlots, wordPoolProblem, DECODE_VARIANTS } from '../src/engine/decode';
 import { verifyNetwork } from '../src/engine/network';
 import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
@@ -101,6 +101,8 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
       // a decode lead has exhibits, not people, times or witnesses
       if (!lead.decode || !DECODE_VARIANTS.includes(lead.decode.variant)) fail(`${lead.id}: a decode lead needs "decode": { "variant": one of ${DECODE_VARIANTS.join(', ')} }`);
       if (lead.speakers.length || lead.columns.length || lead.rows.length) fail(`${lead.id}: a decode lead has no speakers, rows or columns`);
+      const poolProblem = lead.decode?.words ? wordPoolProblem(lead.decode.words) : null;
+      if (poolProblem) fail(`${lead.id}: the word pool ${poolProblem}`);
       const want = lead.decode ? carrySlots(lead.decode.variant, 1).length : 0;
       for (const preset of presets) if (linksFor(lead, preset).length !== (lead.links?.length ? carrySlots(lead.decode!.variant, DECODE_LEVEL[preset]).length : 0)) fail(`${lead.id}: ${lead.decode?.variant} takes ${want} links or none, at every rank`);
       for (const spec of lead.links ?? []) if (spec.take !== 'number' || spec.use !== 'key') fail(`${lead.id}: a decode lead's links take a number and use it as a "key"`);
