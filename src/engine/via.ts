@@ -4,12 +4,13 @@
  * so the game can word the clue as a pointer back ("what Vex moved in the hour Kane moved $3k") instead of a number.
  */
 import type { CipherPuzzle } from './cipher';
+import type { DecodePuzzle } from './decode';
 import type { NetworkPuzzle } from './network';
 import { whereOf, type StakeoutPuzzle } from './stakeout';
 import type { TimelinePuzzle } from './timeline';
 import type { GeneratedPuzzle } from './types';
 
-export type AnyAnswered = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle;
+export type AnyAnswered = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle | DecodePuzzle;
 
 /** Something in an earlier answer: a number, or a person. */
 export type LinkRef =

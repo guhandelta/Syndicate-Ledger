@@ -62,6 +62,9 @@ export const LINK_RULES: Record<Preset, { indirect: boolean }> = {
   chief: { indirect: true },
 };
 
+/** How hard a decode lead is by rank (the decode engine's level, 1 to 4). */
+export const DECODE_LEVEL: Record<Preset, number> = { junior: 1, detective: 2, inspector: 3, chief: 4 };
+
 /**
  * A stakeout lead by rank. The map is bigger than the preset's grid: only a few layouts obey the rules on a small map
  * (two on 4x4), so size is what makes it harder. `minBase`/`maxBase` bound how many layouts the map alone allows.

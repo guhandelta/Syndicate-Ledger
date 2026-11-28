@@ -3,6 +3,7 @@ import { randomClaim } from '../engine/generator';
 import { enumerate } from '../engine/solver';
 import { makeRng } from '../engine/rng';
 import { fittingCodes, freshTrueCipherClaim, type CipherClaim, type CipherPuzzle } from '../engine/cipher';
+import { isDecodeCorrect, normalizeAnswer } from '../engine/decode';
 import { fittingPlacements, freshTrueStakeClaim, type StakeClaim, type StakeoutPuzzle } from '../engine/stakeout';
 import { fittingNetworks, freshTrueNetClaim, type NetClaim, type NetworkPuzzle } from '../engine/network';
 import { fittingOrders, freshTrueTimeClaim, type TimeClaim, type TimelinePuzzle } from '../engine/timeline';
@@ -42,6 +43,8 @@ export interface LeadProgress {
   spots?: number[];
   /** Stakeout leads: rows whose watcher was shown by an ally or after a witness left. */
   shownSpots?: number[];
+  /** Decode leads: what the player has typed as the answer. */
+  typed?: string;
 }
 
 export interface GameState {
@@ -92,6 +95,10 @@ export function newGame(cf: CaseFile, book: PuzzleBook, preset: Preset, characte
       const order = p.solution.map(() => 0);
       for (const gv of p.givens) order[gv.m] = gv.slot;
       leads[lead.id] = { ...common, grid: [], notes: [], order, shownMoments: [] };
+      continue;
+    }
+    if (p.type === 'decode') {
+      leads[lead.id] = { ...common, grid: [], notes: [], typed: '' };
       continue;
     }
     if (p.type === 'cipher') {
@@ -396,6 +403,9 @@ export function checkLead(g: Game, leadId: string): CheckResult {
   if (p.type === 'timeline') {
     if (lp.order!.some((v) => !v)) return 'grid-incomplete';
     if (lp.order!.some((v, m) => v !== p.solution[m])) return 'grid-wrong';
+  } else if (p.type === 'decode') {
+    if (!normalizeAnswer(lp.typed!)) return 'grid-incomplete';
+    if (!isDecodeCorrect(p, lp.typed!)) return 'grid-wrong';
   } else if (p.type === 'cipher') {
     if (lp.digits!.some((v) => !v)) return 'grid-incomplete';
     if (lp.digits!.some((v, k) => v !== p.code[k])) return 'grid-wrong';
@@ -505,6 +515,8 @@ export function buyTip(g: Game, leadId: string, informant: string): AnyClaim | '
     lp.paidTips.push({ speaker: informant, claim: nc });
     return nc;
   }
+  /* v8 ignore next -- the Evidence panel has no informant for a decode lead */
+  if (any.type === 'decode') return 'cant';
   const p = any;
   const known = new Set(p.statements.map((s) => JSON.stringify(s.claim)));
   // draws a few hundred random claims and keeps the first true one the player doesn't already have

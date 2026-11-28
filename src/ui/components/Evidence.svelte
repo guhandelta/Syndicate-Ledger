@@ -1,6 +1,7 @@
 <script lang="ts">
   import { linkedIn } from '../../engine/network';
   import type { CipherPuzzle } from '../../engine/cipher';
+  import type { DecodePuzzle } from '../../engine/decode';
   import type { NetworkPuzzle } from '../../engine/network';
   import { whereOf, type StakeoutPuzzle } from '../../engine/stakeout';
   import type { TimelinePuzzle } from '../../engine/timeline';
@@ -59,6 +60,8 @@
                 <li><strong>{L.districts[z]}</strong>: row {r + 1}, column {c + 1}</li>
               {/each}
             </ul>
+          {:else if p.type === 'decode'}
+            <p class="evidence-code" aria-label="The answer">{(p as DecodePuzzle).answer}</p>
           {:else if p.type === 'cipher'}
             <div class="evidence-code" aria-label="The code">{#each (p as CipherPuzzle).code as d}<span>{d}</span>{/each}</div>
           {:else}

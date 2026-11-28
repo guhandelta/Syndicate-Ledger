@@ -1,5 +1,6 @@
 import { nextStep } from '../engine/logic';
 import { cipherStep, wrongDigit } from '../engine/cipher';
+import { isDecodeCorrect, normalizeAnswer, type DecodePuzzle } from '../engine/decode';
 import { stakeoutStep, wrongSpot } from '../engine/stakeout';
 import { networkStep, pairs, wrongPair } from '../engine/network';
 import { timelineStep, wrongMoment } from '../engine/timeline';
@@ -449,6 +450,23 @@ export class Session {
     return this.anyPuzzle.type === 'cipher';
   }
 
+  /** The open decode lead's puzzle. */
+  get decode() {
+    return this.anyPuzzle as DecodePuzzle;
+  }
+
+  get isDecode() {
+    return this.anyPuzzle.type === 'decode';
+  }
+
+  /** Decode: what the player has typed so far. */
+  setTyped(v: string) {
+    if (this.lp.solved) return;
+    this.lp.typed = v;
+    this.pui.flashWrong = false;
+    this.pui.message = null;
+  }
+
   /** Cipher: is this position fixed (a given, shown by an ally or after a witness left, or the lead is solved)? */
   digitLocked(k: number) {
     return this.lp.solved || this.cipher.givens.some((x) => x.p === k) || !!this.lp.shownDigits?.includes(k);
@@ -654,7 +672,10 @@ export class Session {
 
   checkGrid() {
     this.pui.flashWrong = true;
-    if (this.isStakeout) {
+    if (this.isDecode) {
+      const typed = normalizeAnswer(this.lp.typed ?? '');
+      this.pui.message = !typed ? 'Type your answer first.' : isDecodeCorrect(this.decode, typed) ? 'That answer is correct.' : "That isn't the answer yet.";
+    } else if (this.isStakeout) {
       const bad = wrongSpot(this.stakeout, this.lp.spots!) >= 0;
       this.pui.message = bad ? 'Watchers on the wrong square are shown in red.' : 'Every watcher you have placed so far is on the right square.';
     } else if (this.isCipher) {
@@ -934,9 +955,10 @@ export class Session {
     const nw = this.isNetwork;
     const cp = this.isCipher;
     const sk = this.isStakeout;
+    const dc = this.isDecode;
     const msgs: Record<string, string> = {
-      'grid-incomplete': sk ? 'Some rows of the map still have no watcher.' : cp ? 'Some digits of the code are still empty.' : nw ? 'Some pairs are still undecided. Mark each pair as in contact or never in contact.' : tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
-      'grid-wrong': sk ? "Something doesn't add up. At least one watcher is on the wrong square." : cp ? "Something doesn't add up. At least one digit of the code is wrong." : nw ? "Something doesn't add up. At least one pair is decided the wrong way." : tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
+      'grid-incomplete': dc ? 'Type your answer before closing the lead.' : sk ? 'Some rows of the map still have no watcher.' : cp ? 'Some digits of the code are still empty.' : nw ? 'Some pairs are still undecided. Mark each pair as in contact or never in contact.' : tl ? 'Some moments are not on the timeline yet.' : 'The grid still has empty cells.',
+      'grid-wrong': dc ? "That isn't the answer. Read the exhibits again." : sk ? "Something doesn't add up. At least one watcher is on the wrong square." : cp ? "Something doesn't add up. At least one digit of the code is wrong." : nw ? "Something doesn't add up. At least one pair is decided the wrong way." : tl ? "Something doesn't add up. At least one moment is at the wrong time." : "Something doesn't add up. At least one number on the grid is wrong.",
       'marks-incomplete': 'Mark every statement as True or Lie before closing the lead.',
       'marks-wrong': sk ? "The map is right, but your read on the witnesses isn't. Check each statement against it." : cp ? "The code is right, but your read on the witnesses isn't. Check each statement against it." : nw ? "The network is right, but your read on the witnesses isn't. Check each statement against it." : tl ? "The timeline is right, but your read on the witnesses isn't. Check each statement against it." : "The grid is right, but your read on the witnesses isn't. Check each statement against the grid.",
     };

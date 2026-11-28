@@ -216,5 +216,5 @@ export function describeStatement(cf: CaseFile, lead: Lead, p: AnyPuzzle, claim:
   if (p.type === 'cipher') return describeCipherClaim(claim as CipherClaim, cipherPlaces(cf, lead, p.size));
   if (p.type === 'stakeout') return describeStakeClaim(claim as StakeClaim, stakeoutLabels(lead, p.size, tone));
   if (p.type === 'network') return describeNetClaim(claim as NetClaim, networkPeople(cf, lead, p.size));
-  return describeClaim(claim as Claim, gridLabels(cf, lead, p.size, tone), p.type);
+  return describeClaim(claim as Claim, gridLabels(cf, lead, p.size, tone), p.type as 'ledger' | 'surveillance');
 }

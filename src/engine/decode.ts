@@ -52,6 +52,12 @@ export interface DecodePuzzle {
   data: DecodeData;
   answer: string;
   seed: number;
+  /** The characters in the answer, so a decode lead sizes like the other leads. */
+  size: number;
+  /** A decode puzzle has no witnesses, so no statements to mark; these keep it shaped like the other puzzles. */
+  statements: never[];
+  truth: never[];
+  liarCounts: number[];
 }
 
 /** Capital letters, digits, one space between words; everything else dropped. */
@@ -157,9 +163,10 @@ export function verifyDecode(p: DecodePuzzle): boolean {
 /** The checks a player's typed answer is held to. */
 export const isDecodeCorrect = (p: DecodePuzzle, typed: string) => normalizeAnswer(typed) === normalizeAnswer(p.answer);
 
-const make = (variant: DecodeVariant, level: number, seed: number, data: DecodeData, exhibits: Exhibit[], question: string): DecodePuzzle => ({
-  type: 'decode', variant, level, exhibits, question, data, answer: solveDecode(data), seed,
-});
+const make = (variant: DecodeVariant, level: number, seed: number, data: DecodeData, exhibits: Exhibit[], question: string): DecodePuzzle => {
+  const answer = solveDecode(data);
+  return { type: 'decode', variant, level, exhibits, question, data, answer, seed, size: answer.length, statements: [], truth: [], liarCounts: [0] };
+};
 
 function genBook(level: number, seed: number, rng: Rng): DecodePuzzle {
   const pagesN = 3 + level * 2;
