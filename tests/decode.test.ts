@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calcLines, clock, solveCalc, type CalcData } from '../src/engine/calc';
+import { countPictures, runsOf } from '../src/engine/grid';
 import { DECODE_VARIANTS, decodeShift, dialStops, encodeShift, generateDecode, isDecodeCorrect, keypadDigits, moveDate, normalizeAnswer, serialHolds, solveDecode, verifyDecode, type DecodePuzzle } from '../src/engine/decode';
 
 describe('decode rules', () => {
@@ -171,5 +172,31 @@ describe('the calculation puzzles', () => {
     expect(solveCalc({ variant: 'dice', rolls: 60, dice: [fair, loaded, fair] })).toBe('2');
     expect(solveCalc({ variant: 'dice', rolls: 60, dice: [fair, fair] })).toBe('');
     expect(solveCalc({ variant: 'dice', rolls: 60, dice: [loaded, loaded] })).toBe('');
+  });
+});
+
+describe('nonogram', () => {
+  it('reads runs of studs', () => {
+    expect(runsOf([1, 1, 0, 1])).toEqual([2, 1]);
+    expect(runsOf([0, 0, 0])).toEqual([0]);
+  });
+  it('counts pictures that fit, and stops at two', () => {
+    expect(countPictures([[1], [1]], [[2], [0]]).count).toBe(1);
+    expect(countPictures([[1], [1]], [[1], [1]]).count).toBe(2);
+    expect(countPictures([[1], [1]], [[3], [0]]).count).toBe(0);
+  });
+  it('is square, grows with level, and has exactly one picture', () => {
+    for (let level = 1; level <= 4; level++) {
+      for (let seed = 1; seed <= 12; seed++) {
+        const p = generateDecode({ variant: 'nonogram', level, seed });
+        if (p.data.variant !== 'nonogram') throw new Error('x');
+        expect(p.data.rows.length).toBe([0, 5, 6, 8, 10][level]);
+        expect(p.answer.split(' ').length).toBe(p.data.rows.length);
+        expect(countPictures(p.data.rows, p.data.cols, 3).count).toBe(1);
+      }
+    }
+  });
+  it('a puzzle with two pictures has no answer', () => {
+    expect(solveDecode({ variant: 'nonogram', rows: [[1], [1]], cols: [[1], [1]] })).toBe('');
   });
 });

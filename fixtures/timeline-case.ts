@@ -99,11 +99,20 @@ const decode: Lead = {
   pointsTo: ['crane'],
 } as unknown as Lead;
 
+const plate: Lead = {
+  ...decode,
+  id: 'D2',
+  decode: { variant: 'nonogram' },
+  title: 'The lock plate on the loft door',
+  intro: 'Studs on the plate must be pressed in the right pattern. The clues scratched beside it say how.',
+  fact: 'The loft door opened to the studs.',
+} as unknown as Lead;
+
 export const timelineCase = {
   ...(caseFile as unknown as CaseFile),
   id: 'timeline-demo',
   rankStories: undefined,
-  leads: [lead, net, cipher, stake, decode],
+  leads: [lead, net, cipher, stake, decode, plate],
   events: [],
   offers: [],
   missedClues: [],
@@ -167,3 +176,5 @@ for (const preset of PRESETS) {
 }
 
 for (const preset of PRESETS) timelineBook[`D1:${preset}`] = generateDecode({ variant: 'dial', level: DECODE_LEVEL[preset], seed: 41 });
+
+for (const preset of PRESETS) timelineBook[`D2:${preset}`] = generateDecode({ variant: 'nonogram', level: DECODE_LEVEL[preset], seed: 43 });

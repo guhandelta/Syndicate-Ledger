@@ -23,11 +23,12 @@
  * The answer is `answer`: capital letters, digits and single spaces, compared after `normalizeAnswer`.
  */
 import { calcLines, genCooling, genDice, genReceipt, genTriangulate, genZone, solveCalc, type CalcData } from './calc';
+import { genNonogram, gridLines, solveGrid, type GridData } from './grid';
 import { genBulls, genScale, genSmudge, guessLines, solveGuess, type GuessData } from './guess';
 import { makeRng, type Rng } from './rng';
 
-export type DecodeVariant = 'book' | 'keypad' | 'shift' | 'date' | 'check' | 'dial' | 'bulls' | 'smudge' | 'scale' | 'receipt' | 'zone' | 'cooling' | 'triangulate' | 'dice';
-export const DECODE_VARIANTS: DecodeVariant[] = ['book', 'keypad', 'shift', 'date', 'check', 'dial', 'bulls', 'smudge', 'scale', 'receipt', 'zone', 'cooling', 'triangulate', 'dice'];
+export type DecodeVariant = 'book' | 'keypad' | 'shift' | 'date' | 'check' | 'dial' | 'bulls' | 'smudge' | 'scale' | 'receipt' | 'zone' | 'cooling' | 'triangulate' | 'dice' | 'nonogram';
+export const DECODE_VARIANTS: DecodeVariant[] = ['book', 'keypad', 'shift', 'date', 'check', 'dial', 'bulls', 'smudge', 'scale', 'receipt', 'zone', 'cooling', 'triangulate', 'dice', 'nonogram'];
 
 export interface Exhibit {
   title: string;
@@ -43,7 +44,8 @@ export type DecodeData =
   | { variant: 'check'; serials: string[]; rule: CheckRule }
   | { variant: 'dial'; size: number; moves: { dir: 'R' | 'L'; steps: number }[] }
   | GuessData
-  | CalcData;
+  | CalcData
+  | GridData;
 
 export type CheckRule = { kind: 'sum'; mod: number } | { kind: 'weighted'; mod: number };
 
@@ -145,6 +147,8 @@ export function solveDecode(d: DecodeData): string {
     case 'triangulate':
     case 'dice':
       return solveCalc(d);
+    case 'nonogram':
+      return solveGrid(d);
     default:
       return solveGuess(d);
   }
@@ -175,6 +179,8 @@ export function verifyDecode(p: DecodePuzzle): boolean {
     case 'triangulate':
     case 'dice':
       return calcLines(p.data).every((line) => text.includes(line));
+    case 'nonogram':
+      return gridLines(p.data).every((line) => text.includes(line));
     default:
       return guessLines(p.data).every((line) => text.includes(line));
   }
@@ -303,6 +309,7 @@ const GEN: Record<DecodeVariant, (level: number, seed: number, rng: Rng) => Deco
   book: genBook, keypad: genKeypad, shift: genShift, date: genDate, check: genCheck, dial: genDial,
   bulls: fromGuess('bulls', genBulls), smudge: fromGuess('smudge', genSmudge), scale: fromGuess('scale', genScale),
   receipt: fromGuess('receipt', genReceipt), zone: fromGuess('zone', genZone), cooling: fromGuess('cooling', genCooling), triangulate: fromGuess('triangulate', genTriangulate), dice: fromGuess('dice', genDice),
+  nonogram: fromGuess('nonogram', genNonogram),
 };
 
 export interface DecodeOptions {
