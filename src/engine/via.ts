@@ -22,6 +22,8 @@ export type LinkRef =
   | { kind: 'degree'; p: number }
   /** Cipher: the digit in a place. */
   | { kind: 'digit'; p: number }
+  /** Decode: how many letters are in a word of a word answer (words counted from 0). A number answer is quoted by its `digit`. */
+  | { kind: 'wordLen'; i: number }
   /** Stakeout: the row or column (numbered from 1) a district's watcher stood in. */
   | { kind: 'spot'; z: number; axis: 'row' | 'col' }
   /**
@@ -40,6 +42,9 @@ export interface Via {
   story?: { crime: string; friendly?: string };
 }
 
+/** The digits of a decode answer, in order (letters and spaces are skipped). */
+export const digitsOf = (p: DecodePuzzle): string => p.answer.replace(/\D/g, '');
+
 /** The number a ref points at (not for 'holder'). */
 export function refNumber(p: AnyAnswered, ref: LinkRef): number {
   switch (ref.kind) {
@@ -50,7 +55,9 @@ export function refNumber(p: AnyAnswered, ref: LinkRef): number {
     case 'degree':
       return (p as NetworkPuzzle).degrees[ref.p];
     case 'digit':
-      return (p as CipherPuzzle).code[ref.p];
+      return p.type === 'decode' ? Number(digitsOf(p)[ref.p]) : (p as CipherPuzzle).code[ref.p];
+    case 'wordLen':
+      return (p as DecodePuzzle).answer.split(' ')[ref.i].length;
     case 'spot': {
       const w = whereOf((p as StakeoutPuzzle).regions, (p as StakeoutPuzzle).cols)[ref.z];
       return w[ref.axis === 'row' ? 0 : 1] + 1;

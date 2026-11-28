@@ -25,7 +25,7 @@
 </script>
 
 <div class="decode-wrap">
-  {#each p.exhibits as ex}
+  {#each session.decodeExhibits as ex}
     <section class="exhibit" aria-label={ex.title}>
       <h3 class="exhibit-h">{ex.title}</h3>
       <ul class="exhibit-lines">

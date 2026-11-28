@@ -14,7 +14,7 @@ import type { TimeClaim } from '../engine/timeline';
 import { verifyTimeline } from '../engine/timeline';
 import type { Claim, GeneratedPuzzle } from '../engine/types';
 import { verifyUnique } from '../engine/generator';
-import { refHolder, refNumber, type AnyAnswered, type LinkRef, type Via } from '../engine/via';
+import { digitsOf, refHolder, refNumber, type AnyAnswered, type LinkRef, type Via } from '../engine/via';
 import type { CaseFile, Lead, LinkSpec, Preset } from './caseTypes';
 import { LINK_RULES } from './presets';
 import { at, cipherPlaces, describeStatement, gridLabels, networkPeople, stakeoutLabels, t, timelineLabels, the, type Tone } from './text';
@@ -49,7 +49,11 @@ function pickNumber(src: AnyAnswered, rng: Rng, lo: number, hi: number, indirect
     if (src.type === 'timeline') ref = { kind: 'slot', m: rng.int(0, src.size - 1) };
     else if (src.type === 'network') ref = { kind: 'degree', p: rng.int(0, src.size - 1) };
     else if (src.type === 'cipher') ref = { kind: 'digit', p: rng.int(0, src.size - 1) };
-    else if (src.type === 'decode') return null;
+    else if (src.type === 'decode') {
+      // a number answer is quoted by a digit, a word answer by the length of a word
+      const digits = digitsOf(src);
+      ref = digits.length >= 2 ? { kind: 'digit', p: rng.int(0, digits.length - 1) } : { kind: 'wordLen', i: rng.int(0, src.answer.split(' ').length - 1) };
+    }
     else if (src.type === 'stakeout') ref = { kind: 'spot', z: rng.int(0, src.size - 1), axis: rng.pick(['row', 'col'] as const) };
     else {
       const r = rng.int(0, src.size - 1);
@@ -61,6 +65,50 @@ function pickNumber(src: AnyAnswered, rng: Rng, lo: number, hi: number, indirect
     if (value >= lo && value <= hi) return { ref, value };
   }
   return null;
+}
+
+/**
+ * A decode lead's carried numbers: one per slot of its variant, each quoted from an earlier answer.
+ * Returns the numbers and where each came from, in slot order.
+ */
+export function planCarry(lead: Lead, preset: Preset, slots: [number, number][], answers: Answers, rng: Rng): { carry: number[]; via: Via[] } {
+  const specs = linksFor(lead, preset);
+  if (specs.length !== slots.length) throw new Error(`${lead.id}: ${slots.length} link(s) wanted by this puzzle, ${specs.length} given`);
+  const carry: number[] = [];
+  const via: Via[] = [];
+  specs.forEach((spec, i) => {
+    const src = answers[spec.from];
+    if (!src) throw new Error(`${lead.id}: link quotes ${spec.from}, which is not built yet`);
+    const n = pickNumber(src, rng, slots[i][0], slots[i][1], false);
+    if (!n) throw new Error(`${lead.id}: ${spec.from} has no number for slot ${i + 1}`);
+    carry.push(n.value);
+    via.push({ lead: spec.from, ref: n.ref });
+  });
+  return { carry, via };
+}
+
+/** A decode lead's carried numbers must be the numbers its links point at in the earlier answers. */
+export function carryResolves(lead: Lead, preset: Preset, p: import('../engine/decode').DecodePuzzle, answers: Answers): string | null {
+  const specs = linksFor(lead, preset);
+  const carry = p.carry ?? [];
+  if (carry.length !== specs.length || (p.via ?? []).length !== specs.length) return `has ${carry.length} carried numbers, the case wants ${specs.length}`;
+  for (let i = 0; i < specs.length; i++) {
+    const via = p.via![i];
+    const src = answers[specs[i].from];
+    if (via.lead !== specs[i].from || !src) return `slot ${i + 1} quotes ${via.lead}, the case says ${specs[i].from}`;
+    const want = refNumber(src, via.ref);
+    if (want !== carry[i]) return `slot ${i + 1} carries ${carry[i]}, but ${via.lead} says ${want}`;
+  }
+  return null;
+}
+
+/** A decode lead's exhibits with each carried number written as the pointer back it stands for. */
+export function wordExhibits(cf: CaseFile, p: import('../engine/decode').DecodePuzzle, answers: Answers, tone: Tone) {
+  if (!p.via) return p.exhibits;
+  return p.exhibits.map((e) => ({
+    ...e,
+    lines: e.lines.map((line) => line.replace(/\u2039(\d)\u203a/g, (_, d: string) => `[${phrase(cf, p.via![Number(d) - 1], answers, tone)}]`)),
+  }));
 }
 
 /**
@@ -178,6 +226,8 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
     return `the time number (1 is the earliest) of ${`“${L.moments[ref.m]}”`} in ${title}`;
   }
   if (ref.kind === 'degree') return `how many people ${networkPeople(cf, lead, src.size)[ref.p]} was in contact with in ${title}`;
+  if (ref.kind === 'wordLen') return `the number of letters in the ${ORDINALS[ref.i]} word of the answer to ${title}`;
+  if (ref.kind === 'digit' && src.type === 'decode') return `the ${ORDINALS[ref.p]} digit of the answer to ${title}`;
   if (ref.kind === 'digit') return lead.riddle ? `${cipherPlaces(cf, lead, src.size).long(ref.p)} in ${title}` : `the ${ORDINALS[ref.p]} digit of the code in ${title}`;
   if (ref.kind === 'spot') {
     const L = stakeoutLabels(lead, src.size, tone);

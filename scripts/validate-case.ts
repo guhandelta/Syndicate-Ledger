@@ -8,13 +8,13 @@ import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
 import { verifyCipher } from '../src/engine/cipher';
 import { verifyStakeout } from '../src/engine/stakeout';
-import { verifyDecode, DECODE_VARIANTS } from '../src/engine/decode';
+import { verifyDecode, carrySlots, DECODE_VARIANTS } from '../src/engine/decode';
 import { verifyNetwork } from '../src/engine/network';
 import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
 import { CIPHER_RULES, DECODE_LEVEL, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from '../src/game/presets';
 import { carriedEvidence, caseForRank, partOf } from '../src/game/rankStory';
-import { checkLinks, linkResolves, linksFor, type Answers } from '../src/game/links';
+import { carryResolves, checkLinks, linkResolves, linksFor, type Answers } from '../src/game/links';
 import { t } from '../src/game/text';
 import { validateTown } from '../src/town/townLogic';
 import type { Town } from '../src/town/townTypes';
@@ -100,7 +100,10 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
     } else if (lead.type === 'decode') {
       // a decode lead has exhibits, not people, times or witnesses
       if (!lead.decode || !DECODE_VARIANTS.includes(lead.decode.variant)) fail(`${lead.id}: a decode lead needs "decode": { "variant": one of ${DECODE_VARIANTS.join(', ')} }`);
-      if (lead.speakers.length || lead.columns.length || lead.rows.length || (lead.links ?? []).length) fail(`${lead.id}: a decode lead has no speakers, rows, columns or links`);
+      if (lead.speakers.length || lead.columns.length || lead.rows.length) fail(`${lead.id}: a decode lead has no speakers, rows or columns`);
+      const want = lead.decode ? carrySlots(lead.decode.variant, 1).length : 0;
+      for (const preset of presets) if (linksFor(lead, preset).length !== (lead.links?.length ? carrySlots(lead.decode!.variant, DECODE_LEVEL[preset]).length : 0)) fail(`${lead.id}: ${lead.decode?.variant} takes ${want} links or none, at every rank`);
+      for (const spec of lead.links ?? []) if (spec.take !== 'number' || spec.use !== 'key') fail(`${lead.id}: a decode lead's links take a number and use it as a "key"`);
     } else if (lead.type === 'cipher') {
       // a cipher has no people or times: its statements name the digits by place, or the people of its riddle
       if (lead.riddle) {
@@ -191,6 +194,10 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
           if (!verifyDecode(p)) fail(`${key}: the decode puzzle does not verify`);
           if (p.variant !== lead.decode?.variant) fail(`${key}: variant ${p.variant}, lead wants ${lead.decode?.variant}`);
           if (p.level !== DECODE_LEVEL[preset]) fail(`${key}: level ${p.level}, ${preset} wants ${DECODE_LEVEL[preset]}`);
+          const answersD: Answers = {};
+          for (const l of cf.leads) answersD[l.id] = book[`${l.id}:${preset}`];
+          const badCarry = carryResolves(lead, preset, p, answersD);
+          if (badCarry) fail(`${key}: ${badCarry}`);
           continue;
         }
         if (p.type === 'timeline') {

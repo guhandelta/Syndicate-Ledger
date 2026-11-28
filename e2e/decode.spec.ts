@@ -63,6 +63,19 @@ test('a nonogram lead: shade the grid, close the lead', async ({ page }) => {
   await expect(page.getByRole('dialog')).toContainText('Lead closed');
 });
 
+test('a decode lead shows its carried numbers as pointers back to the earlier lead', async ({ page }) => {
+  await openLead(page, /Junior/, 'D1');
+  const first = await puzzleOf(page, 'junior');
+  await page.getByRole('textbox', { name: 'Your answer' }).fill(first.answer);
+  await page.getByRole('button', { name: 'Close this lead' }).click();
+  await clearDialogs(page);
+  await page.locator('article.lead', { hasText: 'D3' }).getByRole('button').click();
+  await clearDialogs(page);
+  const text = await page.locator('.exhibit').allInnerTexts();
+  expect(text.join(' ')).toContain('digit of the answer to');
+  expect(text.join(' ')).not.toContain('\u2039');
+});
+
 test('the decode screen has no accessibility problems', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'one browser is enough');
   await openLead(page, /Chief/);
