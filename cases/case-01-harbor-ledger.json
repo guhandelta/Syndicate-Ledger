@@ -1293,6 +1293,32 @@
           },
           "cost": 2,
           "opensAfter": [],
+          "links": [
+            {
+              "from": "@story",
+              "take": "number",
+              "use": "key",
+              "fact": {
+                "value": 9,
+                "story": {
+                  "crime": "the door number stamped on the brass plate from the ice house lock, CS-9",
+                  "friendly": "the number on the stamped plate, CS-9"
+                }
+              }
+            },
+            {
+              "from": "@story",
+              "take": "number",
+              "use": "key",
+              "fact": {
+                "value": 4,
+                "story": {
+                  "crime": "how many coins Tip carried at 9 PM, the biggest bag of the night",
+                  "friendly": "how many coins Tip carried at 9 o'clock, the biggest bag of the night"
+                }
+              }
+            }
+          ],
           "title": {
             "crime": "Meena's wall calendar",
             "friendly": "Meena's wall calendar"

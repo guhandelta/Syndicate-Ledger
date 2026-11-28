@@ -85,6 +85,7 @@ export function carrySlots(variant: DecodeVariant, level: number): [number, numb
   switch (variant) {
     case 'shift':
     case 'dial':
+    case 'date':
       return [[1, 9], [1, 9]];
     case 'book':
       return [[1, 3 + level * 2], [1, 3 + level]];
@@ -194,6 +195,7 @@ export function carryMatters(p: DecodePuzzle): boolean {
     let other: DecodeData;
     if (d.variant === 'shift') other = { ...d, key: d.key.map((k, j) => (j === i ? wrong(i) : k)) };
     else if (d.variant === 'dial') other = { ...d, moves: d.moves.map((m, j) => (j === i ? { ...m, steps: wrong(i) } : m)) };
+    else if (d.variant === 'date') other = { ...d, month: i === 0 ? wrong(0) : d.month, day: i === 1 ? wrong(1) : d.day };
     else if (d.variant === 'book') {
       const [page, line, word] = d.picks[0];
       other = { ...d, picks: [i === 0 ? [wrong(0), line, word] : [page, wrong(1), word], ...d.picks.slice(1)] };
@@ -216,7 +218,7 @@ export function verifyDecode(p: DecodePuzzle): boolean {
     case 'shift':
       return text.includes(p.data.cipher) && text.includes(p.data.key.map((k, i) => show(p.carry, i, k)).join('-')) && carryHolds(p, p.data.key.slice(0, 2));
     case 'date':
-      return text.includes(`${p.data.month}/${p.data.day}`) && text.includes(String(p.data.days));
+      return text.includes(p.carry ? `${carryToken(0)}/${carryToken(1)}` : `${p.data.month}/${p.data.day}`) && text.includes(String(p.data.days)) && carryHolds(p, [p.data.month, p.data.day]);
     case 'check':
       return p.data.serials.every((s) => text.includes(s));
     case 'dial':
@@ -316,14 +318,17 @@ function genShift(level: number, seed: number, rng: Rng, carry?: number[], words
   ], 'Undo the shifts and type the hidden word.');
 }
 
-function genDate(level: number, seed: number, rng: Rng): DecodePuzzle {
-  const month = level >= 3 ? rng.pick([1, 2, 11, 12]) : rng.int(1, 12);
-  const day = rng.int(1, MONTH_DAYS[month - 1]);
+function genDate(level: number, seed: number, rng: Rng, carry?: number[]): DecodePuzzle {
+  // always draw, so the same seed gives the same puzzle whatever is carried in
+  const drawnMonth = level >= 3 ? rng.pick([1, 2, 11, 12]) : rng.int(1, 12);
+  const drawnDay = rng.int(1, MONTH_DAYS[drawnMonth - 1]);
+  const month = carry ? carry[0] : drawnMonth;
+  const day = carry ? carry[1] : drawnDay;
   const days = rng.int(5, 20 + level * 30);
   const direction: 1 | -1 = level >= 2 && rng.next() < 0.5 ? -1 : 1;
   const data: DecodeData = { variant: 'date', month, day, days, direction };
   return make('date', level, seed, data, [
-    { title: 'Wall calendar', lines: [`${month}/${day} is circled in red. (Months have 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 days; no leap year.)`] },
+    { title: 'Wall calendar', lines: [`${carry ? `${carryToken(0)}/${carryToken(1)}` : `${month}/${day}`} is circled in red. (Months have 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 days; no leap year.)`] },
     { title: 'Sticky note on the safe', lines: [`Move ${direction === 1 ? 'forward' : 'back'} by the victim's age: ${days}. The PIN is the new month then the new day, two digits each.`] },
   ], 'Work out the new date and type the four-digit PIN.');
 }

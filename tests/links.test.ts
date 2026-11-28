@@ -83,6 +83,8 @@ describe('Case 1 links', () => {
     for (const { story } of ranks)
       for (const lead of story.leads)
         for (const spec of lead.links ?? []) {
+          // a story fact stands in for an earlier answer, so it quotes no lead
+          if (spec.fact) continue;
           const idx = story.leads.findIndex((l) => l.id === spec.from);
           expect(idx).toBeGreaterThanOrEqual(0);
           expect(idx).toBeLessThan(story.leads.findIndex((l) => l.id === lead.id));

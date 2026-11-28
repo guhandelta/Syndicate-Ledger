@@ -78,6 +78,10 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
     };
     walk(lead.id);
     for (const spec of lead.links ?? []) {
+      if (spec.fact) {
+        if (lead.type !== 'decode' || spec.from !== '@story' || !Number.isInteger(spec.fact.value)) fail(`${lead.id}: a story-fact link belongs in a decode lead, with "from": "@story" and a whole number`);
+        continue;
+      }
       if (!before.has(spec.from)) fail(`${lead.id}: link quotes ${spec.from}, which does not open before it`);
       if (spec.valueFrom && !before.has(spec.valueFrom)) fail(`${lead.id}: link quotes ${spec.valueFrom}, which does not open before it`);
       if (spec.valueFrom && spec.take !== 'person') fail(`${lead.id}: "valueFrom" picks a person, so it needs "take": "person"`);
