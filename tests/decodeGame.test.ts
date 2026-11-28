@@ -113,6 +113,16 @@ describe('a decode lead that carries numbers from an earlier lead', () => {
     expect(() => buildRank(caseWith([lone]), 'junior')).toThrow();
   });
 
+  it('quotes a letter of a one-word answer by its place in the alphabet', () => {
+    const cf = caseWith([{ ...leadFor('shift'), title: 'The note' }, keyedLead('dial')]);
+    const book = buildRank(cf, 'junior');
+    const p = book['D2:junior'] as DecodePuzzle;
+    expect(p.via!.every((v) => v.ref.kind === 'letter')).toBe(true);
+    const text = wordExhibits(cf, p, { D1: book['D1:junior'] as never }, 'crime').flatMap((e) => e.lines).join(' ');
+    expect(text).toMatch(/place in the alphabet \(A is 1\) of the \d\w\w letter of the answer to “The note”/);
+    expect(carryResolves(keyedLead('dial'), 'junior', p, { D1: book['D1:junior'] as never })).toBeNull();
+  });
+
   it('says so when the earlier answer has no number that fits a slot', () => {
     // a book's line slot takes 1 to 4, and a shift answer's first word is always longer than that
     const cf = caseWith([leadFor('shift'), keyedLead('book')]);

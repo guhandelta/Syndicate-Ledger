@@ -1,17 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import type { CaseFile, GridBook } from '../src/game/caseTypes';
+import type { AnyPuzzle, CaseFile, GridBook } from '../src/game/caseTypes';
 import { PRESETS } from '../src/game/caseTypes';
 import { caseForRank } from '../src/game/rankStory';
 import { enumerate } from '../src/engine/solver';
 import { evalClaim } from '../src/engine/claims';
 import { fireEvents, accuse, accuseStatus, submitAccusation, addFlag, checkLead, gridOf as puzzleOf, hoursLeft, newGame, solveLead, spendHours, startLead, trustOf } from '../src/game/state';
 import { verifyUnique } from '../src/engine/generator';
+import { verifyDecode } from '../src/engine/decode';
 import { book } from './caseBook';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
 
 function solve(g: ReturnType<typeof newGame>, id: string) {
+  const any = g.book[`${id}:${g.s.preset}`];
+  if (any.type === 'decode') {
+    g.s.leads[id].typed = any.answer;
+    expect(checkLead(g, id)).toBe('solved');
+    solveLead(g, id);
+    return;
+  }
   const p = puzzleOf(g, id);
   const lp = g.s.leads[id];
   lp.grid = p.solution.map((r) => r.slice());
@@ -23,13 +31,15 @@ function solve(g: ReturnType<typeof newGame>, id: string) {
 describe('case 1', () => {
   // one test per puzzle, so no single test holds the worker for long. The 7x7 Chief puzzles take many seconds each
   // to check (a CI run with coverage stalled the test worker), so `npm run validate` checks those.
-  for (const lead of cf.leads)
-    for (const preset of PRESETS.filter((r) => r !== 'chief'))
+  for (const preset of PRESETS.filter((r) => r !== 'chief'))
+    for (const lead of caseForRank(cf, preset).leads.filter((l) => !l.id.startsWith('J'))) {
       it(`has a verified puzzle for ${lead.id} at ${preset}`, { timeout: 120_000 }, () => {
-        const p = book[`${lead.id}:${preset}`];
+        const p = book[`${lead.id}:${preset}`] as AnyPuzzle;
         expect(p, `${lead.id}:${preset}`).toBeTruthy();
-        expect(verifyUnique(p)).toEqual({ ok: true });
+        if (p.type === 'decode') expect(verifyDecode(p)).toBe(true);
+        else expect(verifyUnique(p as never)).toEqual({ ok: true });
       });
+    }
 
   it('reaches the full bust on the default clock without informants', () => {
     const g = newGame(cf, book, 'inspector');
@@ -120,7 +130,8 @@ describe('accusation rules', () => {
 
 describe('witness leaves', () => {
   // (Chief has its own leads and no Nevethitha event)
-  for (const preset of PRESETS.filter((r) => r !== 'chief')) {
+  // (Detective's L2 is a decode lead with no witness to send away, so it has no such event)
+  for (const preset of PRESETS.filter((r) => r !== 'chief' && r !== 'detective')) {
     it(`keeps L2 solvable with one answer at ${preset} after Nevethitha leaves`, () => {
       const g = newGame(cf, book, preset);
       g.s.hoursUsed = 4;

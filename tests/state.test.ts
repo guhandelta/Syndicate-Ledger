@@ -14,6 +14,11 @@ const clone = (): CaseFile => JSON.parse(JSON.stringify(cf0));
 const fresh = (preset: 'junior' | 'detective' | 'inspector' | 'chief' = 'inspector', cf = cf0) => newGame(cf, book, preset);
 
 function fill(g: ReturnType<typeof fresh>, id: string, marks = true) {
+  const any = g.book[`${id}:${g.s.preset}`];
+  if (any.type === 'decode') {
+    g.s.leads[id].typed = any.answer;
+    return;
+  }
   const p = puzzleOf(g, id);
   const lp = g.s.leads[id];
   lp.grid = p.solution.map((r) => r.slice());
@@ -280,6 +285,13 @@ describe('accusations', () => {
     expect(proofHolds(g, 'vex', ['L2', 'carried:junior'])).toBe(false);
     expect(proofHolds(g, 'crane', ['L3', 'L4', 'carried:detective'])).toBe(false);
     expect(proofHolds(fresh('junior'), 'crane', ['L3', 'L4', 'carried:junior'])).toBe(false);
+  });
+
+  it("a decode lead can expose a double agent: solving Detective's L3 sets tip-exposed", () => {
+    const g = fresh('detective', caseForRank(cf0, 'detective'));
+    expect(g.s.flags).not.toContain('tip-exposed');
+    solve(g, 'L3');
+    expect(g.s.flags).toContain('tip-exposed');
   });
 
   it('lists the proven facts', () => {

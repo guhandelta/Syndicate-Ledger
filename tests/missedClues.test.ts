@@ -37,7 +37,7 @@ describe('missed-clue data', () => {
 
 describe('wrong marks', () => {
   it('nudges when the player doubts an honest witness (L1-1)', () => {
-    const g = newGame(cf, book, 'detective');
+    const g = newGame(cf, book, 'inspector');
     const meena = wrongIndexes(g, 'L1', 'meena');
     fillLead(g, 'L1', [meena[0]]);
     expect(checkLead(g, 'L1')).toBe('marks-wrong');
@@ -83,7 +83,7 @@ describe('unmarked statements', () => {
 
 describe('events', () => {
   it('fires L2-1 when Nevethitha leaves before L2 is started', () => {
-    const g = newGame(cf, book, 'detective');
+    const g = newGame(cf, book, 'inspector');
     const fired = spendHours(g, 4);
     expect(fired.map((e) => e.id)).toContain('nevethitha-leaves');
     expect(ids(pendingClues(g, { kind: 'event', event: 'nevethitha-leaves' }))).toEqual(['L2-1']);
@@ -120,7 +120,7 @@ describe('accusations', () => {
   });
 
   it('nudges X-3 when L4 is solved but Tip is not exposed', () => {
-    const g = newGame(cf, book, 'detective');
+    const g = newGame(cf, book, 'inspector');
     fillLead(g, 'L4');
     solveLead(g, 'L4');
     const got = ids(pendingClues(g, { kind: 'accuse', person: 'crane' }));
@@ -134,7 +134,7 @@ describe('accusations', () => {
   });
 
   it('does not nudge X-2 once that person has a checked statement', () => {
-    const g = newGame(cf, book, 'detective');
+    const g = newGame(cf, book, 'inspector');
     fillLead(g, 'L1');
     solveLead(g, 'L1');
     expect(ids(pendingClues(g, { kind: 'accuse', person: 'kane' }))).not.toContain('X-2');

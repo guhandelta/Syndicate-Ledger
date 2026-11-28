@@ -10,7 +10,8 @@ import { refHolder, refNumber } from '../src/engine/via';
 import type { CaseFile, PuzzleBook } from '../src/game/caseTypes';
 import { PRESETS } from '../src/game/caseTypes';
 import { caseForRank } from '../src/game/rankStory';
-import { checkLinks, linkResolves, linksFor, planLinks, wordStatement, type Answers } from '../src/game/links';
+import { carryMatters } from '../src/engine/decode';
+import { carryResolves, checkLinks, linkResolves, linksFor, planLinks, wordStatement, type Answers } from '../src/game/links';
 import { describeStatement } from '../src/game/text';
 
 const cf: CaseFile = JSON.parse(readFileSync('cases/case-01-harbor-ledger.json', 'utf8'));
@@ -58,6 +59,13 @@ describe('Case 1 links', () => {
       for (const l of story.leads) answers[l.id] = book[`${l.id}:${preset}`];
       for (const lead of story.leads) {
         const p = book[`${lead.id}:${preset}`] as AnyAnswered;
+        if (p.type === 'decode') {
+          // a decode lead carries its numbers; each must be the number its link points at
+          expect(carryResolves(lead, preset, p, answers), `${lead.id}:${preset}`).toBeNull();
+          expect(carryMatters(p), `${lead.id}:${preset}`).toBe(true);
+          seen += linksFor(lead, preset).length;
+          continue;
+        }
         const links = (p.statements as { via?: Via }[]).filter((s) => s.via);
         expect(links.length, `${lead.id}:${preset}`).toBe(linksFor(lead, preset).length);
         for (const st of links) {
@@ -97,11 +105,11 @@ describe('Case 1 links', () => {
   });
 
   it('higher ranks describe the cell through someone else in the same hour', () => {
-    const story = caseForRank(cf, 'detective');
+    const story = caseForRank(cf, 'inspector');
     const answers: Answers = {};
-    for (const l of story.leads) answers[l.id] = book[`${l.id}:detective`];
+    for (const l of story.leads) answers[l.id] = book[`${l.id}:inspector`];
     const lead = story.leads.find((l) => l.id === 'L2')!;
-    const p = book['L2:detective'] as AnyAnswered;
+    const p = book['L2:inspector'] as AnyAnswered;
     const st = (p.statements as { via?: Via }[]).find((s) => s.via)!;
     expect(st.via!.ref.kind === 'cell' && st.via!.ref.by).toBeTruthy();
     expect(wordStatement(story, lead, p, st as never, answers, 'crime')).toMatch(/in the hour .* moved/);

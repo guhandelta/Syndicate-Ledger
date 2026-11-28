@@ -210,6 +210,8 @@ export interface Lead {
    * the earlier answer when this puzzle is generated, so the puzzle still has exactly one answer.
    */
   links?: LinkSpec[];
+  /** Flags set when this lead is solved, for a lead (such as a decode lead) that has no witness whose exposure would set them. */
+  flagsOnSolve?: string[];
   /** The lead that follows this one at once: closing this lead offers to go straight on to it (a two-step finale). */
   then?: string;
 }
