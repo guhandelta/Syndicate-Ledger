@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calcLines, clock, solveCalc, type CalcData } from '../src/engine/calc';
 import { countPictures, runsOf } from '../src/engine/grid';
-import { DECODE_VARIANTS, decodeShift, dialStops, encodeShift, generateDecode, isDecodeCorrect, keypadDigits, moveDate, normalizeAnswer, serialHolds, solveDecode, verifyDecode, type DecodePuzzle } from '../src/engine/decode';
+import { wordPoolProblem, DECODE_VARIANTS, decodeShift, dialStops, encodeShift, generateDecode, isDecodeCorrect, keypadDigits, moveDate, normalizeAnswer, serialHolds, solveDecode, verifyDecode, type DecodePuzzle } from '../src/engine/decode';
 
 describe('decode rules', () => {
   it('moves a date across month and year ends', () => {
@@ -198,5 +198,39 @@ describe('nonogram', () => {
   });
   it('a puzzle with two pictures has no answer', () => {
     expect(solveDecode({ variant: 'nonogram', rows: [[1], [1]], cols: [[1], [1]] })).toBe('');
+  });
+});
+
+describe('a lead with its own story words', () => {
+  const words = ['CRANE', 'WAREHOUSE', 'BERTH', 'HARBOR', 'FERRYMAN', 'MIDNIGHT', 'LEDGER', 'SHIPPING', 'TIDEWATER', 'PADLOCK'];
+  it('draws the answer from the story words for a shift, a book and a keypad', () => {
+    for (const variant of ['shift', 'book', 'keypad'] as const) {
+      for (let level = 1; level <= 4; level++) {
+        for (let seed = 1; seed <= 15; seed++) {
+          const p = generateDecode({ variant, level, seed, words });
+          expect(verifyDecode(p)).toBe(true);
+          for (const w of p.answer.split(' ')) expect(words).toContain(w);
+        }
+      }
+    }
+  });
+  it('still gives a different puzzle for each seed', () => {
+    const answers = new Set(Array.from({ length: 30 }, (_, i) => generateDecode({ variant: 'shift', level: 2, seed: i + 1, words }).answer));
+    expect(answers.size).toBeGreaterThan(4);
+  });
+  it('falls back to any story word when none fits the rank', () => {
+    const short = ['AX', 'BXE', 'CAT', 'DOG', 'EEL', 'FOX'].filter((w) => w.length >= 3);
+    expect(generateDecode({ variant: 'shift', level: 4, seed: 1, words: [...short, 'ABC', 'DEF', 'GHI'] }).answer.length).toBeGreaterThanOrEqual(3);
+  });
+  it('mixes in generic names when a keypad has too few story words', () => {
+    const p = generateDecode({ variant: 'keypad', level: 1, seed: 2, words: words.slice(0, 6) });
+    expect(verifyDecode(p)).toBe(true);
+  });
+  it('rejects a bad pool', () => {
+    expect(wordPoolProblem(words)).toBeNull();
+    expect(wordPoolProblem(['A', 'B'])).toMatch(/at least 6/);
+    expect(wordPoolProblem([...words.slice(0, 5), 'lower'])).toMatch(/capital letters/);
+    expect(wordPoolProblem([...words.slice(0, 5), 'CRANE'])).toMatch(/twice/);
+    expect(() => generateDecode({ variant: 'shift', level: 1, seed: 1, words: ['X'] })).toThrow(/word pool/);
   });
 });

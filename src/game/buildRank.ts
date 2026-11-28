@@ -82,7 +82,8 @@ function withLinks<P extends { statements: { via?: unknown }[] }>(cfr: CaseFile,
 export function buildDecode(cfr: CaseFile, preset: Preset, lead: Lead, seed: number, built: PuzzleBook): DecodePuzzle {
   const variant = lead.decode!.variant;
   const level = DECODE_LEVEL[preset];
-  if (!linksFor(lead, preset).length) return generateDecode({ variant, level, seed });
+  const words = lead.decode!.words;
+  if (!linksFor(lead, preset).length) return generateDecode({ variant, level, seed, words });
   const answers: Answers = {};
   for (const l of cfr.leads) {
     const a = built[`${l.id}:${preset}`];
@@ -93,7 +94,7 @@ export function buildDecode(cfr: CaseFile, preset: Preset, lead: Lead, seed: num
   for (let attempt = 0; attempt < LINK_ATTEMPTS; attempt++) {
     try {
       const { carry, via } = planCarry(lead, preset, slots, answers, makeRng((seed ^ 0x9e3779b9) + attempt * 7919));
-      const p = generateDecode({ variant, level, seed, carry });
+      const p = generateDecode({ variant, level, seed, carry, words });
       const matters = carryMatters(p);
       /* v8 ignore start -- a wrong key digit or dial turn always changes the answer; only a book with the same word in two places can fail, and the next pick then works */
       if (!matters) {

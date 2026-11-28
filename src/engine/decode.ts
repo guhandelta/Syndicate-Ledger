@@ -242,7 +242,7 @@ const make = (variant: DecodeVariant, level: number, seed: number, data: DecodeD
   return { type: 'decode', variant, level, exhibits, question, data, answer, seed, size: answer.length, statements: [], truth: [], liarCounts: [0] };
 };
 
-function genBook(level: number, seed: number, rng: Rng, carry?: number[]): DecodePuzzle {
+function genBook(level: number, seed: number, rng: Rng, carry?: number[], words?: string[]): DecodePuzzle {
   const pagesN = 3 + level * 2;
   const pages: string[][][] = [];
   for (let p = 0; p < pagesN; p++) {
@@ -260,6 +260,9 @@ function genBook(level: number, seed: number, rng: Rng, carry?: number[]): Decod
     const p = first ? carry[0] : dp;
     const l = first ? carry[1] : dl;
     const w = rng.int(1, pages[p - 1][l - 1].length);
+    // the word the note points at comes from the story's own words when the lead has them
+    const told = rng.pick(words ?? WORDS);
+    if (words) pages[p - 1][l - 1][w - 1] = told;
     const id = `${p}-${l}-${w}`;
     if (seen.has(id)) continue;
     seen.add(id);
@@ -273,8 +276,9 @@ function genBook(level: number, seed: number, rng: Rng, carry?: number[]): Decod
   ], 'Each triple is page-line-word. Look up each word and type them in order, separated by spaces.');
 }
 
-function genKeypad(level: number, seed: number, rng: Rng): DecodePuzzle {
-  const pool = [...NAMES, ...SHORT.filter((w) => w.length <= 5)];
+function genKeypad(level: number, seed: number, rng: Rng, _carry?: number[], words?: string[]): DecodePuzzle {
+  const own = (words ?? []).filter((w) => w.length <= 8);
+  const pool = own.length >= 8 ? own : words ? [...own, ...NAMES] : [...NAMES, ...SHORT.filter((w) => w.length <= 5)];
   const names: string[] = [];
   const digitsSeen = new Set<string>();
   const count = 4 + level;
@@ -295,8 +299,9 @@ function genKeypad(level: number, seed: number, rng: Rng): DecodePuzzle {
   ], 'Each digit is a key on an old phone. Which name on the list is the napkin spelling? Type it.');
 }
 
-function genShift(level: number, seed: number, rng: Rng, carry?: number[]): DecodePuzzle {
-  const plain = rng.pick(WORDS.filter((w) => w.length >= 4 + level && w.length <= 5 + level * 2));
+function genShift(level: number, seed: number, rng: Rng, carry?: number[], words?: string[]): DecodePuzzle {
+  const fit = (words ?? WORDS).filter((w) => w.length >= 4 + level && w.length <= 5 + level * 2);
+  const plain = rng.pick(fit.length ? fit : (words as string[])); // the generic list always has a fit, so a pool is the only way to get here
   const key = Array.from({ length: 2 + Math.min(level, 3) }, (_, i) => {
     // always draw, so the same seed gives the same puzzle whatever is carried in
     const drawn = rng.int(1, 9);
@@ -361,7 +366,7 @@ const fromGuess = (variant: DecodeVariant, gen: (level: number, rng: Rng) => { d
   return make(variant, level, seed, g.data, g.exhibits, g.question);
 };
 
-const GEN: Record<DecodeVariant, (level: number, seed: number, rng: Rng, carry?: number[]) => DecodePuzzle> = {
+const GEN: Record<DecodeVariant, (level: number, seed: number, rng: Rng, carry?: number[], words?: string[]) => DecodePuzzle> = {
   book: genBook, keypad: genKeypad, shift: genShift, date: genDate, check: genCheck, dial: genDial,
   bulls: fromGuess('bulls', genBulls), smudge: fromGuess('smudge', genSmudge), scale: fromGuess('scale', genScale),
   receipt: fromGuess('receipt', genReceipt), zone: fromGuess('zone', genZone), cooling: fromGuess('cooling', genCooling), triangulate: fromGuess('triangulate', genTriangulate), dice: fromGuess('dice', genDice),
@@ -375,6 +380,17 @@ export interface DecodeOptions {
   seed: number;
   /** Numbers carried in from earlier leads, one per slot of `carrySlots`; the puzzle's rule uses them. */
   carry?: number[];
+  /** The story's own words (capital letters, 3 to 12 each, at least 6): answers and words in the exhibits are drawn from these before the generic list. */
+  words?: string[];
+}
+
+/** Does this word pool suit a puzzle? Null when it does, else why not. */
+export function wordPoolProblem(words: string[]): string | null {
+  if (words.length < 6) return 'needs at least 6 words';
+  const bad = words.find((w) => !/^[A-Z]{3,12}$/.test(w));
+  if (bad) return `"${bad}" is not 3 to 12 capital letters`;
+  if (new Set(words).size !== words.length) return 'has a word twice';
+  return null;
 }
 
 /** Builds one decode puzzle. The tests check `verifyDecode` on many seeds of every variant and level. */
@@ -383,6 +399,8 @@ export function generateDecode(o: DecodeOptions): DecodePuzzle {
   const slots = carrySlots(o.variant, level);
   const carry = o.carry && o.carry.length ? o.carry : undefined;
   if (carry && (carry.length !== slots.length || carry.some((v, i) => v < slots[i][0] || v > slots[i][1]))) throw new Error(`${o.variant}: carry ${carry.join(',')} does not fit its slots`);
-  const p = GEN[o.variant](level, o.seed, makeRng(o.seed), carry);
+  const problem = o.words ? wordPoolProblem(o.words) : null;
+  if (problem) throw new Error(`word pool ${problem}`);
+  const p = GEN[o.variant](level, o.seed, makeRng(o.seed), carry, o.words);
   return carry ? { ...p, carry } : p;
 }

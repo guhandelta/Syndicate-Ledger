@@ -194,7 +194,8 @@ export interface Lead {
    * Decode leads: which code puzzle this is (book, keypad, shift, date, check, dial). There are no witnesses: the player reads the
    * exhibits and types one answer. `rows` and `columns` are empty and `speakers` is empty.
    */
-  decode?: { variant: DecodeVariant };
+  /** A decode lead's puzzle kind, and optionally the story's own words its answers and exhibits are drawn from. */
+  decode?: { variant: DecodeVariant; words?: string[] };
   speakers: string[];
   liars: Record<Preset, string[]>;
   fact: Text;
