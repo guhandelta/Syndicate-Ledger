@@ -8,10 +8,11 @@ import { gradePuzzle } from '../src/engine/logic';
 import { verifyUnique } from '../src/engine/generator';
 import { verifyCipher } from '../src/engine/cipher';
 import { verifyStakeout } from '../src/engine/stakeout';
+import { verifyDecode, DECODE_VARIANTS } from '../src/engine/decode';
 import { verifyNetwork } from '../src/engine/network';
 import { isWalk, verifyTimeline } from '../src/engine/timeline';
 import { FACES, LEAD_TYPES, PRESETS, VOICES, type CaseFile, type Condition, type Line, type Preset, type PuzzleBook, type Voice } from '../src/game/caseTypes';
-import { CIPHER_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from '../src/game/presets';
+import { CIPHER_RULES, DECODE_LEVEL, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from '../src/game/presets';
 import { carriedEvidence, caseForRank, partOf } from '../src/game/rankStory';
 import { checkLinks, linkResolves, linksFor, type Answers } from '../src/game/links';
 import { t } from '../src/game/text';
@@ -96,6 +97,10 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
       // a stakeout has districts, not people or times; the biggest map is the Chief's
       const most = STAKEOUT_RULES.chief.size;
       if ((lead.districts?.length ?? 0) < most) fail(`${lead.id}: stakeout leads need ${most} districts so every preset can be built`);
+    } else if (lead.type === 'decode') {
+      // a decode lead has exhibits, not people, times or witnesses
+      if (!lead.decode || !DECODE_VARIANTS.includes(lead.decode.variant)) fail(`${lead.id}: a decode lead needs "decode": { "variant": one of ${DECODE_VARIANTS.join(', ')} }`);
+      if (lead.speakers.length || lead.columns.length || lead.rows.length || (lead.links ?? []).length) fail(`${lead.id}: a decode lead has no speakers, rows, columns or links`);
     } else if (lead.type === 'cipher') {
       // a cipher has no people or times: its statements name the digits by place, or the people of its riddle
       if (lead.riddle) {
@@ -180,8 +185,14 @@ function checkStory(cf: CaseFile, presets: Preset[], label: string) {
         if (!p) { fail(`${key}: no puzzle`); continue; }
         const rules = PRESET_RULES[preset];
         const wantSize = lead.type === 'stakeout' ? STAKEOUT_RULES[preset].size : rules.size;
-        if (p.size !== wantSize) fail(`${key}: size ${p.size}, preset wants ${wantSize}`);
+        if (p.type !== 'decode' && p.size !== wantSize) fail(`${key}: size ${p.size}, preset wants ${wantSize}`);
         if (p.type !== lead.type) fail(`${key}: type ${p.type}, lead is ${lead.type}`);
+        if (p.type === 'decode') {
+          if (!verifyDecode(p)) fail(`${key}: the decode puzzle does not verify`);
+          if (p.variant !== lead.decode?.variant) fail(`${key}: variant ${p.variant}, lead wants ${lead.decode?.variant}`);
+          if (p.level !== DECODE_LEVEL[preset]) fail(`${key}: level ${p.level}, ${preset} wants ${DECODE_LEVEL[preset]}`);
+          continue;
+        }
         if (p.type === 'timeline') {
           const check = verifyTimeline(p);
           if (!check.ok) fail(`${key}: ${check.reason}`);

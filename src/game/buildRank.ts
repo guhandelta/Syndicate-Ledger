@@ -4,6 +4,7 @@
  * A seed rebuilds exactly the same puzzles, so a saved game only needs to remember it.
  */
 import { generateCipher, verifyCipher } from '../engine/cipher';
+import { generateDecode } from '../engine/decode';
 import { generatePuzzle, verifyUnique } from '../engine/generator';
 import { generateNetwork, verifyNetwork } from '../engine/network';
 import { generateStakeout, verifyStakeout } from '../engine/stakeout';
@@ -12,7 +13,7 @@ import { generateTimeline, verifyTimeline } from '../engine/timeline';
 import type { GridType } from '../engine/types';
 import type { AnyPuzzle, CaseFile, Lead, Preset, PuzzleBook } from './caseTypes';
 import { checkLinks, linkResolves, linksFor, planLinks, type Answers } from './links';
-import { CIPHER_RULES, MAP_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from './presets';
+import { CIPHER_RULES, DECODE_LEVEL, MAP_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from './presets';
 import { caseForRank } from './rankStory';
 
 /** What each grid size asks of its generators (the rule book's sizes, 4 to 7). Plain tables, so a size has one place to be tuned. */
@@ -110,6 +111,8 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
       /* v8 ignore next -- the generator only returns a puzzle that verifies; this is a second opinion */
       if (!tc.ok) throw new Error(`${lead.id}:${preset} failed: ${tc.reason}`);
       p = t;
+    } else if (lead.type === 'decode') {
+      p = generateDecode({ variant: lead.decode!.variant, level: DECODE_LEVEL[preset], seed });
     } else if (lead.type === 'cipher') {
       const cp = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generateCipher({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...CIPHER_RULES[preset], ...(lead.message ? { message: lead.message } : {}), planted: planted as never, seed }, 800));
       const cc = verifyCipher(cp);

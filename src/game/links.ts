@@ -49,6 +49,7 @@ function pickNumber(src: AnyAnswered, rng: Rng, lo: number, hi: number, indirect
     if (src.type === 'timeline') ref = { kind: 'slot', m: rng.int(0, src.size - 1) };
     else if (src.type === 'network') ref = { kind: 'degree', p: rng.int(0, src.size - 1) };
     else if (src.type === 'cipher') ref = { kind: 'digit', p: rng.int(0, src.size - 1) };
+    else if (src.type === 'decode') return null;
     else if (src.type === 'stakeout') ref = { kind: 'spot', z: rng.int(0, src.size - 1), axis: rng.pick(['row', 'col'] as const) };
     else {
       const r = rng.int(0, src.size - 1);

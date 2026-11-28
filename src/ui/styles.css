@@ -454,3 +454,12 @@ kbd {
 .stake-mark { font-size: clamp(1.1rem, 4.5vw, 1.9rem); line-height: 1; }
 .stake-cell.placed { box-shadow: inset 0 0 0 3px var(--accent); }
 .stake-cell.clash, .stake-cell.wrong { box-shadow: inset 0 0 0 3px var(--bad, #e0645c); }
+
+/* ---------- decode: exhibits to read, one answer to type ---------- */
+.decode-wrap { display: grid; gap: 12px; }
+.exhibit { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: var(--card, transparent); }
+.exhibit-h { margin: 0 0 6px; font-size: 0.95rem; }
+.exhibit-lines { margin: 0; padding-left: 18px; font-family: ui-monospace, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.decode-answer { display: grid; gap: 4px; max-width: 420px; font-weight: 600; }
+.decode-answer input { font: inherit; font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.05em; text-transform: uppercase; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
+.decode-answer input.wrong { border-color: #dc2626; }

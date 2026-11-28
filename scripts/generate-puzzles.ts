@@ -14,6 +14,7 @@ const only = process.env.ONLY_PRESET;
 const book: PuzzleBook = {};
 
 const describe = (p: PuzzleBook[string]) => {
+  if (p.type === 'decode') return `${p.size} chars    decode ${p.variant.padEnd(7)} level ${p.level}`;
   const lies = p.truth.filter((x) => !x).length;
   const base = `grade ${p.grade}  statements ${p.statements.length}  lies ${lies}`;
   if (p.type === 'timeline') return `${p.size} moments  timeline     ${base}`;
