@@ -26,6 +26,8 @@ export type LinkRef =
   | { kind: 'wordLen'; i: number }
   /** Decode: the place in the alphabet (A is 1) of a letter of a one-word answer (letters counted from 0). */
   | { kind: 'letter'; p: number }
+  /** A fixed number from the story (a plate number, a page), not from another puzzle's answer. `says` is how the clue names it. */
+  | { kind: 'fact'; value: number; says: { crime: string; friendly?: string } }
   /** Stakeout: the row or column (numbered from 1) a district's watcher stood in. */
   | { kind: 'spot'; z: number; axis: 'row' | 'col' }
   /**
@@ -58,6 +60,8 @@ export function refNumber(p: AnyAnswered, ref: LinkRef): number {
       return (p as NetworkPuzzle).degrees[ref.p];
     case 'digit':
       return p.type === 'decode' ? Number(digitsOf(p)[ref.p]) : (p as CipherPuzzle).code[ref.p];
+    case 'fact':
+      return ref.value;
     case 'letter':
       return (p as DecodePuzzle).answer.charCodeAt(ref.p) - 64;
     case 'wordLen':

@@ -42,7 +42,7 @@ describe('rank stories', () => {
     expect(d.leads.every((l) => l.type === 'decode')).toBe(true);
     expect(d.leads.map((l) => l.fact)).toEqual(cf.leads.map((l) => l.fact));
     // the chain: each lead after the first carries two numbers from the one before
-    expect(d.leads.map((l) => (l.links ?? []).map((k) => k.from))).toEqual([[], ['L1', 'L1'], ['L2', 'L2'], ['L3', 'L3']]);
+    expect(d.leads.map((l) => (l.links ?? []).map((k) => k.from))).toEqual([['@story', '@story'], ['L1', 'L1'], ['L2', 'L2'], ['L3', 'L3']]);
     expect(d.leads.find((l) => l.id === 'L3')!.flagsOnSolve).toEqual(['tip-exposed']);
     expect(d.leads).not.toBe(cf.leads);
   });

@@ -6,6 +6,7 @@ import { DECODE_LEVEL } from '../src/game/presets';
 import { buyTip, checkLead, newGame, puzzleOf, solveLead, startLead } from '../src/game/state';
 import { carryResolves, planLinks, wordExhibits } from '../src/game/links';
 import { makeRng } from '../src/engine/rng';
+import { refNumber } from '../src/engine/via';
 import { idleHint } from '../src/ui/idleHint';
 
 const leadFor = (variant: (typeof DECODE_VARIANTS)[number], id = 'D1'): Lead =>
@@ -67,11 +68,11 @@ describe('a decode lead in the game', () => {
   });
 });
 
-const keyedLead = (variant: 'shift' | 'dial' | 'book', links = 2): Lead =>
+const keyedLead = (variant: 'shift' | 'dial' | 'book' | 'date', links = 2): Lead =>
   ({ ...leadFor(variant, 'D2'), opensAfter: ['D1'], links: Array.from({ length: links }, () => ({ from: 'D1', take: 'number', use: 'key' })) }) as unknown as Lead;
 
 describe('a decode lead that carries numbers from an earlier lead', () => {
-  for (const variant of ['shift', 'dial', 'book'] as const) {
+  for (const variant of ['shift', 'dial', 'book', 'date'] as const) {
     it(`${variant}: every rank carries two numbers that match the earlier answer and each one matters`, () => {
       const cf = caseWith([leadFor('dial'), keyedLead(variant)]);
       for (const preset of ['junior', 'detective', 'inspector', 'chief'] as const) {
@@ -111,6 +112,28 @@ describe('a decode lead that carries numbers from an earlier lead', () => {
     expect(() => buildRank(cf, 'junior')).toThrow(/could not be built with its links/);
     const lone = { ...leadFor('shift', 'D2'), opensAfter: [], links: [{ from: 'D1', take: 'number', use: 'key' }, { from: 'D1', take: 'number', use: 'key' }] } as unknown as Lead;
     expect(() => buildRank(caseWith([lone]), 'junior')).toThrow();
+  });
+
+  it('can carry fixed story numbers instead of an earlier answer, worded as the story names them', () => {
+    const fact = (value: number, crime: string) => ({ from: '@story', take: 'number', use: 'key', fact: { value, story: { crime, friendly: `${crime} (friendly)` } } });
+    const lead = { ...leadFor('date', 'D1'), links: [fact(9, 'the door number on the plate'), fact(4, 'the coins Tip carried')] } as unknown as Lead;
+    const cf = caseWith([lead]);
+    for (const preset of ['junior', 'chief'] as const) {
+      const book = buildRank(cf, preset);
+      const p = book[`D1:${preset}`] as DecodePuzzle;
+      expect(p.carry).toEqual([9, 4]);
+      expect(carryMatters(p)).toBe(true);
+      expect(carryResolves(lead, preset, p, {})).toBeNull();
+    }
+    const p = buildRank(cf, 'junior')['D1:junior'] as DecodePuzzle;
+    expect(wordExhibits(cf, p, {}, 'crime').flatMap((e) => e.lines).join(' ')).toContain('[the door number on the plate]/[the coins Tip carried]');
+    expect(wordExhibits(cf, p, {}, 'friendly').flatMap((e) => e.lines).join(' ')).toContain('the coins Tip carried (friendly)');
+    expect(refNumber(p, p.via![0].ref)).toBe(9);
+    // a story number outside the slot's range, a wrong carried number and a wrong kind of link are all caught
+    const tooBig = { ...lead, links: [fact(12, 'x'), fact(4, 'y')] } as unknown as Lead;
+    expect(() => buildRank(caseWith([tooBig]), 'junior')).toThrow(/does not fit slot 1/);
+    expect(carryResolves(lead, 'junior', { ...p, carry: [9, 5] }, {})).toMatch(/should carry the story number/);
+    expect(carryResolves(lead, 'junior', { ...p, via: [{ lead: 'D0', ref: { kind: 'digit', p: 0 } }, p.via![1]] }, {})).toMatch(/should carry the story number/);
   });
 
   it('quotes a letter of a one-word answer by its place in the alphabet', () => {

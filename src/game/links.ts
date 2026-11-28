@@ -80,6 +80,12 @@ export function planCarry(lead: Lead, preset: Preset, slots: [number, number][],
   const carry: number[] = [];
   const via: Via[] = [];
   specs.forEach((spec, i) => {
+    if (spec.fact) {
+      if (spec.fact.value < slots[i][0] || spec.fact.value > slots[i][1]) throw new Error(`${lead.id}: story number ${spec.fact.value} does not fit slot ${i + 1}`);
+      carry.push(spec.fact.value);
+      via.push({ lead: '@story', ref: { kind: 'fact', value: spec.fact.value, says: { crime: t(spec.fact.story, 'crime'), friendly: t(spec.fact.story, 'friendly') } } });
+      return;
+    }
     const src = answers[spec.from];
     if (!src) throw new Error(`${lead.id}: link quotes ${spec.from}, which is not built yet`);
     const n = pickNumber(src, rng, slots[i][0], slots[i][1], false);
@@ -97,6 +103,11 @@ export function carryResolves(lead: Lead, preset: Preset, p: import('../engine/d
   if (carry.length !== specs.length || (p.via ?? []).length !== specs.length) return `has ${carry.length} carried numbers, the case wants ${specs.length}`;
   for (let i = 0; i < specs.length; i++) {
     const via = p.via![i];
+    const fact = specs[i].fact;
+    if (fact) {
+      if (via.ref.kind !== 'fact' || via.ref.value !== fact.value || carry[i] !== fact.value) return `slot ${i + 1} should carry the story number ${fact.value}`;
+      continue;
+    }
     const src = answers[specs[i].from];
     if (via.lead !== specs[i].from || !src) return `slot ${i + 1} quotes ${via.lead}, the case says ${specs[i].from}`;
     const want = refNumber(src, via.ref);
@@ -220,6 +231,7 @@ export function planLinks(cf: CaseFile, preset: Preset, lead: Lead, size: number
 
 /** The earlier answer, in words: a number or a person, named by where it comes from. */
 function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
+  if (via.ref.kind === 'fact') return (tone === 'friendly' ? via.ref.says.friendly : undefined) ?? via.ref.says.crime;
   const src = answers[via.lead]!;
   const lead = cf.leads.find((l) => l.id === via.lead)!;
   const title = `“${t(lead.title, tone)}”`;

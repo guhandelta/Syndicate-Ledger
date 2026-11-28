@@ -123,8 +123,14 @@ export interface Clipping {
 
 /** One link clue of a lead. */
 export interface LinkSpec {
-  /** The earlier lead whose answer is quoted. It must come before this lead in the chain. */
+  /** The earlier lead whose answer is quoted. It must come before this lead in the chain. `"@story"` when `fact` is set. */
   from: string;
+  /**
+   * A decode lead only: a fixed number from the story (a plate number, a count from the rank below's handover) in
+   * place of an earlier answer. `story` names it the way a clue would ("the door number stamped on the brass plate").
+   * Fixed facts link ranks, because the rank below's puzzles are made fresh each game and may not exist yet.
+   */
+  fact?: { value: number; story: Text };
   /** What is quoted: a number from that answer, or a person. */
   take: 'number' | 'person';
   /**
