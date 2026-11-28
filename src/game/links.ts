@@ -52,7 +52,10 @@ function pickNumber(src: AnyAnswered, rng: Rng, lo: number, hi: number, indirect
     else if (src.type === 'decode') {
       // a number answer is quoted by a digit, a word answer by the length of a word
       const digits = digitsOf(src);
-      ref = digits.length >= 2 ? { kind: 'digit', p: rng.int(0, digits.length - 1) } : { kind: 'wordLen', i: rng.int(0, src.answer.split(' ').length - 1) };
+      const words = src.answer.split(' ');
+      if (digits.length >= 2) ref = { kind: 'digit', p: rng.int(0, digits.length - 1) };
+      else if (words.length >= 2) ref = { kind: 'wordLen', i: rng.int(0, words.length - 1) };
+      else ref = { kind: 'letter', p: rng.int(0, src.answer.length - 1) };
     }
     else if (src.type === 'stakeout') ref = { kind: 'spot', z: rng.int(0, src.size - 1), axis: rng.pick(['row', 'col'] as const) };
     else {
@@ -226,6 +229,7 @@ function phrase(cf: CaseFile, via: Via, answers: Answers, tone: Tone): string {
     return `the time number (1 is the earliest) of ${`“${L.moments[ref.m]}”`} in ${title}`;
   }
   if (ref.kind === 'degree') return `how many people ${networkPeople(cf, lead, src.size)[ref.p]} was in contact with in ${title}`;
+  if (ref.kind === 'letter') return `the place in the alphabet (A is 1) of the ${ORDINALS[ref.p]} letter of the answer to ${title}`;
   if (ref.kind === 'wordLen') return `the number of letters in the ${ORDINALS[ref.i]} word of the answer to ${title}`;
   if (ref.kind === 'digit' && src.type === 'decode') return `the ${ORDINALS[ref.p]} digit of the answer to ${title}`;
   if (ref.kind === 'digit') return lead.riddle ? `${cipherPlaces(cf, lead, src.size).long(ref.p)} in ${title}` : `the ${ORDINALS[ref.p]} digit of the code in ${title}`;

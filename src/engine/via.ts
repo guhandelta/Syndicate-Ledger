@@ -24,6 +24,8 @@ export type LinkRef =
   | { kind: 'digit'; p: number }
   /** Decode: how many letters are in a word of a word answer (words counted from 0). A number answer is quoted by its `digit`. */
   | { kind: 'wordLen'; i: number }
+  /** Decode: the place in the alphabet (A is 1) of a letter of a one-word answer (letters counted from 0). */
+  | { kind: 'letter'; p: number }
   /** Stakeout: the row or column (numbered from 1) a district's watcher stood in. */
   | { kind: 'spot'; z: number; axis: 'row' | 'col' }
   /**
@@ -56,6 +58,8 @@ export function refNumber(p: AnyAnswered, ref: LinkRef): number {
       return (p as NetworkPuzzle).degrees[ref.p];
     case 'digit':
       return p.type === 'decode' ? Number(digitsOf(p)[ref.p]) : (p as CipherPuzzle).code[ref.p];
+    case 'letter':
+      return (p as DecodePuzzle).answer.charCodeAt(ref.p) - 64;
     case 'wordLen':
       return (p as DecodePuzzle).answer.split(' ')[ref.i].length;
     case 'spot': {

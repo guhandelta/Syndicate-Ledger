@@ -1268,6 +1268,443 @@
         "vex": { "needs": ["L2"] },
         "tip": { "needs": ["L3"] }
       },
+      "leads": [
+        {
+          "id": "L1",
+          "type": "decode",
+          "decode": {
+            "variant": "date",
+            "words": [
+              "VEX",
+              "TIP",
+              "KANE",
+              "CRANE",
+              "MEENA",
+              "HARBOR",
+              "SHIPPING",
+              "WAREHOUSE",
+              "TIDEWATER",
+              "MIDNIGHT",
+              "LEDGER",
+              "FERRYMAN",
+              "BERTH",
+              "GATEBOOK"
+            ]
+          },
+          "cost": 2,
+          "opensAfter": [],
+          "title": {
+            "crime": "Meena's wall calendar",
+            "friendly": "Meena's wall calendar"
+          },
+          "intro": {
+            "crime": "No witness can help with the cash box: Meena's calendar and a sticky note hold its PIN. Read them and work it out.",
+            "friendly": "The cash box opens with a secret number. The calendar and the sticky note tell you which one!"
+          },
+          "columns": [],
+          "rows": [],
+          "speakers": [],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "Cash moves through the fish market every night. At 10pm Vex carried $3k out in a single bag, straight to Warehouse 9, and told everyone he was only moving crates.",
+            "friendly": "The coins go through the fish market at night. At 10 o'clock Vex carried 3 coins in one little bag, straight to Warehouse 9."
+          },
+          "pointsTo": [
+            "vex"
+          ]
+        },
+        {
+          "id": "L2",
+          "type": "decode",
+          "decode": {
+            "variant": "book",
+            "words": [
+              "VEX",
+              "TIP",
+              "KANE",
+              "CRANE",
+              "MEENA",
+              "HARBOR",
+              "SHIPPING",
+              "WAREHOUSE",
+              "TIDEWATER",
+              "MIDNIGHT",
+              "LEDGER",
+              "FERRYMAN",
+              "BERTH",
+              "GATEBOOK"
+            ]
+          },
+          "cost": 2,
+          "opensAfter": [
+            "L1"
+          ],
+          "links": [
+            {
+              "from": "L1",
+              "take": "number",
+              "use": "key",
+              "story": {
+                "crime": "Pinned in the cash box: {q}."
+              }
+            },
+            {
+              "from": "L1",
+              "take": "number",
+              "use": "key",
+              "story": {
+                "crime": "Scratched on the lid: {q}."
+              }
+            }
+          ],
+          "title": {
+            "crime": "The dock's visitor book",
+            "friendly": "The dock's visitor book"
+          },
+          "intro": {
+            "crime": "The visitor book at the dock gate holds a coded note. Where to look in the book is already in your notes.",
+            "friendly": "The gate book has a secret note. Your notes already say where to look!"
+          },
+          "columns": [],
+          "rows": [],
+          "speakers": [],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "Vex was inside Warehouse 9 at midnight, not at home as he claims.",
+            "friendly": "Vex was in Warehouse 9 at midnight. He said he was at home!"
+          },
+          "pointsTo": [
+            "vex"
+          ]
+        },
+        {
+          "id": "L3",
+          "type": "decode",
+          "decode": {
+            "variant": "dial",
+            "words": [
+              "VEX",
+              "TIP",
+              "KANE",
+              "CRANE",
+              "MEENA",
+              "HARBOR",
+              "SHIPPING",
+              "WAREHOUSE",
+              "TIDEWATER",
+              "MIDNIGHT",
+              "LEDGER",
+              "FERRYMAN",
+              "BERTH",
+              "GATEBOOK"
+            ]
+          },
+          "cost": 2,
+          "opensAfter": [
+            "L2"
+          ],
+          "links": [
+            {
+              "from": "L2",
+              "take": "number",
+              "use": "key",
+              "story": {
+                "crime": "Tip muttered it while turning the dial: {q}."
+              }
+            },
+            {
+              "from": "L2",
+              "take": "number",
+              "use": "key",
+              "story": {
+                "crime": "A slip in Tip's pocket said: {q}."
+              }
+            }
+          ],
+          "title": {
+            "crime": "Tip's payment lockbox",
+            "friendly": "Tip's secret lockbox"
+          },
+          "intro": {
+            "crime": "Tip keeps his payment slips in a combination lockbox. The first turns of the dial come from what the visitor book told you.",
+            "friendly": "Tip hides his notes in a lockbox. The first turns are in the gate book!"
+          },
+          "columns": [],
+          "rows": [],
+          "speakers": [],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "Every payment ends up in an account owned by Crane Shipping. Tip lied to cover it.",
+            "friendly": "All the coins go to the shipping company. Tip fibbed to hide it!"
+          },
+          "pointsTo": [
+            "tip",
+            "crane"
+          ],
+          "flagsOnSolve": [
+            "tip-exposed"
+          ]
+        },
+        {
+          "id": "L4",
+          "type": "decode",
+          "decode": {
+            "variant": "shift",
+            "words": [
+              "VEX",
+              "TIP",
+              "KANE",
+              "CRANE",
+              "MEENA",
+              "HARBOR",
+              "SHIPPING",
+              "WAREHOUSE",
+              "TIDEWATER",
+              "MIDNIGHT",
+              "LEDGER",
+              "FERRYMAN",
+              "BERTH",
+              "GATEBOOK"
+            ]
+          },
+          "cost": 2,
+          "opensAfter": [
+            "L3"
+          ],
+          "links": [
+            {
+              "from": "L3",
+              "take": "number",
+              "use": "key",
+              "story": {
+                "crime": "Written in Crane's hand beside the key: {q}."
+              }
+            },
+            {
+              "from": "L3",
+              "take": "number",
+              "use": "key",
+              "story": {
+                "crime": "Folded into the ledger's cover: {q}."
+              }
+            }
+          ],
+          "title": {
+            "crime": "The harbormaster's private ledger",
+            "friendly": "The secret ledger"
+          },
+          "intro": {
+            "crime": "Hidden in Warehouse 9: a private ledger whose last page is scrambled. Part of its key is what you took from Tip's lockbox.",
+            "friendly": "A secret book in Warehouse 9 has a scrambled page. Part of the key is in Tip's lockbox!"
+          },
+          "columns": [],
+          "rows": [],
+          "speakers": [],
+          "liars": {
+            "junior": [],
+            "detective": [],
+            "inspector": [],
+            "chief": []
+          },
+          "fact": {
+            "crime": "Crane staged the theft. The $90k never left his company. It was washed through the market to pay the syndicate.",
+            "friendly": "Mr. Crane hid the coins himself and blamed someone else!"
+          },
+          "pointsTo": [
+            "crane"
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "page-torn",
+          "at": 4,
+          "unlessSolved": "L2",
+          "effect": {
+            "type": "addCost",
+            "lead": "L2",
+            "hours": 1
+          },
+          "rumor": {
+            "crime": "Someone was seen at the dock gate with a razor blade.",
+            "friendly": "Someone was at the gate book with scissors."
+          },
+          "message": {
+            "crime": "A page of the visitor book was cut out overnight. Reading what is left costs an extra hour.",
+            "friendly": "A page of the gate book was cut out! Reading the rest takes an extra hour."
+          }
+        },
+        {
+          "id": "warehouse-burns",
+          "at": 8,
+          "ifFlag": "tip-trap",
+          "unlessSolved": "L4",
+          "effect": {
+            "type": "addCost",
+            "lead": "L4",
+            "hours": 1
+          },
+          "rumor": {
+            "crime": "Word on the docks: someone wants Warehouse 9 gone.",
+            "friendly": "Somebody wants to mess up Warehouse 9."
+          },
+          "message": {
+            "crime": "Warehouse 9 burned overnight. Tip told someone. The ledger survived, but rebuilding the trail costs an extra hour.",
+            "friendly": "Warehouse 9 got flooded! Tip told the gang. Finding the secret book now takes an extra hour."
+          }
+        },
+        {
+          "id": "ship-sails",
+          "at": 12,
+          "effect": {
+            "type": "endCase"
+          },
+          "rumor": {
+            "crime": "The cargo ship sails at the end of Day 3.",
+            "friendly": "The gang's boat leaves at the end of Day 3."
+          },
+          "message": {
+            "crime": "The ship is leaving. Make your accusation now.",
+            "friendly": "The boat is leaving! Time to say who did it."
+          }
+        }
+      ],
+      "missedClues": [
+        {
+          "id": "L2-1",
+          "presets": [
+            "detective"
+          ],
+          "when": {
+            "kind": "event",
+            "event": "page-torn"
+          },
+          "message": {
+            "crime": "A page of the visitor book was cut out. What is left still holds the note, but it cost you an hour. Check the gate book earlier next time.",
+            "friendly": "The gate book lost a page. It took an extra hour!"
+          }
+        },
+        {
+          "id": "L2-3",
+          "presets": [
+            "junior",
+            "detective",
+            "inspector",
+            "chief"
+          ],
+          "when": {
+            "kind": "accuse",
+            "unsolved": "L2"
+          },
+          "message": {
+            "crime": "You haven't cracked the dock camera log yet. Whoever was in those rooms is the one you need to know about. Don't point the finger yet.",
+            "friendly": "The camera log still has secrets. Solve it first!"
+          }
+        },
+        {
+          "id": "L4-3",
+          "presets": [
+            "junior",
+            "detective",
+            "inspector",
+            "chief"
+          ],
+          "when": {
+            "kind": "event",
+            "event": "warehouse-burns"
+          },
+          "message": {
+            "crime": "Warehouse 9 burned overnight. The harbormaster's ledger survived, but tracing it now costs you extra hours. You should have opened it sooner.",
+            "friendly": "The warehouse burned, but the book is safe. It will take more time!"
+          }
+        },
+        {
+          "id": "L4-4",
+          "presets": [
+            "junior",
+            "detective",
+            "inspector",
+            "chief"
+          ],
+          "when": {
+            "kind": "accuse",
+            "person": "crane",
+            "unsolved": "L4"
+          },
+          "message": {
+            "crime": "You never cracked the harbormaster's ledger. Without it you can't tie the warehouse to the boss. Open it first.",
+            "friendly": "The harbormaster's book still has secrets. Open it first!"
+          }
+        },
+        {
+          "id": "X-1",
+          "presets": [
+            "detective",
+            "inspector",
+            "chief"
+          ],
+          "when": {
+            "kind": "event",
+            "event": "warehouse-burns",
+            "flag": "tip-trap"
+          },
+          "message": {
+            "crime": "Tip swore he would guard Warehouse 9 for one favor, and it burned anyway. Never trust a man who sells his promises.",
+            "friendly": "Tip promised to guard Warehouse 9, but it still burned!"
+          }
+        },
+        {
+          "id": "X-2",
+          "presets": [
+            "junior",
+            "detective",
+            "inspector",
+            "chief"
+          ],
+          "when": {
+            "kind": "accuse",
+            "unchecked": true
+          },
+          "message": {
+            "crime": "You are about to accuse someone whose statements you never checked. Read what they told you before you point the finger.",
+            "friendly": "Check what they told you before you point!"
+          }
+        },
+        {
+          "id": "X-3",
+          "presets": [
+            "junior",
+            "detective",
+            "inspector",
+            "chief"
+          ],
+          "when": {
+            "kind": "accuse",
+            "person": "crane",
+            "solved": "L4",
+            "missingFlag": "tip-exposed"
+          },
+          "message": {
+            "crime": "You have the boss in your sights, but the proof is incomplete. Tip's record still hides a double-agent lie. Expose it first, or Crane walks.",
+            "friendly": "Crane is close, but Tip's secret is still hidden. Find it first!"
+          }
+        }
+      ],
       "handover": {
         "scene": [
           {

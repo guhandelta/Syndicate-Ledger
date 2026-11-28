@@ -35,10 +35,16 @@ describe('rank stories', () => {
     expect(carriedEvidence(cf, 'inspector')).toBeUndefined();
   });
 
-  it("Detective's story only replaces who can be convicted and by what, to lean on the plate", () => {
+  it("Detective's story has its own decode leads, the same ids and facts, and leans on the plate", () => {
     const d = caseForRank(cf, 'detective');
     expect(d.proof!.crane.needs).toContain('carried:junior');
-    expect(d.leads).toBe(cf.leads);
+    expect(d.leads.map((l) => l.id)).toEqual(['L1', 'L2', 'L3', 'L4']);
+    expect(d.leads.every((l) => l.type === 'decode')).toBe(true);
+    expect(d.leads.map((l) => l.fact)).toEqual(cf.leads.map((l) => l.fact));
+    // the chain: each lead after the first carries two numbers from the one before
+    expect(d.leads.map((l) => (l.links ?? []).map((k) => k.from))).toEqual([[], ['L1', 'L1'], ['L2', 'L2'], ['L3', 'L3']]);
+    expect(d.leads.find((l) => l.id === 'L3')!.flagsOnSolve).toEqual(['tip-exposed']);
+    expect(d.leads).not.toBe(cf.leads);
   });
 
   it('a rank story that replaces nothing plays the case file as it is', () => {

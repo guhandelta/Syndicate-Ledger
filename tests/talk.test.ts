@@ -72,8 +72,8 @@ describe('conditions on lines', () => {
   });
 
   it('a liar is caught once the lead that shows the lie is solved', () => {
-    const g = game();
-    const p = book['L2:detective'];
+    const g = newGame(cf, book, 'inspector');
+    const p = book['L2:inspector'];
     const lp = g.s.leads.L2;
     lp.started = true;
     lp.grid = p.solution.map((r) => r.slice());

@@ -33,7 +33,7 @@ describe('idle tips', () => {
   });
 
   it('sends the player to accuse once every lead is solved', () => {
-    const g = newGame(cf, book, 'detective');
+    const g = newGame(cf, book, 'inspector');
     for (const id of ['L1', 'L2', 'L3', 'L4']) solve(g, id);
     expect(idleHint(ctx({ game: g, screen: 'board' })).todo).toMatch(/Make an accusation/);
     expect(idleHint(ctx({ game: g, screen: 'town' })).todo).toMatch(/Harbor police desk/);

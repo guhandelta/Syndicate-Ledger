@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { buildRank, buildRankFresh, leadSeed } from '../src/game/buildRank';
 import type { CaseFile, PuzzleBook } from '../src/game/caseTypes';
 import { answerRequest, buildInWorker, FRESH_RANKS, type RankReply, type RankRequest, type WorkerLike } from '../src/game/rankClient';
+import { verifyDecode, type DecodePuzzle } from '../src/engine/decode';
 import { verifyUnique } from '../src/engine/generator';
 import type { GeneratedPuzzle } from '../src/engine/types';
 
@@ -30,10 +31,19 @@ describe('building a rank', () => {
   it('gives a fresh seed its own puzzles, the same every time', () => {
     const lead = cf.leads[0];
     expect(leadSeed(cf, lead, 'junior', 0)).not.toBe(leadSeed(cf, lead, 'junior', 7));
+    // Detective's own decode leads
     const a = buildRank(cf, 'detective', { runSeed: 7 });
     expect(buildRank(cf, 'detective', { runSeed: 7 })).toEqual(a);
     expect(a['L1:detective']).not.toEqual(shipped['L1:detective']);
-    for (const key of ['L1:detective', 'L3:detective']) expect(verifyUnique(a[key] as GeneratedPuzzle), key).toEqual({ ok: true });
+    for (const key of ['L1:detective', 'L2:detective', 'L3:detective', 'L4:detective']) expect(verifyDecode(a[key] as DecodePuzzle), key).toBe(true);
+  });
+
+  it('builds the shared witness leads (ledger, surveillance, links, anchors) at the smaller grid size', () => {
+    // the case without its rank stories plays the base leads, as Detective did before it had its own
+    const base: CaseFile = { ...cf, rankStories: undefined };
+    const a = buildRank(base, 'detective', { runSeed: 7 });
+    expect(buildRank(base, 'detective', { runSeed: 7 })).toEqual(a);
+    for (const key of ['L1:detective', 'L2:detective', 'L3:detective', 'L4:detective']) expect(verifyUnique(a[key] as GeneratedPuzzle), key).toEqual({ ok: true });
   });
 
   it('hides a lead\'s message under its code, and builds a plain code when the lead has none', () => {

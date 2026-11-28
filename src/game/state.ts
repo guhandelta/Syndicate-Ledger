@@ -429,6 +429,7 @@ export function solveLead(g: Game, leadId: string) {
   const p = puzzleOf(g, leadId);
   const lp = g.s.leads[leadId];
   lp.solved = true;
+  for (const f of g.cf.leads.find((l) => l.id === leadId)!.flagsOnSolve ?? []) addFlag(g, f);
   const lies = p.truth.filter((t) => !t).length;
   if (lies) g.s.favors += 1; // exposing a liar earns a favor (rule book section 3)
   for (const [i, s] of p.statements.entries()) {

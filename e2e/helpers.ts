@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { PRESETS, type CaseFile, type Preset } from '../src/game/caseTypes';
 import type { CipherPuzzle } from '../src/engine/cipher';
+import type { DecodePuzzle } from '../src/engine/decode';
 import type { NetworkPuzzle } from '../src/engine/network';
 import type { StakeoutPuzzle } from '../src/engine/stakeout';
 import type { TimelinePuzzle } from '../src/engine/timeline';
@@ -12,7 +13,7 @@ import { caseForRank } from '../src/game/rankStory';
 
 const readJson = (file: string) => JSON.parse(readFileSync(path.resolve(file), 'utf8'));
 export const cf = readJson('cases/case-01-harbor-ledger.json') as CaseFile;
-export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle>;
+export const book = readJson('cases/case-01-harbor-ledger/puzzles.json') as Record<string, GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle | DecodePuzzle>;
 /** The case as one rank plays it: its own story's leads, proof and endings. */
 export const caseFor = (preset: Preset) => caseForRank(cf, preset);
 // the e2e plays the shipped puzzles (seed 0), because its solver reads them from puzzles.json; a test of fresh puzzles opens GAME_URL without it
@@ -58,6 +59,13 @@ export async function solveLead(page: Page, preset: Preset, leadId: string) {
   await card.getByRole('button').click();
   await clearDialogs(page);
   const p = book[`${leadId}:${preset}`];
+  if (p.type === 'decode') {
+    // a decode lead has no witnesses: type the answer and close the lead
+    await page.getByRole('textbox', { name: 'Your answer' }).fill(p.answer);
+    await page.getByRole('button', { name: 'Close this lead' }).click();
+    await expect(page.getByRole('dialog').getByRole('heading')).toContainText('Lead closed');
+    return;
+  }
   if (p.type === 'timeline') {
     const moments = page.locator('ul.moments > li.moment');
     for (let m = 0; m < p.size; m++) if (!p.givens.some((g) => g.m === m)) await moments.nth(m).locator('select').selectOption(String(p.solution[m]));
