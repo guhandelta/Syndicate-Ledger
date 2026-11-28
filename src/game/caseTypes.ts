@@ -129,9 +129,10 @@ export interface LinkSpec {
   take: 'number' | 'person';
   /**
    * How it is used in this lead: "is" (a cell, digit or moment equals it), "sum" (two cells add up to it),
-   * "apart" (two moments or digits differ by it), "linked" (a person was in contact with the quoted person).
+   * "apart" (two moments or digits differ by it), "linked" (a person was in contact with the quoted person),
+   * "key" (a decode lead only: the number fills a slot of the puzzle's rule, such as a page number or a dial turn).
    */
-  use: 'is' | 'sum' | 'apart' | 'linked';
+  use: 'is' | 'sum' | 'apart' | 'linked' | 'key';
   /**
    * A person link only: the number that picks the person is itself quoted from this other earlier lead, so the clue
    * needs two earlier answers put together ("whoever moved, at 8 PM, as many coins as ...").

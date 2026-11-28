@@ -4,7 +4,7 @@
  * A seed rebuilds exactly the same puzzles, so a saved game only needs to remember it.
  */
 import { generateCipher, verifyCipher } from '../engine/cipher';
-import { generateDecode } from '../engine/decode';
+import { carryMatters, carrySlots, generateDecode, type DecodePuzzle } from '../engine/decode';
 import { generatePuzzle, verifyUnique } from '../engine/generator';
 import { generateNetwork, verifyNetwork } from '../engine/network';
 import { generateStakeout, verifyStakeout } from '../engine/stakeout';
@@ -12,7 +12,7 @@ import { makeRng } from '../engine/rng';
 import { generateTimeline, verifyTimeline } from '../engine/timeline';
 import type { GridType } from '../engine/types';
 import type { AnyPuzzle, CaseFile, Lead, Preset, PuzzleBook } from './caseTypes';
-import { checkLinks, linkResolves, linksFor, planLinks, type Answers } from './links';
+import { checkLinks, linkResolves, linksFor, planCarry, planLinks, type Answers } from './links';
 import { CIPHER_RULES, DECODE_LEVEL, MAP_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from './presets';
 import { caseForRank } from './rankStory';
 
@@ -75,6 +75,40 @@ function withLinks<P extends { statements: { via?: unknown }[] }>(cfr: CaseFile,
   throw new Error(`${lead.id}:${preset} could not be built with its links: ${last}`);
 }
 
+/**
+ * A decode lead. With links, each carried number is quoted from an earlier answer; a pick is kept only if every
+ * carried number really matters (changing it changes the answer), so the player cannot skip the link.
+ */
+export function buildDecode(cfr: CaseFile, preset: Preset, lead: Lead, seed: number, built: PuzzleBook): DecodePuzzle {
+  const variant = lead.decode!.variant;
+  const level = DECODE_LEVEL[preset];
+  if (!linksFor(lead, preset).length) return generateDecode({ variant, level, seed });
+  const answers: Answers = {};
+  for (const l of cfr.leads) {
+    const a = built[`${l.id}:${preset}`];
+    if (a) answers[l.id] = a as Answers[string];
+  }
+  const slots = carrySlots(variant, level);
+  let last = '';
+  for (let attempt = 0; attempt < LINK_ATTEMPTS; attempt++) {
+    try {
+      const { carry, via } = planCarry(lead, preset, slots, answers, makeRng((seed ^ 0x9e3779b9) + attempt * 7919));
+      const p = generateDecode({ variant, level, seed, carry });
+      const matters = carryMatters(p);
+      /* v8 ignore start -- a wrong key digit or dial turn always changes the answer; only a book with the same word in two places can fail, and the next pick then works */
+      if (!matters) {
+        last = 'a carried number does not change the answer';
+        continue;
+      }
+      /* v8 ignore stop */
+      return { ...p, via };
+    } catch (e) {
+      last = (e as Error).message;
+    }
+  }
+  throw new Error(`${lead.id}:${preset} could not be built with its links: ${last}`);
+}
+
 export interface BuildOptions {
   /** 0 (the default) is the shipped case. */
   runSeed?: number;
@@ -112,7 +146,7 @@ export function buildRank(cf: CaseFile, preset: Preset, opts: BuildOptions = {})
       if (!tc.ok) throw new Error(`${lead.id}:${preset} failed: ${tc.reason}`);
       p = t;
     } else if (lead.type === 'decode') {
-      p = generateDecode({ variant: lead.decode!.variant, level: DECODE_LEVEL[preset], seed });
+      p = buildDecode(cfr, preset, lead, seed, built);
     } else if (lead.type === 'cipher') {
       const cp = withLinks(cfr, preset, lead, n, seed, built, (planted, seed) => generateCipher({ size: n, speakers, liarRange: rules.liarRange, maxGrade: Math.min(rules.maxGrade, 3), ...CIPHER_RULES[preset], ...(lead.message ? { message: lead.message } : {}), planted: planted as never, seed }, 800));
       const cc = verifyCipher(cp);

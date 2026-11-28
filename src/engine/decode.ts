@@ -26,6 +26,7 @@ import { calcLines, genCooling, genDice, genReceipt, genTriangulate, genZone, so
 import { genNonogram, gridLines, solveGrid, type GridData } from './grid';
 import { genBulls, genScale, genSmudge, guessLines, solveGuess, type GuessData } from './guess';
 import { makeRng, type Rng } from './rng';
+import type { Via } from './via';
 
 export type DecodeVariant = 'book' | 'keypad' | 'shift' | 'date' | 'check' | 'dial' | 'bulls' | 'smudge' | 'scale' | 'receipt' | 'zone' | 'cooling' | 'triangulate' | 'dice' | 'nonogram';
 export const DECODE_VARIANTS: DecodeVariant[] = ['book', 'keypad', 'shift', 'date', 'check', 'dial', 'bulls', 'smudge', 'scale', 'receipt', 'zone', 'cooling', 'triangulate', 'dice', 'nonogram'];
@@ -60,6 +61,12 @@ export interface DecodePuzzle {
   seed: number;
   /** The characters in the answer, so a decode lead sizes like the other leads. */
   size: number;
+  /**
+   * Numbers carried in from earlier leads. Slot i appears in the exhibits as the token `carryToken(i)`, which the game
+   * words as a pointer back ("the 2nd digit of the code in ..."); `via` says where each came from.
+   */
+  carry?: number[];
+  via?: Via[];
   /** A decode puzzle has no witnesses, so no statements to mark; these keep it shaped like the other puzzles. */
   statements: never[];
   truth: never[];
@@ -68,6 +75,23 @@ export interface DecodePuzzle {
 
 /** Capital letters, digits, one space between words; everything else dropped. */
 export const normalizeAnswer = (s: string): string => s.toUpperCase().replace(/[^A-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+
+/** The stand-in for carried number `i` (counted from 0) in the exhibits. */
+export const carryToken = (i: number) => `\u2039${i + 1}\u203a`;
+const show = (carry: number[] | undefined, i: number, value: number | string) => (carry && i < carry.length ? carryToken(i) : String(value));
+
+/** The variants whose rule can take carried numbers, and the range each slot accepts. */
+export function carrySlots(variant: DecodeVariant, level: number): [number, number][] {
+  switch (variant) {
+    case 'shift':
+    case 'dial':
+      return [[1, 9], [1, 9]];
+    case 'book':
+      return [[1, 3 + level * 2], [1, 3 + level]];
+    default:
+      return [];
+  }
+}
 
 const WORDS = [
   'ANCHOR', 'LANTERN', 'HARBOR', 'COPPER', 'SHUTTER', 'BEACON', 'CARGO', 'ROPE', 'TIMBER', 'WINDOW', 'BRIDGE', 'FERRY', 'GRAVEL', 'KETTLE', 'MARKET', 'NEEDLE',
@@ -154,6 +178,30 @@ export function solveDecode(d: DecodeData): string {
   }
 }
 
+/** Do the carried numbers, if any, sit in the slots of the data they stand for? */
+const carryHolds = (p: DecodePuzzle, slots: number[]): boolean => !p.carry || (p.carry.length === slots.length && p.carry.every((v, i) => v === slots[i]));
+
+/**
+ * Does every carried number matter? Reading any one of them wrongly (the next number along, wrapping within its
+ * slot's range) must give a different answer, so a player who skips the link cannot land on the right answer.
+ */
+export function carryMatters(p: DecodePuzzle): boolean {
+  const carry = p.carry ?? [];
+  const slots = carrySlots(p.variant, p.level);
+  const wrong = (i: number) => (carry[i] === slots[i][1] ? slots[i][0] : carry[i] + 1);
+  return carry.every((_, i) => {
+    const d = p.data;
+    let other: DecodeData;
+    if (d.variant === 'shift') other = { ...d, key: d.key.map((k, j) => (j === i ? wrong(i) : k)) };
+    else if (d.variant === 'dial') other = { ...d, moves: d.moves.map((m, j) => (j === i ? { ...m, steps: wrong(i) } : m)) };
+    else if (d.variant === 'book') {
+      const [page, line, word] = d.picks[0];
+      other = { ...d, picks: [i === 0 ? [wrong(0), line, word] : [page, wrong(1), word], ...d.picks.slice(1)] };
+    } else return false;
+    return solveDecode(other) !== p.answer;
+  });
+}
+
 /** Does this puzzle's stored answer follow from its data, and are its exhibits worded from that data? */
 export function verifyDecode(p: DecodePuzzle): boolean {
   const solved = solveDecode(p.data);
@@ -162,17 +210,17 @@ export function verifyDecode(p: DecodePuzzle): boolean {
   const text = p.exhibits.flatMap((e) => e.lines).join('\n');
   switch (p.data.variant) {
     case 'book':
-      return p.data.picks.every(([a, b, c]) => text.includes(`${a}-${b}-${c}`));
+      return p.data.picks.every(([a, b, c], i) => text.includes(i === 0 && p.carry ? `${carryToken(0)}-${carryToken(1)}-${c}` : `${a}-${b}-${c}`)) && carryHolds(p, [p.data.picks[0][0], p.data.picks[0][1]]);
     case 'keypad':
       return text.includes(p.data.digits) && p.data.names.every((n) => text.includes(n));
     case 'shift':
-      return text.includes(p.data.cipher) && text.includes(p.data.key.join('-'));
+      return text.includes(p.data.cipher) && text.includes(p.data.key.map((k, i) => show(p.carry, i, k)).join('-')) && carryHolds(p, p.data.key.slice(0, 2));
     case 'date':
       return text.includes(`${p.data.month}/${p.data.day}`) && text.includes(String(p.data.days));
     case 'check':
       return p.data.serials.every((s) => text.includes(s));
     case 'dial':
-      return p.data.moves.every((m) => text.includes(`${m.dir} ${m.steps}`));
+      return p.data.moves.every((m, i) => text.includes(`${m.dir} ${show(p.carry, i, m.steps)}`)) && carryHolds(p, p.data.moves.slice(0, 2).map((m) => m.steps));
     case 'receipt':
     case 'zone':
     case 'cooling':
@@ -194,7 +242,7 @@ const make = (variant: DecodeVariant, level: number, seed: number, data: DecodeD
   return { type: 'decode', variant, level, exhibits, question, data, answer, seed, size: answer.length, statements: [], truth: [], liarCounts: [0] };
 };
 
-function genBook(level: number, seed: number, rng: Rng): DecodePuzzle {
+function genBook(level: number, seed: number, rng: Rng, carry?: number[]): DecodePuzzle {
   const pagesN = 3 + level * 2;
   const pages: string[][][] = [];
   for (let p = 0; p < pagesN; p++) {
@@ -206,8 +254,11 @@ function genBook(level: number, seed: number, rng: Rng): DecodePuzzle {
   const seen = new Set<string>();
   const picks: [number, number, number][] = [];
   while (picks.length < k) {
-    const p = rng.int(1, pagesN);
-    const l = rng.int(1, pages[p - 1].length);
+    const first = picks.length === 0 && carry;
+    const dp = rng.int(1, pagesN);
+    const dl = rng.int(1, pages[dp - 1].length);
+    const p = first ? carry[0] : dp;
+    const l = first ? carry[1] : dl;
     const w = rng.int(1, pages[p - 1][l - 1].length);
     const id = `${p}-${l}-${w}`;
     if (seen.has(id)) continue;
@@ -217,7 +268,7 @@ function genBook(level: number, seed: number, rng: Rng): DecodePuzzle {
   const data: DecodeData = { variant: 'book', pages, picks };
   const bookLines = pages.flatMap((lines, pi) => lines.map((ws, li) => `p${pi + 1} l${li + 1}: ${ws.join(' ')}`));
   return make('book', level, seed, data, [
-    { title: 'The cryptic note', lines: [picks.map((t) => t.join('-')).join(', ')] },
+    { title: 'The cryptic note', lines: [picks.map((t, i) => (i === 0 && carry ? `${carryToken(0)}-${carryToken(1)}-${t[2]}` : t.join('-'))).join(', ')] },
     { title: 'The book on the desk (page, line: words)', lines: bookLines },
   ], 'Each triple is page-line-word. Look up each word and type them in order, separated by spaces.');
 }
@@ -244,14 +295,18 @@ function genKeypad(level: number, seed: number, rng: Rng): DecodePuzzle {
   ], 'Each digit is a key on an old phone. Which name on the list is the napkin spelling? Type it.');
 }
 
-function genShift(level: number, seed: number, rng: Rng): DecodePuzzle {
+function genShift(level: number, seed: number, rng: Rng, carry?: number[]): DecodePuzzle {
   const plain = rng.pick(WORDS.filter((w) => w.length >= 4 + level && w.length <= 5 + level * 2));
-  const key = Array.from({ length: 2 + Math.min(level, 3) }, () => rng.int(1, 9));
+  const key = Array.from({ length: 2 + Math.min(level, 3) }, (_, i) => {
+    // always draw, so the same seed gives the same puzzle whatever is carried in
+    const drawn = rng.int(1, 9);
+    return carry && i < 2 ? carry[i] : drawn;
+  });
   const cipher = encodeShift(plain, key);
   const data: DecodeData = { variant: 'shift', cipher, key };
   return make('shift', level, seed, data, [
     { title: 'The scrambled message', lines: [cipher] },
-    { title: "Badge number on the desk", lines: [key.join('-')] },
+    { title: "Badge number on the desk", lines: [key.map((k, i) => show(carry, i, k)).join('-')] },
     { title: 'Note in the margin', lines: ['Letter 1 moves back by the first number, letter 2 by the second, and so on. When the numbers run out, start again.'] },
   ], 'Undo the shifts and type the hidden word.');
 }
@@ -289,13 +344,14 @@ function genCheck(level: number, seed: number, rng: Rng): DecodePuzzle {
   ], 'One serial breaks the rule: it was forged. Type it.');
 }
 
-function genDial(level: number, seed: number, rng: Rng): DecodePuzzle {
+function genDial(level: number, seed: number, rng: Rng, carry?: number[]): DecodePuzzle {
   const size = level >= 3 ? 60 : 40;
   const n = 2 + level;
-  const moves = Array.from({ length: n }, (_, i) => ({ dir: (i % 2 === 0 ? 'R' : 'L') as 'R' | 'L', steps: rng.int(5, size - 5) }));
+  const moves = Array.from({ length: n }, (_, i) => ({ dir: (i % 2 === 0 ? 'R' : 'L') as 'R' | 'L', steps: i < 2 && carry ? carry[i] : 0 }));
+  moves.forEach((m, i) => { const drawn = rng.int(5, size - 5); if (!(i < 2 && carry)) m.steps = drawn; });
   const data: DecodeData = { variant: 'dial', size, moves };
   return make('dial', level, seed, data, [
-    { title: "Scribbled on the safe's lid", lines: ['Start at 0.', ...moves.map((m) => `${m.dir} ${m.steps}`)] },
+    { title: "Scribbled on the safe's lid", lines: ['Start at 0.', ...moves.map((m, i) => `${m.dir} ${show(carry, i, m.steps)}`)] },
     { title: 'The dial', lines: [`Numbers 0 to ${size - 1}, then back to 0. R turns up, L turns down. The code is where the dial stops after each turn, two digits each.`] },
   ], 'Work out where it stops each time and type the code.');
 }
@@ -305,7 +361,7 @@ const fromGuess = (variant: DecodeVariant, gen: (level: number, rng: Rng) => { d
   return make(variant, level, seed, g.data, g.exhibits, g.question);
 };
 
-const GEN: Record<DecodeVariant, (level: number, seed: number, rng: Rng) => DecodePuzzle> = {
+const GEN: Record<DecodeVariant, (level: number, seed: number, rng: Rng, carry?: number[]) => DecodePuzzle> = {
   book: genBook, keypad: genKeypad, shift: genShift, date: genDate, check: genCheck, dial: genDial,
   bulls: fromGuess('bulls', genBulls), smudge: fromGuess('smudge', genSmudge), scale: fromGuess('scale', genScale),
   receipt: fromGuess('receipt', genReceipt), zone: fromGuess('zone', genZone), cooling: fromGuess('cooling', genCooling), triangulate: fromGuess('triangulate', genTriangulate), dice: fromGuess('dice', genDice),
@@ -317,10 +373,16 @@ export interface DecodeOptions {
   /** 1 (Junior) to 4 (Chief). */
   level: number;
   seed: number;
+  /** Numbers carried in from earlier leads, one per slot of `carrySlots`; the puzzle's rule uses them. */
+  carry?: number[];
 }
 
 /** Builds one decode puzzle. The tests check `verifyDecode` on many seeds of every variant and level. */
 export function generateDecode(o: DecodeOptions): DecodePuzzle {
   const level = Math.max(1, Math.min(4, Math.round(o.level)));
-  return GEN[o.variant](level, o.seed, makeRng(o.seed));
+  const slots = carrySlots(o.variant, level);
+  const carry = o.carry && o.carry.length ? o.carry : undefined;
+  if (carry && (carry.length !== slots.length || carry.some((v, i) => v < slots[i][0] || v > slots[i][1]))) throw new Error(`${o.variant}: carry ${carry.join(',')} does not fit its slots`);
+  const p = GEN[o.variant](level, o.seed, makeRng(o.seed), carry);
+  return carry ? { ...p, carry } : p;
 }

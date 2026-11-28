@@ -16,7 +16,7 @@ import {
 } from '../game/state';
 import { caseForRank, nextRank, parseProgress, progressKey, rankUnlocked, recordPart, type CaseProgress } from '../game/rankStory';
 import { describeStatement, gridLabels, networkPeople, stakeoutLabels, t, timelineLabels, type Tone } from '../game/text';
-import { wordStatement, type Answers } from '../game/links';
+import { wordExhibits, wordStatement, type Answers } from '../game/links';
 import { buildInWorker, FRESH_RANKS, type WorkerLike } from '../game/rankClient';
 import RankWorker from '../game/rankWorker?worker&inline';
 import { townForRank, type Pose } from '../town/townLogic';
@@ -531,6 +531,11 @@ export class Session {
     if (!this.s) return out;
     for (const l of this.cf.leads) out[l.id] = this.book[`${l.id}:${this.s.preset}`];
     return out;
+  }
+
+  /** The decode lead's exhibits, with each carried number worded as the earlier finding it comes from. */
+  get decodeExhibits() {
+    return wordExhibits(this.cf, this.decode, this.answers, this.tone);
   }
 
   /** A statement in plain words; a linked clue quotes the earlier puzzle it comes from. */

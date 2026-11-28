@@ -5,6 +5,7 @@
 import caseFile from '../cases/case-01-harbor-ledger.json';
 import { generateCipher } from '../src/engine/cipher';
 import { generateDecode } from '../src/engine/decode';
+import { buildDecode } from '../src/game/buildRank';
 import { generateNetwork } from '../src/engine/network';
 import { generateStakeout } from '../src/engine/stakeout';
 import { generateTimeline } from '../src/engine/timeline';
@@ -108,11 +109,22 @@ const plate: Lead = {
   fact: 'The loft door opened to the studs.',
 } as unknown as Lead;
 
+const keyed: Lead = {
+  ...decode,
+  id: 'D3',
+  decode: { variant: 'shift' },
+  opensAfter: ['D1'],
+  title: 'The note pinned in the safe',
+  intro: 'The note is scrambled. Part of its key is not written down: you already know where to find it.',
+  links: [{ from: 'D1', take: 'number', use: 'key' }, { from: 'D1', take: 'number', use: 'key' }],
+  fact: 'The note named the buyer.',
+} as unknown as Lead;
+
 export const timelineCase = {
   ...(caseFile as unknown as CaseFile),
   id: 'timeline-demo',
   rankStories: undefined,
-  leads: [lead, net, cipher, stake, decode, plate],
+  leads: [lead, net, cipher, stake, decode, plate, keyed],
   events: [],
   offers: [],
   missedClues: [],
@@ -178,3 +190,6 @@ for (const preset of PRESETS) {
 for (const preset of PRESETS) timelineBook[`D1:${preset}`] = generateDecode({ variant: 'dial', level: DECODE_LEVEL[preset], seed: 41 });
 
 for (const preset of PRESETS) timelineBook[`D2:${preset}`] = generateDecode({ variant: 'nonogram', level: DECODE_LEVEL[preset], seed: 43 });
+
+// D3 carries two numbers from D1's answer, so it is built after D1
+for (const preset of PRESETS) timelineBook[`D3:${preset}`] = buildDecode(timelineCase as unknown as CaseFile, preset, keyed, 47, timelineBook);
