@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { calcLines, clock, solveCalc, type CalcData } from '../src/engine/calc';
 import { DECODE_VARIANTS, decodeShift, dialStops, encodeShift, generateDecode, isDecodeCorrect, keypadDigits, moveDate, normalizeAnswer, serialHolds, solveDecode, verifyDecode, type DecodePuzzle } from '../src/engine/decode';
 
 describe('decode rules', () => {
@@ -45,7 +46,7 @@ describe('every variant at every level', () => {
           texts.add(JSON.stringify(p.exhibits));
         }
       }
-      expect(answers.size).toBeGreaterThan(variant === 'scale' ? 6 : 20);
+      expect(answers.size).toBeGreaterThan(variant === 'dice' ? 3 : variant === 'scale' ? 6 : variant === 'receipt' ? 12 : 20);
       expect(texts.size).toBeGreaterThan(55);
     });
     it(`${variant}: the same seed builds the same puzzle`, () => {
@@ -127,5 +128,48 @@ describe('the guess-and-feedback puzzles', () => {
     const m = generateDecode({ variant: 'smudge', level: 2, seed: 4 });
     if (m.data.variant !== 'smudge') throw new Error('x');
     expect(solveDecode({ ...m.data, facts: [] })).toBe('');
+  });
+});
+
+describe('the calculation puzzles', () => {
+  it('wraps a clock past midnight', () => {
+    expect(clock(-15)).toBe('2345');
+    expect(clock(1440 + 75)).toBe('0115');
+  });
+  it('receipt: works the torn price out from the change', () => {
+    // subtotal 30 + 10% tax = 33; paid 50, change 17; items 12 + torn + 8 -> torn = 10
+    const d: CalcData = { variant: 'receipt', items: [{ name: 'A', price: 12 }, { name: 'B', price: null }, { name: 'C', price: 8 }], rate: 10, paid: 50, change: 17 };
+    expect(solveCalc(d)).toBe('10');
+    expect(solveCalc({ ...d, change: 16 })).toBe('');
+    expect(solveCalc({ ...d, items: [{ name: 'A', price: 12 }, { name: 'B', price: 1 }, { name: 'C', price: 8 }] })).toBe('');
+    expect(solveCalc({ ...d, items: [{ name: 'A', price: 12 }, { name: 'B', price: null }, { name: 'C', price: 30 }] })).toBe('');
+    expect(calcLines(d)[1]).toContain('torn');
+  });
+  it('zone: adds the zone difference and wraps at midnight', () => {
+    const d = { variant: 'zone', watch: '03:15', from: { city: 'A', offset: 0 }, to: { city: 'B', offset: 3 } } as const;
+    expect(solveCalc(d)).toBe('0615');
+    expect(solveCalc({ ...d, watch: '23:30' })).toBe('0230');
+    expect(solveCalc({ ...d, to: { city: 'C', offset: -5 } })).toBe('2215');
+    expect(solveCalc({ ...d, to: { city: 'C', offset: 5.5 } })).toBe('0845');
+  });
+  it('cooling: counts back from when the cup was found', () => {
+    const d = { variant: 'cooling', found: '02:00', foundTemp: 54, startTemp: 90, perHour: 9 } as const;
+    expect(solveCalc(d)).toBe('2200');
+    expect(solveCalc({ ...d, foundTemp: 49.5, perHour: 9 })).toBe('2130');
+    expect(solveCalc({ ...d, foundTemp: 53 })).toBe('');
+    expect(solveCalc({ ...d, foundTemp: 95 })).toBe('');
+  });
+  it('triangulate: needs exactly one crossing that fits every report', () => {
+    const towers = [{ x: 0, y: 0, d: 2 }];
+    expect(solveCalc({ variant: 'triangulate', size: 5, towers })).toBe('');
+    expect(solveCalc({ variant: 'triangulate', size: 5, towers: [{ x: 0, y: 0, d: 4 }, { x: 4, y: 0, d: 2 }] })).toBe('3 1');
+    expect(solveCalc({ variant: 'triangulate', size: 5, towers: [{ x: 0, y: 0, d: 20 }] })).toBe('');
+  });
+  it('dice: only one die may look rigged', () => {
+    const fair = [10, 10, 10, 10, 10, 10];
+    const loaded = [30, 6, 6, 6, 6, 6];
+    expect(solveCalc({ variant: 'dice', rolls: 60, dice: [fair, loaded, fair] })).toBe('2');
+    expect(solveCalc({ variant: 'dice', rolls: 60, dice: [fair, fair] })).toBe('');
+    expect(solveCalc({ variant: 'dice', rolls: 60, dice: [loaded, loaded] })).toBe('');
   });
 });

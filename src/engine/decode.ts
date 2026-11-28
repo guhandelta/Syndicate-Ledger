@@ -22,11 +22,12 @@
  *
  * The answer is `answer`: capital letters, digits and single spaces, compared after `normalizeAnswer`.
  */
+import { calcLines, genCooling, genDice, genReceipt, genTriangulate, genZone, solveCalc, type CalcData } from './calc';
 import { genBulls, genScale, genSmudge, guessLines, solveGuess, type GuessData } from './guess';
 import { makeRng, type Rng } from './rng';
 
-export type DecodeVariant = 'book' | 'keypad' | 'shift' | 'date' | 'check' | 'dial' | 'bulls' | 'smudge' | 'scale';
-export const DECODE_VARIANTS: DecodeVariant[] = ['book', 'keypad', 'shift', 'date', 'check', 'dial', 'bulls', 'smudge', 'scale'];
+export type DecodeVariant = 'book' | 'keypad' | 'shift' | 'date' | 'check' | 'dial' | 'bulls' | 'smudge' | 'scale' | 'receipt' | 'zone' | 'cooling' | 'triangulate' | 'dice';
+export const DECODE_VARIANTS: DecodeVariant[] = ['book', 'keypad', 'shift', 'date', 'check', 'dial', 'bulls', 'smudge', 'scale', 'receipt', 'zone', 'cooling', 'triangulate', 'dice'];
 
 export interface Exhibit {
   title: string;
@@ -41,7 +42,8 @@ export type DecodeData =
   | { variant: 'date'; month: number; day: number; days: number; direction: 1 | -1 }
   | { variant: 'check'; serials: string[]; rule: CheckRule }
   | { variant: 'dial'; size: number; moves: { dir: 'R' | 'L'; steps: number }[] }
-  | GuessData;
+  | GuessData
+  | CalcData;
 
 export type CheckRule = { kind: 'sum'; mod: number } | { kind: 'weighted'; mod: number };
 
@@ -137,6 +139,12 @@ export function solveDecode(d: DecodeData): string {
     }
     case 'dial':
       return dialStops(d.size, d.moves).map(pad2).join('');
+    case 'receipt':
+    case 'zone':
+    case 'cooling':
+    case 'triangulate':
+    case 'dice':
+      return solveCalc(d);
     default:
       return solveGuess(d);
   }
@@ -161,6 +169,12 @@ export function verifyDecode(p: DecodePuzzle): boolean {
       return p.data.serials.every((s) => text.includes(s));
     case 'dial':
       return p.data.moves.every((m) => text.includes(`${m.dir} ${m.steps}`));
+    case 'receipt':
+    case 'zone':
+    case 'cooling':
+    case 'triangulate':
+    case 'dice':
+      return calcLines(p.data).every((line) => text.includes(line));
     default:
       return guessLines(p.data).every((line) => text.includes(line));
   }
@@ -280,7 +294,7 @@ function genDial(level: number, seed: number, rng: Rng): DecodePuzzle {
   ], 'Work out where it stops each time and type the code.');
 }
 
-const fromGuess = (variant: DecodeVariant, gen: typeof genBulls) => (level: number, seed: number, rng: Rng): DecodePuzzle => {
+const fromGuess = (variant: DecodeVariant, gen: (level: number, rng: Rng) => { data: DecodeData; exhibits: Exhibit[]; question: string }) => (level: number, seed: number, rng: Rng): DecodePuzzle => {
   const g = gen(level, rng);
   return make(variant, level, seed, g.data, g.exhibits, g.question);
 };
@@ -288,6 +302,7 @@ const fromGuess = (variant: DecodeVariant, gen: typeof genBulls) => (level: numb
 const GEN: Record<DecodeVariant, (level: number, seed: number, rng: Rng) => DecodePuzzle> = {
   book: genBook, keypad: genKeypad, shift: genShift, date: genDate, check: genCheck, dial: genDial,
   bulls: fromGuess('bulls', genBulls), smudge: fromGuess('smudge', genSmudge), scale: fromGuess('scale', genScale),
+  receipt: fromGuess('receipt', genReceipt), zone: fromGuess('zone', genZone), cooling: fromGuess('cooling', genCooling), triangulate: fromGuess('triangulate', genTriangulate), dice: fromGuess('dice', genDice),
 };
 
 export interface DecodeOptions {
