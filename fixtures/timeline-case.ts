@@ -4,11 +4,12 @@
  */
 import caseFile from '../cases/case-01-harbor-ledger.json';
 import { generateCipher } from '../src/engine/cipher';
+import { generateDecode } from '../src/engine/decode';
 import { generateNetwork } from '../src/engine/network';
 import { generateStakeout } from '../src/engine/stakeout';
 import { generateTimeline } from '../src/engine/timeline';
 import { PRESETS, type CaseFile, type Lead, type PuzzleBook } from '../src/game/caseTypes';
-import { CIPHER_RULES, MAP_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from '../src/game/presets';
+import { CIPHER_RULES, DECODE_LEVEL, MAP_RULES, NET_RULES, PRESET_RULES, STAKEOUT_RULES } from '../src/game/presets';
 
 const lead: Lead = {
   id: 'T1',
@@ -82,11 +83,27 @@ const stake: Lead = {
   pointsTo: ['vex'],
 } as unknown as Lead;
 
+const decode: Lead = {
+  id: 'D1',
+  type: 'decode',
+  decode: { variant: 'dial' },
+  cost: 2,
+  opensAfter: [],
+  title: 'The safe in the net loft',
+  intro: 'A note on the safe lid shows how the dial was turned. No witness can help: read it and work out the code.',
+  columns: [],
+  rows: [],
+  speakers: [],
+  liars: { junior: [], detective: [], inspector: [], chief: [] },
+  fact: 'The safe held the festival coins.',
+  pointsTo: ['crane'],
+} as unknown as Lead;
+
 export const timelineCase = {
   ...(caseFile as unknown as CaseFile),
   id: 'timeline-demo',
   rankStories: undefined,
-  leads: [lead, net, cipher, stake],
+  leads: [lead, net, cipher, stake, decode],
   events: [],
   offers: [],
   missedClues: [],
@@ -148,3 +165,5 @@ for (const preset of PRESETS) {
     seed: size * 409,
   });
 }
+
+for (const preset of PRESETS) timelineBook[`D1:${preset}`] = generateDecode({ variant: 'dial', level: DECODE_LEVEL[preset], seed: 41 });

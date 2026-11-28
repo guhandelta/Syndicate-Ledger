@@ -1,4 +1,5 @@
 import type { CipherClaim, CipherPuzzle } from '../engine/cipher';
+import type { DecodePuzzle, DecodeVariant } from '../engine/decode';
 import type { NetClaim, NetworkPuzzle } from '../engine/network';
 import type { StakeClaim, StakeoutPuzzle } from '../engine/stakeout';
 import type { TimeClaim, TimelinePuzzle } from '../engine/timeline';
@@ -6,8 +7,8 @@ import type { Claim } from '../engine/types';
 import type { GeneratedPuzzle, GridType } from '../engine/types';
 
 /** The kinds of puzzle a lead can hold: the two number grids, a timeline of moments to put in order, a network of who was in contact with whom, a cipher, or a stakeout map. */
-export type LeadType = GridType | 'timeline' | 'network' | 'cipher' | 'stakeout';
-export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline', 'network', 'cipher', 'stakeout'];
+export type LeadType = GridType | 'timeline' | 'network' | 'cipher' | 'stakeout' | 'decode';
+export const LEAD_TYPES: LeadType[] = ['ledger', 'surveillance', 'timeline', 'network', 'cipher', 'stakeout', 'decode'];
 
 /** What a witness can say, in any kind of lead. */
 export type AnyClaim = Claim | TimeClaim | NetClaim | CipherClaim | StakeClaim;
@@ -188,6 +189,11 @@ export interface Lead {
   riddle?: { people: string[]; noun: string };
   /** Stakeout leads: what stands in each district, e.g. { one: "patrol", many: "patrols" }. Default "watcher". */
   watchers?: { one: string; many: string };
+  /**
+   * Decode leads: which code puzzle this is (book, keypad, shift, date, check, dial). There are no witnesses: the player reads the
+   * exhibits and types one answer. `rows` and `columns` are empty and `speakers` is empty.
+   */
+  decode?: { variant: DecodeVariant };
   speakers: string[];
   liars: Record<Preset, string[]>;
   fact: Text;
@@ -352,7 +358,7 @@ export type RankStory = { part: CasePart } & Partial<Pick<CaseFile, StoryField>>
 };
 
 /** puzzles.json: key is `${leadId}:${preset}`. */
-export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle;
+export type AnyPuzzle = GeneratedPuzzle | TimelinePuzzle | NetworkPuzzle | CipherPuzzle | StakeoutPuzzle | DecodePuzzle;
 export type PuzzleBook = Record<string, AnyPuzzle>;
 /** A book of grid puzzles only (Case 1 today). */
 export type GridBook = Record<string, GeneratedPuzzle>;
